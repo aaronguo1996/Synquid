@@ -44,16 +44,19 @@ edges :: Graph e -> [Edge e]
 edges g = [ (v, l, w) | v <- indices g, (l, w) <- g!v]
 -- edges g = [e | (e,v) <- g]
 
-generateEdges :: (String, SuccinctType) -> [(Type, Int)] -> [Edge String]
+generateEdges :: (String, SuccinctType) -> [(SuccinctType, Int)] -> [Edge String]
 generateEdges (name, ty) tyIndices = case ty of
+    SuccSgl ty -> []
     SuccCom tyLst -> let tys = foldl (\acc t -> removeDups ((getTypes t) ++ acc) []) [] tyLst
-                     in map (\t -> addEdge t (TypeSet tys) "") tys
+                     in map (\t -> addEdge t ty "") tys
     SuccVar names tys -> []
     SuccFun tyLst retTy | length tyLst == 0 -> []
                         | length tyLst == 1 -> let tys = foldl (\acc t -> removeDups ((getTypes t) ++ acc) []) [] tyLst
                                                in [addEdge (head tys) retTy name]
                         | otherwise -> let tys = foldl (\acc t -> removeDups ((getTypes t) ++ acc) []) [] tyLst
-                                       in [addEdge (TypeSet tys) retTy name]
+                                       in [addEdge (SuccCom tys) retTy name]
+                        --let tys = foldl (\acc t -> removeDups ((getTypes t) ++ acc) []) [] tyLst
+                                       --in [addEdge (TypeSet tys) retTy name]
   where
     addEdge src dst name = (getTypeIdx tyIndices src, name, getTypeIdx tyIndices dst)
   --     SuccCom tyLst = \t -> addEdge tyLst

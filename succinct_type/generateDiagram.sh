@@ -1,2 +1,2 @@
 stack runhaskell Main.hs > diagram.dig
-dot -Tpng diagram.dig -o diagram.png
+dot -Tpng diagram.dig -o $1

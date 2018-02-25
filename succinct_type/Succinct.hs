@@ -9,6 +9,7 @@ data BaseType =
   | Bool
   | String
   | Char
+  | Nil
   | DT String Type
   | TVar String
 
@@ -18,7 +19,8 @@ data Type =
   | TypeSet [Type]
 
 data SuccinctType = 
-    SuccFun [SuccinctType] Type
+    SuccSgl Type
+  | SuccFun [SuccinctType] SuccinctType
   | SuccVar [String] [SuccinctType]
   | SuccCom [SuccinctType]
 
@@ -26,6 +28,7 @@ type Context = [(String, Type)]
 
 hasTVar :: Type -> Bool
 hasTVar (BType (TVar _))    = True
+hasTVar (BType (DT _ t))    = hasTVar t
 hasTVar (BType _)           = False
 hasTVar (Fun paramTy retTy) = (hasTVar paramTy) || (hasTVar retTy)
 
@@ -35,30 +38,35 @@ hasTVar (Fun paramTy retTy) = (hasTVar paramTy) || (hasTVar retTy)
 --
 toSuccinctType :: Type -> SuccinctType
 toSuccinctType (BType bt) = case bt of
-    DT name ty | hasTVar ty -> case toSuccinctType ty of
-                               SuccVar names tys -> SuccVar (removeDups (name:names) []) tys
-                               _ -> SuccFun [] (BType bt)
-               | otherwise -> SuccFun [] (BType bt)
-    _ -> SuccFun [] (BType bt)
-toSuccinctType (Fun paramTy retLst) = case (elemIndex succinctParam tyLst) of
-    Just i  -> SuccFun tyLst retTy
-    Nothing -> SuccFun ((toSuccinctType paramTy):tyLst) retTy
-  where
-    succinctParam = toSuccinctType paramTy
-    SuccFun tyLst retTy = toSuccinctType retLst
+    DT name ty -> case toSuccinctType ty of
+                    SuccVar names tys -> SuccVar (removeDups (name:names) []) tys
+                    SuccFun param ret -> SuccVar [name] (param ++ [ret])
+                    SuccCom tys -> SuccVar [name] tys
+    _ -> SuccFun [] (SuccSgl (BType bt))
+toSuccinctType (Fun paramTy retLst) = case toSuccinctType retLst of
+    SuccFun tyLst retTy -> case (elemIndex (toSuccinctType paramTy) tyLst) of
+                             Just i  -> SuccFun tyLst retTy
+                             Nothing -> SuccFun ((toSuccinctType paramTy):tyLst) retTy
+    SuccVar names tys   -> SuccFun [toSuccinctType paramTy] (SuccVar names tys)
+    SuccCom tys         -> SuccFun [toSuccinctType paramTy] (SuccCom tys)
 
 typeToStr :: Type -> String
 typeToStr (BType Int) = "Int"
 typeToStr (BType Bool) = "Bool"
 typeToStr (BType Char) = "Char"
 typeToStr (BType String) = "String"
-typeToStr (BType (DT name t)) = name ++ "_" ++ (typeToStr t)
+typeToStr (BType Nil) = ""
+typeToStr (BType (DT name t)) = name ++ (if typeToStr t == "" then "" else "_" ++ (typeToStr t))
 typeToStr (BType (TVar name)) = name
 typeToStr (Fun paramTy retTy) = (typeToStr paramTy) ++ "->" ++ (typeToStr retTy)
-typeToStr (TypeSet tys) = "LB_"++ (foldl (\acc t -> acc ++ (typeToStr t) ++ "_") "" tys) ++"RB"
+typeToStr (TypeSet tys) = "\"{"++ (foldl (\acc t -> acc ++ (typeToStr t) ++ ",") "" tys) ++"}\""
 
 succinctToStr :: SuccinctType -> String
-succinctToStr (SuccFun tyLst retTy) = "{" ++ (foldl (++) "" (map succinctToStr tyLst)) ++ "}->" ++ (typeToStr retTy)
+succinctToStr (SuccSgl t) = typeToStr t
+succinctToStr (SuccFun [] retTy) = succinctToStr retTy
+succinctToStr (SuccFun tyLst retTy) = (foldl (\acc x -> acc++x++"_") "" (map succinctToStr tyLst)) ++ "_" ++ (succinctToStr retTy)
+succinctToStr (SuccVar names tyLst) = (foldl (\acc x -> acc++x++"_") "" names) ++ (foldl (\acc x -> acc++x++"_") "" (map succinctToStr tyLst))
+succinctToStr (SuccCom tyLst) = "\""++(foldl (\acc x -> acc++"+"++x) "" (map succinctToStr tyLst))++"\""
 
 renameVars :: Type -> Int -> Type
 renameVars (BType (TVar name)) n = BType (TVar ("a_" ++ (show n)))
@@ -109,31 +117,29 @@ applyVars (pn, t) bases =
 --                                                             else pn, Fun t1 t2)) (zip appliedParam appliedRet)
 -- applyVars ty _                          = [ty]
 
-addCompoundTypes :: (String, SuccinctType) -> [(SuccinctType, Type)]
+addCompoundTypes :: (String, SuccinctType) -> [SuccinctType]
 addCompoundTypes (_, SuccFun paramLst retTy)
-    | length paramLst > 1 = [(SuccCom succLst,TypeSet typeLst)]
+    | length paramLst > 1 = [SuccCom typeLst]
     | otherwise = []
   where
     typeLst = foldl (\acc x -> acc ++ (getTypes x)) [] paramLst
-    succLst = map toSuccinctType typeLst
 addCompoundTypes _ = []
 
-getTypes :: SuccinctType -> [Type]
-getTypes (SuccFun [] retTy) = [retTy]
-getTypes (SuccFun tyLst retTy) = (foldl (\acc t -> acc ++ (getTypes t)) [] tyLst) ++ ([retTy])
-getTypes (SuccVar nameLst tyLst) = foldl (\acc t -> acc ++ (getTypes t)) [] tyLst
-getTypes (SuccCom tyLst) = let tys = foldl (\acc t -> acc ++ (getTypes t)) [] tyLst
-                           in [TypeSet tys]
+getTypes :: SuccinctType -> [SuccinctType]
+getTypes (SuccSgl ty) = [SuccSgl ty]
+getTypes (SuccFun tyLst retTy) = (foldl (\acc t -> acc ++ (getTypes t)) [] tyLst) ++ (getTypes retTy)
+getTypes (SuccVar nameLst tyLst) = [SuccVar nameLst tyLst]
+getTypes (SuccCom tyLst) = [SuccCom tyLst] --(foldl (\acc t -> acc ++ (getTypes t)) [] tyLst) ++ 
 
 getBaseTypes :: [Type] -> [Type]
 getBaseTypes []       = []
 getBaseTypes (ty:tys) = case ty of
-    BType (DT _ _) -> getBaseTypes tys
+    BType (DT _ _) -> if hasTVar ty then  getBaseTypes tys else ty:(getBaseTypes tys)
     BType (TVar _) -> getBaseTypes tys
     Fun paramTy retTy -> (getBaseTypes [paramTy]) ++ (getBaseTypes [retTy]) ++ (getBaseTypes tys)
     _              -> ty:(getBaseTypes tys)
 
-toTypeIdx :: [Type] -> [(Type, Int)]
+toTypeIdx :: [SuccinctType] -> [(SuccinctType, Int)]
 toTypeIdx tys = res
   where
     (_, res) = foldl addNew (0, []) tys
@@ -141,16 +147,16 @@ toTypeIdx tys = res
       Just i -> (cnt, acc)
       Nothing -> (cnt+1, (ty, cnt):acc)
 
-getTypeIdx :: [(Type, Int)] -> Type -> Int
+getTypeIdx :: [(SuccinctType, Int)] -> SuccinctType -> Int
 getTypeIdx [] _ = -1
 getTypeIdx ((ty, idx):tys) tyFind
   | ty == tyFind = idx
   | otherwise = getTypeIdx tys tyFind
 
-getTypeName :: [(Type, Int)] -> Int -> String
+getTypeName :: [(SuccinctType, Int)] -> Int -> String
 getTypeName [] _ = ""
 getTypeName ((ty, idx):tys) tyIdx
-  | idx == tyIdx = typeToStr ty
+  | idx == tyIdx = succinctToStr ty
   | otherwise = getTypeName tys tyIdx
 
 instance Eq BaseType where
@@ -158,6 +164,7 @@ instance Eq BaseType where
   Bool == Bool = True
   Char == Char = True
   String == String = True
+  Nil == Nil = True
   DT n1 t1 == DT n2 t2 = (n1==n2) && (t1==t2)
   TVar n1 == TVar n2 = n1==n2
   _ == _ = False
@@ -172,9 +179,14 @@ instance Eq SuccinctType where
   SuccFun aList aTy == SuccFun bList bTy = ((sort aList)==(sort bList)) && (aTy==bTy)
   SuccVar aList aTy == SuccVar bList bTy = ((sort aList)==(sort bList)) && (aTy==bTy)
   SuccCom aList == SuccCom bList = ((sort aList)==(sort bList))
+  SuccSgl a == SuccSgl b = (a==b)
   _ == _ = False
 
 instance Ord BaseType where
+  Nil <= Int = True
+  Int <= Nil = False
+  Nil <= Bool = True
+  Bool <= Nil = False
   Int <= Bool = True
   Bool <= Int = False
   Int <= Char = True
@@ -217,3 +229,16 @@ instance Ord SuccinctType where
   SuccFun aList aTy <= SuccFun bList bTy = (aList <= bList) && (aTy <= bTy)
   SuccVar aList aTy <= SuccVar bList bTy = (aList <= bList) && (aTy <= bTy)
   SuccCom aList <= SuccCom bList = (aList <= bList)
+  SuccSgl a <= SuccSgl b = (a <= b)
+  SuccSgl a <= SuccFun aList aTy = True
+  SuccFun aList aTy <= SuccSgl a = False
+  SuccSgl a <= SuccVar aList aTy = True
+  SuccVar aList aTy <= SuccSgl a = False
+  SuccSgl a <= SuccCom aList = True
+  SuccCom aList <= SuccSgl a = False
+  SuccFun aList aTy <= SuccVar bList bTy = True
+  SuccVar bList bTy <= SuccFun aList aTy = False
+  SuccFun aList aTy <= SuccCom bList = True
+  SuccCom bList <= SuccFun aList aTy = False
+  SuccVar aList aTy <= SuccCom bList = True
+  SuccCom bList <= SuccVar aList aTy = False
