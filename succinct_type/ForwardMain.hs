@@ -2,7 +2,7 @@ module Main where
 
 import Data.Tuple
 import Graph
-import Succinct
+import SuccinctForward
 import Utility
 
 
@@ -29,25 +29,22 @@ main = do
                        ,("b", (BType (DT "AddressBook" (BType Nil))))
                        ,("mergeAddressBooks", (Fun (BType (DT "AddressBook" (BType Nil))) (Fun (BType (DT "AddressBook" (BType Nil))) (BType (DT "AddressBook" (BType Nil))))))
                        ]
-    listConcat = [("Nil", BType (DT "List" (BType (TVar "a"))))
-                 ,("Cons", (Fun (BType (TVar "a")) (Fun (BType (DT "List" (BType (TVar "a")))) (BType (DT "List" (BType (TVar "a")))))))
-                 ,("Nil2", BType (DT "ListOfLists" (BType (TVar "a"))))
-                 ,("Cons2", (Fun (BType (DT "List" (BType (TVar "a")))) (Fun (BType (DT "ListOfLists" (BType (TVar "a")))) (BType (DT "ListOfLists" (BType (TVar "a")))))))
-                 ,("append", (Fun (BType (DT "List" (BType (TVar "a")))) (Fun (BType (DT "List" (BType (TVar "a")))) (BType (DT "List" (BType (TVar "a")))))))
-                 ,("xss", BType (DT "ListOfLists" (BType (TVar "a"))))
-                 ,("concat", (Fun (BType (DT "ListOfLists" (BType (TVar "a")))) (BType (DT "List" (BType (TVar "a"))))))
-                 ]
-    replicateExmp = [("zero", BType Int)
-                    ,("inc", Fun (BType Int) (BType Int))
-                    ,("dec", Fun (BType Int) (BType Int))
-                    ,("Nil", BType (DT "List" (BType (TVar "a"))))
-                    ,("Cons", (Fun (BType (TVar "a")) (Fun (BType (DT "List" (BType (TVar "a")))) (BType (DT "List" (BType (TVar "a")))))))
-                    ,("Cons_match", (Fun (BType (DT "List" (BType (TVar "a")))) (BType (TVar "a"))))
-                    --,("n", BType (DT "Nat" (BType Nil)))
-                    --,("", Fun (BType (DT "Nat" (BType Nil))) (BType Int))
-                    ,("replicate", Fun (BType Int) (Fun (BType (TVar "a")) (BType (DT "List" (BType (TVar "a"))))))
-                    ]
-    testCont = replicateExmp
+    -- sampleTest = [("f",(TyArr (TyInt) (TyArr (TyBool) (TyArr (TyInt) (TyInt))))) -- Int -> Bool -> Int -> Int
+    --              , ("name", TyChar) -- Char
+    --              , ("g", TyArr (TyString) (TyBool)) -- String -> Bool
+    --              , ("lst", TyDt "List" [TyInt]) -- List Int
+    --              , ("h", TyArr (TyDt "List" [TyInt]) TyBool) -- List Int -> Bool
+    --              , ("s", TyAll "X" (TyArr (TyDt "List" [TyId "X"]) TyBool)) -- List a -> Bool
+    --              , ("t", TyAll "X" (TyArr (TyDt "List" [TyId "X"]) (TyDt "List" [TyId "X"]))) -- List a -> a
+    --              , ("r", TyAll "X" (TyAll "Y" (TyArr (TyDt "List" [TyId "X"]) (TyDt "List" [TyId "Y"])))) -- List a -> List b
+    --              ]
+    -- target = TyBool
+    -- --ctx = map (\(n,t)->(n, VarBind t)) sampleTest
+    -- sctx = map (\(n,t)->(n,toSuccinctType t)) sampleTest
+    -- tyCtx = []
+    -- starget = toSuccinctType target
+    -- result = traversal sctx starget
+    testCont = addressBookMerge
     -- renamedTyLst = let (_, tys) = foldl (\(n, acc) ty -> (n+1, ((renameVars ty n):acc))) (0,[]) testTyLst in tys
     baseTyLst    = removeDups (getBaseTypes (snd (unzip testCont))) []
     -- baseTyLst = snd (unzip testCont)
@@ -57,14 +54,17 @@ main = do
     succinctTyLst = zip testNames (map toSuccinctType testTypes)
     compoundTys = foldl (\acc x -> acc ++ (addCompoundTypes x)) [] succinctTyLst
     --allTyLst = appliedTyLst ++ (map (\x -> ("", x)) (snd (unzip compoundTys)))
-    allSuccTyLst = succinctTyLst ++ (map (\x -> ("", x)) compoundTys)
+    allSuccTyLst = (addDstDot succinctTyLst) ++ (map (\x -> ("", x)) compoundTys)
     typeIndices = toTypeIdx (removeDups (foldl (\acc t -> (getTypes t) ++ acc) [] (snd (unzip allSuccTyLst))) [])
     edges = foldl (\acc x -> (generateEdges x typeIndices)++acc) [] allSuccTyLst
     gr = transposeG (buildG (0,(length typeIndices)-1) edges)
     --e = edges gr
     lgr = LabGraph gr (\x->getTypeName typeIndices x)
-  putStrLn $ showGraphViz lgr typeIndices
+  --   succinctTys = map toSuccinctType (snd (unzip sampleTest))
+  -- putStrLn $ foldl (\acc t -> acc ++ (succinct2str t) ++ "\n") "" succinctTys
+  -- putStrLn $ foldl (\acc (t1,n,t2) -> acc ++ (succinct2str t1) ++ "="++n++"=>" ++ (succinct2str t2) ++ "\n") "" result
+  --putStrLn $ showGraphViz lgr typeIndices
   --putStrLn $ foldl (\acc t -> acc ++ (fst t) ++ ": " ++ (succinctToStr (snd t)) ++ "\n") "" allSuccTyLst
   --putStrLn $ foldl (\acc (v, n, u) -> acc ++ (show v) ++ "->" ++ n ++ "->" ++ (show u) ++ "\n") "" edges
-  --putStrLn $ foldl (\acc t -> acc ++ (succinctToStr (fst t)) ++ ":" ++ (show (snd t)) ++ "\n") "" typeIndices
+  putStrLn $ foldl (\acc t -> acc ++ (succinctToStr (fst t)) ++ ":" ++ (show (snd t)) ++ "\n") "" typeIndices
   --putStrLn $ foldl (\acc t -> acc ++ (fst t) ++ " " ++ (typeToStr (snd t)) ++ "\n") "" appliedTyLst

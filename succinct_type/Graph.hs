@@ -1,7 +1,7 @@
 module Graph where
 import Data.Array
 import Data.List
-import Succinct
+import SuccinctForward
 import Utility
 
 type Vertex = Int
@@ -42,30 +42,18 @@ showGraphViz (LabGraph gr lab) tyIndices =
 
 edges :: Graph e -> [Edge e]
 edges g = [ (v, l, w) | v <- indices g, (l, w) <- g!v]
--- edges g = [e | (e,v) <- g]
 
 generateEdges :: (String, SuccinctType) -> [(SuccinctType, Int)] -> [Edge String]
 generateEdges (name, ty) tyIndices = case ty of
-    SuccSgl ty -> []
+    SuccSgl t -> []
+    SuccCons t -> []
     SuccCom tyLst -> let tys = foldl (\acc t -> removeDups ((getTypes t) ++ acc) []) [] tyLst
                      in map (\t -> addEdge t ty "") tys
     SuccVar names tys -> []
-    SuccFun tyLst retTy | length tyLst == 0 -> []
+    SuccFun tyLst retTy | length tyLst == 0 -> let SuccSgl tt = retTy in [addEdge retTy (SuccCons tt) "rooted_value"]
                         | length tyLst == 1 -> let tys = foldl (\acc t -> removeDups ((getTypes t) ++ acc) []) [] tyLst
                                                in [addEdge (head tys) retTy name]
                         | otherwise -> let tys = foldl (\acc t -> removeDups ((getTypes t) ++ acc) []) [] tyLst
                                        in [addEdge (SuccCom tys) retTy name]
-                        --let tys = foldl (\acc t -> removeDups ((getTypes t) ++ acc) []) [] tyLst
-                                       --in [addEdge (TypeSet tys) retTy name]
   where
     addEdge src dst name = (getTypeIdx tyIndices src, name, getTypeIdx tyIndices dst)
-  --     SuccCom tyLst = \t -> addEdge tyLst
-  --     SuccFun tyLst retTy | length tyLst == 1 = [addEdge retTy (head tyLst)]
-  --                         | otherwise = (map (addEdge retTy) tyLst) ++ (generateEdges xs tyIndices)
-
-  -- where
-  --   addEdge dst t = let SuccFun _ src = t in ((srcIdx src), name, dst)
-  --   srcIdx src = getTypeIdx tyIndices src
-  --   retIdx = getTypeIdx   retTy
-  --   SuccFun tyLst retTy = toSuccinctType ty
-  --   (name, ty) = x
