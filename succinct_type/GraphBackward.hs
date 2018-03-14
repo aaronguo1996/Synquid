@@ -41,8 +41,8 @@ showGraphViz (LabGraph gr lab) tyIndices =
   "rankdir=BT;\n" ++
   "ratio=fill;\n" ++
   "size=\"8.5,11!\";\n" ++
-  "node  [style=\"rounded,filled,bold\", shape=box, width=2, fontsize=24];\n"++
-  "edge [fontsize=24]\n"++
+  "node  [style=\"rounded,filled,bold\", shape=box, width=2, fontsize=20];\n"++
+  "edge [fontsize=20]\n"++
   (concatMap showNode $ indices gr) ++
   (concatMap showEdge $ edges gr) ++
   "}\n"

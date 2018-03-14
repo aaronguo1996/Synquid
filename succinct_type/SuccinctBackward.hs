@@ -277,7 +277,8 @@ unify comp target ctx = case (comp, target) of
                                                      assign vars x y = case (vars, x,y) of
                                                                          ([], [], [])                         -> []
                                                                          ((SRaw (TyId var)):vs, xx:xs, yy:ys) -> case xx of
-                                                                             [] -> (var, TyAbbBind (head yy)):(assign vs xs ys)
+                                                                             [] | length yy > 0 -> (var, TyAbbBind (head yy)):(assign vs xs ys)
+                                                                                | otherwise     -> []
                                                                              _  -> (var, TyAbbBind (SDt xx yy)):(assign vs xs ys)
                                                                          _                                    -> []
                                                      isValid x y = case (x,y) of
@@ -354,9 +355,10 @@ traversal sctx seen sty = case sty of
 isReachable :: [(STy,String,STy)] -> [STy] -> STy -> Bool
 isReachable []    _    _  = False
 isReachable edges seen ty = case ty of
-    SDone _ -> True
-    _       -> foldl (\acc x -> (acc || isReachable edges (x:seen) x)) False (getDsts seen ty)
-  where
+    SDone _  -> True
+    SCmp tys -> foldl (\acc x -> (acc && isReachable edges (x:seen) x)) True (getDsts seen ty)
+    _        -> foldl (\acc x -> (acc || isReachable edges (x:seen) x)) False (getDsts seen ty)
+  where 
     getDsts seen t = let fold_fun (acc, s) (from,_,to) = 
                              if (from == t) && (not (hasSeen s to))
                                  then (to:acc, t:s)

@@ -39,6 +39,11 @@ divide n x  = foldl f [] (fromZero (length x))
   where
     f acc elm = let (p1, p2) = splitAt elm x in (map (\x->p1:x) (divide (n-1) p2))++acc
 
+-- divideDup :: (Eq a) => Int -> [a] -> [[[a]]]
+-- divideDup 1 x = foldl (\acc x->acc++[[x]]) [] (subsequences x)
+-- divideDup n x = [i:j | i <- (subsequences x),
+--                       j <- (divideDup (n-1) x)]
+
 divideDup :: Int -> [a] -> [[[a]]]
 divideDup 1 x = [[x]]
 divideDup n x = [i:j | i <- drop 1 (subsequences x),
