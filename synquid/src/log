@@ -1,0 +1,743 @@
+Checking THIS :: List A0 in
+\THIS . 
+  match ?? with
+Checking 0 :: {Int|_v >= 0} in
+\THIS . 
+  match THIS with
+    Nil -> ??
+Checking + :: x1:_ -> x0:_ -> {Int|_v >= 0} in
+\THIS . 
+  match THIS with
+    Cons x xs -> ?? ?? ??
+Checking 1 :: Int in
+\THIS . 
+  match THIS with
+    Cons x xs -> ?? + ??
+Checking +
+           1 :: x0:_ -> {Int|_v >= 0} in
+\THIS . 
+  match THIS with
+    Cons x xs -> ?? ??
+Checking len :: x4:_ -> Int in
+\THIS . 
+  match THIS with
+    Cons x xs -> 1 + (?? ??)
+Checking xs :: List A2 in
+\THIS . 
+  match THIS with
+    Cons x xs -> 1 + (len ??)
+Checking len xs :: Int in
+\THIS . 
+  match THIS with
+    Cons x xs -> 1 + ??
+Checking 1 + (len
+                xs) :: {Int|_v >= 0} in
+\THIS . 
+  match THIS with
+    Cons x xs -> ??
+Checking THIS :: Address in
+\THIS . 
+  match ?? with
+Checking priv :: Bool in
+\THIS . 
+  match THIS with
+    Address info priv -> ??
+Checking THIS :: AddressBook in
+\THIS . 
+  match ?? with
+Checking + :: x1:_ -> x0:_ -> {Int|_v >= 0} in
+\THIS . 
+  match THIS with
+    AddressBook bs ps -> ?? ?? ??
+Checking len :: x4:_ -> Int in
+\THIS . 
+  match THIS with
+    AddressBook bs ps -> (?? ??) +
+                           ??
+Checking bs :: List A0 in
+\THIS . 
+  match THIS with
+    AddressBook bs ps -> (len ??) +
+                           ??
+Checking len bs :: Int in
+\THIS . 
+  match THIS with
+    AddressBook bs ps -> ?? + ??
+Checking + (len
+              bs) :: x0:_ -> {Int|_v >= 0} in
+\THIS . 
+  match THIS with
+    AddressBook bs ps -> ?? ??
+Checking len :: x6:_ -> LET x2:({Int|_v >= 0}) IN Int in
+\THIS . 
+  match THIS with
+    AddressBook bs ps -> (len bs) +
+                           (?? ??)
+Checking ps :: List A1 in
+\THIS . 
+  match THIS with
+    AddressBook bs ps -> (len bs) +
+                           (len ??)
+Checking len
+           ps :: LET x2:({Int|_v >= 0}) IN Int in
+\THIS . 
+  match THIS with
+    AddressBook bs ps -> (len bs) +
+                           ??
+Checking (len bs) + (len
+                       ps) :: {Int|_v >= 0} in
+\THIS . 
+  match THIS with
+    AddressBook bs ps -> ??
+Checking Program {content = PErr, typeOf = ScalarT (TypeVarT (fromList []) "_") (BoolLit True)} in
+error
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking error in
+error
+Checking Program {content = PErr, typeOf = ScalarT (TypeVarT (fromList []) "_") (BoolLit True)} in
+\adds . error
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking error in
+\adds . error
+Trying mkAddressBook
+Checking mkAddressBook :: X0:_ -> {AddressBook|size _v == len adds} in
+\adds . ?? ??
+TYPE ERROR: Found inconsistent refinements
+when checking mkAddressBook ::
+X0:_ -> {AddressBook|size _v == len adds}
+in
+\adds . mkAddressBook ??
+Trying AddressBook
+Checking AddressBook :: X1:_ -> X0:_ -> {AddressBook|size _v == len adds} in
+\adds . ?? ?? ??
+Trying adds
+Checking adds :: List {Address|!isPriv _v} in
+\adds . AddressBook ?? ??
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking adds ::
+List {Address|!isPriv _v} in
+\adds . AddressBook adds ??
+Trying Nil
+Checking Nil :: List {Address|!isPriv _v} in
+\adds . AddressBook ?? ??
+Checking AddressBook
+           Nil :: X0:_ -> {AddressBook|size _v == len adds} in
+\adds . ?? ??
+Trying adds
+Checking adds :: List {Address|isPriv _v} in
+\adds . AddressBook Nil ??
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking adds ::
+List {Address|isPriv _v} in
+\adds . AddressBook Nil adds
+Trying Nil
+Checking Nil :: List {Address|isPriv _v} in
+\adds . AddressBook Nil ??
+Checking AddressBook Nil
+           Nil :: {AddressBook|size _v == len adds} in
+\adds . ??
+Checking Program {content = PErr, typeOf = ScalarT (TypeVarT (fromList []) "_") (BoolLit True)} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> error
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking error in
+\adds . 
+  match adds with
+    Cons x5 x6 -> error
+Trying mkAddressBook
+Checking mkAddressBook :: X2:_ -> {AddressBook|size _v == len adds} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> ?? ??
+TYPE ERROR: Found inconsistent refinements
+when checking mkAddressBook ::
+X2:_ -> {AddressBook|size _v == len adds}
+in
+\adds . 
+  match adds with
+    Cons x5 x6 -> mkAddressBook ??
+Trying AddressBook
+Checking AddressBook :: X3:_ -> X2:_ -> {AddressBook|size _v == len adds} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> ?? ?? ??
+Trying adds
+Checking adds :: List {Address|!isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook ?? ??
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking adds ::
+List {Address|!isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook adds
+                    ??
+Trying x6
+Checking x6 :: List {Address|!isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook ?? ??
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking x6 ::
+List {Address|!isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook x6 ??
+Trying Nil
+Checking Nil :: List {Address|!isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook ?? ??
+Checking AddressBook
+           Nil :: X2:_ -> {AddressBook|size _v == len adds} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> ?? ??
+Trying adds
+Checking adds :: List {Address|isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil ??
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking adds ::
+List {Address|isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil
+                    adds
+Trying x6
+Checking x6 :: List {Address|isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil ??
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking x6 ::
+List {Address|isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil x6
+Trying Nil
+Checking Nil :: List {Address|isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil ??
+Checking AddressBook Nil
+           Nil :: {AddressBook|size _v == len adds} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> ??
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking AddressBook Nil
+                Nil ::
+{AddressBook|size _v == len adds}
+in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil
+                    Nil
+Trying mkAddressBook
+Checking mkAddressBook :: X2:_ -> {AddressBook|size _v == len adds} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> ?? ??
+TYPE ERROR: Found inconsistent refinements
+when checking mkAddressBook ::
+X2:_ -> {AddressBook|size _v == len adds}
+in
+\adds . 
+  match adds with
+    Cons x5 x6 -> mkAddressBook ??
+Trying AddressBook
+Checking AddressBook :: X3:_ -> X2:_ -> {AddressBook|size _v == len adds} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> ?? ?? ??
+Trying adds
+Checking adds :: List {Address|!isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook ?? ??
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking adds ::
+List {Address|!isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook adds
+                    ??
+Trying x6
+Checking x6 :: List {Address|!isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook ?? ??
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking x6 ::
+List {Address|!isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook x6 ??
+Trying Nil
+Checking Nil :: List {Address|!isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook ?? ??
+Checking AddressBook
+           Nil :: X2:_ -> {AddressBook|size _v == len adds} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> ?? ??
+Trying Cons
+Checking Cons :: X5:_ -> X4:_ -> List {Address|isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil
+                    (?? ?? ??)
+Trying append
+Checking append :: X5:_ -> X4:_ -> List {Address|isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil
+                    (?? ?? ??)
+Trying Nil
+Checking Nil :: List A4 in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil
+                    (append ?? ??)
+Checking append
+           Nil :: X4:_ -> List {Address|isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil
+                    (?? ??)
+Trying Nil
+Checking Nil :: List A4 in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil
+                    (append Nil ??)
+Checking append Nil
+           Nil :: List {Address|isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil ??
+Checking AddressBook Nil (append
+                            Nil
+                            Nil) :: {AddressBook|size _v == len adds} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> ??
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking AddressBook Nil
+                (append Nil Nil) ::
+{AddressBook|size _v == len adds}
+in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil
+                    (append Nil Nil)
+Trying AddressBook
+Checking AddressBook :: X3:_ -> X2:_ -> {AddressBook|size _v == len adds} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> ?? ?? ??
+Trying Cons
+Checking Cons :: X5:_ -> X4:_ -> List {Address|!isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook (?? ??
+                                 ??) ??
+Trying append
+Checking append :: X5:_ -> X4:_ -> List {Address|!isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook (?? ??
+                                 ??) ??
+Trying Nil
+Checking Nil :: List A3 in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook
+                    (append ?? ??) ??
+Checking append
+           Nil :: X4:_ -> List {Address|!isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook (??
+                                 ??) ??
+Trying Nil
+Checking Nil :: List A3 in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook
+                    (append Nil ??) ??
+Checking append Nil
+           Nil :: List {Address|!isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook ?? ??
+Checking AddressBook (append Nil
+                        Nil) :: X2:_ -> {AddressBook|size _v == len adds} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> ?? ??
+Trying mkAddressBook
+Checking mkAddressBook :: X2:_ -> {AddressBook|size _v == len adds} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> ?? ??
+TYPE ERROR: Found inconsistent refinements
+when checking mkAddressBook ::
+X2:_ -> {AddressBook|size _v == len adds}
+in
+\adds . 
+  match adds with
+    Cons x5 x6 -> mkAddressBook ??
+Trying AddressBook
+Checking AddressBook :: X3:_ -> X2:_ -> {AddressBook|size _v == len adds} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> ?? ?? ??
+Trying adds
+Checking adds :: List {Address|!isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook ?? ??
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking adds ::
+List {Address|!isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook adds
+                    ??
+Trying x6
+Checking x6 :: List {Address|!isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook ?? ??
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking x6 ::
+List {Address|!isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook x6 ??
+Trying Nil
+Checking Nil :: List {Address|!isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook ?? ??
+Checking AddressBook
+           Nil :: X2:_ -> {AddressBook|size _v == len adds} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> ?? ??
+Trying Cons
+Checking Cons :: X5:_ -> X4:_ -> List {Address|isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil
+                    (?? ?? ??)
+Trying append
+Checking append :: X5:_ -> X4:_ -> List {Address|isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil
+                    (?? ?? ??)
+Trying Nil
+Checking Nil :: List A4 in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil
+                    (append ?? ??)
+Checking append
+           Nil :: X4:_ -> List {Address|isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil
+                    (?? ??)
+Trying Cons
+Checking Cons :: X7:_ -> X6:_ -> List A4 in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil
+                    (append Nil (?? ?? ??))
+Trying append
+Checking append :: X7:_ -> X6:_ -> List A4 in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil
+                    (append Nil (?? ?? ??))
+Trying Nil
+Checking Nil :: List A6 in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil
+                    (append Nil (append ?? ??))
+Checking append
+           Nil :: X6:_ -> List A4 in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil
+                    (append Nil (?? ??))
+Trying Nil
+Checking Nil :: List A6 in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil
+                    (append Nil (append Nil ??))
+Checking append Nil
+           Nil :: List A4 in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil
+                    (append Nil ??)
+Checking append Nil (append Nil
+                       Nil) :: List {Address|isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil ??
+Checking AddressBook Nil (append
+                            Nil (append Nil
+                                   Nil)) :: {AddressBook|size _v == len adds} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> ??
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking AddressBook Nil
+                (append Nil (append Nil Nil)) ::
+{AddressBook|size _v == len adds}
+in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil
+                    (append Nil (append Nil Nil))
+Trying Cons
+Checking Cons :: X5:_ -> X4:_ -> List {Address|isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil
+                    (?? ?? ??)
+Trying append
+Checking append :: X5:_ -> X4:_ -> List {Address|isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil
+                    (?? ?? ??)
+Trying Cons
+Checking Cons :: X7:_ -> X6:_ -> List A4 in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil
+                    (append (?? ?? ??) ??)
+Trying append
+Checking append :: X7:_ -> X6:_ -> List A4 in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil
+                    (append (?? ?? ??) ??)
+Trying Nil
+Checking Nil :: List A5 in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil
+                    (append (append ?? ??) ??)
+Checking append
+           Nil :: X6:_ -> List A4 in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil
+                    (append (?? ??) ??)
+Trying Nil
+Checking Nil :: List A5 in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil
+                    (append (append Nil ??) ??)
+Checking append Nil
+           Nil :: List A4 in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil
+                    (append ?? ??)
+Checking append (append Nil
+                   Nil) :: X4:_ -> List {Address|isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook Nil
+                    (?? ??)
+Trying AddressBook
+Checking AddressBook :: X3:_ -> X2:_ -> {AddressBook|size _v == len adds} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> ?? ?? ??
+Trying Cons
+Checking Cons :: X5:_ -> X4:_ -> List {Address|!isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook (?? ??
+                                 ??) ??
+Trying append
+Checking append :: X5:_ -> X4:_ -> List {Address|!isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook (?? ??
+                                 ??) ??
+Trying Nil
+Checking Nil :: List A3 in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook
+                    (append ?? ??) ??
+Checking append
+           Nil :: X4:_ -> List {Address|!isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook (??
+                                 ??) ??
+Trying Nil
+Checking Nil :: List A3 in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook
+                    (append Nil ??) ??
+Checking append Nil
+           Nil :: List {Address|!isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook ?? ??
+Checking AddressBook (append Nil
+                        Nil) :: X2:_ -> {AddressBook|size _v == len adds} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> ?? ??
+Trying AddressBook
+Checking AddressBook :: X3:_ -> X2:_ -> {AddressBook|size _v == len adds} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> ?? ?? ??
+Trying Cons
+Checking Cons :: X5:_ -> X4:_ -> List {Address|!isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook (?? ??
+                                 ??) ??
+Trying append
+Checking append :: X5:_ -> X4:_ -> List {Address|!isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook (?? ??
+                                 ??) ??
+Trying Nil
+Checking Nil :: List A3 in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook
+                    (append ?? ??) ??
+Checking append
+           Nil :: X4:_ -> List {Address|!isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook (??
+                                 ??) ??
+Trying Cons
+Checking Cons :: X7:_ -> X6:_ -> List A3 in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook
+                    (append Nil (?? ?? ??)) ??
+Trying append
+Checking append :: X7:_ -> X6:_ -> List A3 in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook
+                    (append Nil (?? ?? ??)) ??
+Trying Nil
+Checking Nil :: List A5 in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook
+                    (append Nil (append ?? ??)) ??
+Checking append
+           Nil :: X6:_ -> List A3 in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook
+                    (append Nil (?? ??)) ??
+Trying Nil
+Checking Nil :: List A5 in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook
+                    (append Nil (append Nil ??)) ??
+Checking append Nil
+           Nil :: List A3 in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook
+                    (append Nil ??) ??
+Checking append Nil (append Nil
+                       Nil) :: List {Address|!isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook ?? ??
+Checking AddressBook (append Nil
+                        (append Nil
+                           Nil)) :: X2:_ -> {AddressBook|size _v == len adds} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> ?? ??
+Trying Cons
+Checking Cons :: X5:_ -> X4:_ -> List {Address|!isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook (?? ??
+                                 ??) ??
+Trying append
+Checking append :: X5:_ -> X4:_ -> List {Address|!isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook (?? ??
+                                 ??) ??
+Trying Cons
+Checking Cons :: X7:_ -> X6:_ -> List A3 in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook
+                    (append (?? ?? ??) ??) ??
+Trying append
+Checking append :: X7:_ -> X6:_ -> List A3 in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook
+                    (append (?? ?? ??) ??) ??
+Trying Nil
+Checking Nil :: List A4 in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook
+                    (append (append ?? ??) ??) ??
+Checking append
+           Nil :: X6:_ -> List A3 in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook
+                    (append (?? ??) ??) ??
+Trying Nil
+Checking Nil :: List A4 in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook
+                    (append (append Nil ??) ??) ??
+Checking append Nil
+           Nil :: List A3 in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook
+                    (append ?? ??) ??
+Checking append (append Nil
+                   Nil) :: X4:_ -> List {Address|!isPriv _v} in
+\adds . 
+  match adds with
+    Cons x5 x6 -> AddressBook (??
+                                 ??) ??
