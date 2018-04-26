@@ -28,7 +28,7 @@ import Control.Monad.Reader
 import Control.Applicative hiding (empty)
 import Control.Lens
 import Debug.Trace
-
+import Data.Time.Clock
 {- Interface -}
 
 -- | Choices for the type of terminating fixpoint operator
@@ -131,9 +131,10 @@ runExplorer eParams tParams topLevel initTS go = do
 generateI :: MonadHorn s => Environment -> RType -> Explorer s RProgram
 generateI env t@(FunctionT x tArg tRes) = do
   let ctx = \p -> Program (PFun x p) t
+  --let env' = if Map.null (env ^. succinctGraph) then Map.foldlWithKey (\accEnv name ty -> addPolySuccinctSymbol name ty accEnv) env $ allSymbols env else env
   pBody <- inContext ctx $ generateI (unfoldAllVariables $ addVariable x tArg $ env) tRes
   return $ ctx pBody
-generateI env t@(ScalarT _ _) = do
+generateI env t@(ScalarT _ _) = do 
   maEnabled <- asks . view $ _1 . abduceScrutinees -- Is match abduction enabled?
   d <- asks . view $ _1 . matchDepth
   maPossible <- runInSolver $ hasPotentialScrutinees env -- Are there any potential scrutinees in scope?
@@ -465,24 +466,24 @@ checkE env typ p@(Program pTerm pTyp) = do
 enumerateAt :: MonadHorn s => Environment -> RType -> Int -> Explorer s RProgram
 enumerateAt env typ 0 = do
     let symbols = Map.toList $ symbolsOfArity (arity typ) env
-    -- Set.toList $ Map.foldlWithKey (\acc k v -> (Set.map (\x->(k,x)) v) `Set.union` acc) Set.empty $ goalMap
-    let lookupMap = rootTypeOf env (rtypeToSuccinctType (if arity typ == 0 then typ else getFuncRetty typ))
-    let symbols' = filter (\(id,_) -> case Map.lookup id lookupMap of
-                                        Just _ -> True
-                                        Nothing -> False) symbols
+    -- let filteredSymbols = symbols
+    let filteredSymbols = filter (\(id,_) -> elem id reachableList) symbols
     useCounts <- use symbolUseCount
-    let symbols'' = if arity typ == 0
-                      then sortBy (mappedCompare (\(x, _) -> (Set.member x (env ^. constants), Map.findWithDefault 0 x useCounts))) symbols'
-                      else sortBy (mappedCompare (\(x, _) -> (not $ Set.member x (env ^. constants), Map.findWithDefault 0 x useCounts))) symbols'
-    msum $ map pickSymbol symbols''
+    let sortedSymbols = if arity typ == 0
+                      then sortBy (mappedCompare (\(x, _) -> (Set.member x (env ^. constants), Map.findWithDefault 0 x useCounts))) filteredSymbols
+                      else sortBy (mappedCompare (\(x, _) -> (not $ Set.member x (env ^. constants), Map.findWithDefault 0 x useCounts))) filteredSymbols
+    msum $ map pickSymbol sortedSymbols
     -- msum $ map pickSymbol symbols
   where
+    targetMap = findDstNodesInGraph (env ^. succinctGraph) (rtypeToSuccinctType (if arity typ == 0 then typ else getFuncRetty typ))
+    reachableList = Map.foldl (\acc set -> acc `Set.union` set) Set.empty $ Map.filterWithKey (\k v -> Set.member k (env ^. reachableSymbols)) targetMap
     getFuncRetty ty = case ty of
       FunctionT _ _ t -> getFuncRetty t
+      LetT _ _ t -> getFuncRetty t
       _               -> ty
-    -- goalMap = case Map.lookup (rtypeToSuccinctType typ) (env ^. succinctGraph) of
-    --   Just m -> m
-    --   Nothing -> Map.empty
+    goalMap = case Map.lookup (rtypeToSuccinctType typ) (env ^. succinctGraph) of
+      Just m -> m
+      Nothing -> Map.empty
     pickSymbol (name, sch) = do
       when (Set.member name (env ^. letBound)) mzero
       t <- symbolType env name sch
