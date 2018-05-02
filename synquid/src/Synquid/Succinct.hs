@@ -164,7 +164,7 @@ succinctTypeSubstitute subst (SuccinctInhabited t) = simplifySuccinctType $ Succ
 
 unifySuccinct :: RSuccinctType -> RSuccinctType -> [Id] -> (Bool, [SuccTypeSubstitution])
 unifySuccinct comp target boundedTys = case (comp, target) of
-  (SuccinctScalar (TypeVarT _ id), target) -> (True, [Map.singleton id target])
+  (SuccinctScalar (TypeVarT _ id), target) -> if id `elem` boundedTys then (False, [Map.empty]) else (True, [Map.singleton id target])
   (SuccinctScalar t1, SuccinctScalar t2) -> (t1 == t2, [Map.empty])
   (SuccinctDatatype idSet1 tySet1 consMap1, SuccinctDatatype idSet2 tySet2 consMap2) -> 
     if idSet1 `Set.isSubsetOf` idSet2
@@ -174,9 +174,11 @@ unifySuccinct comp target boundedTys = case (comp, target) of
             SuccinctScalar (TypeVarT _ _) -> True
             _                             -> False
           getTyVar (SuccinctScalar (TypeVarT _ id)) = id
-          isBound tv = tv `elem` boundedTys
+          isBound tv = tv `elem` boundedTys -- [TODO] is the bounded value checked correctly?
+          -- bound1 = tySet1
           bound1 = (Set.filter (not . isTyVar) tySet1) `Set.union` (Set.filter (isBound . getTyVar) (Set.filter isTyVar tySet1)) 
-          bound2 = (Set.filter (not . isTyVar) tySet2) `Set.union` (Set.filter (isBound . getTyVar) (Set.filter isTyVar tySet2))
+          -- bound2 = (Set.filter (not . isTyVar) tySet2) `Set.union` (Set.filter (isBound . getTyVar) (Set.filter isTyVar tySet2))
+          bound2 = tySet2
         in 
           if bound1 `Set.isSubsetOf` bound2
             then
@@ -213,7 +215,7 @@ unifySuccinct comp target boundedTys = case (comp, target) of
 
     allCombos :: Set (Id,Int) -> Set RSuccinctType -> Set RSuccinctType -> Set (Id,Int) -> Set RSuccinctType -> [SuccTypeSubstitution]
     allCombos cons tys freeVars tcons tty =
-      if (length cons /= 0 || length tys /= 0) && (length freeVars == 0) -- no freeVars to fill
+      if length freeVars == 0 -- (length cons /= 0 || length tys /= 0) && (length freeVars == 0) -- no freeVars to fill
         then [Map.empty]
         else
           let mustTys = distribute (Set.size freeVars) tys
@@ -242,6 +244,19 @@ unifySuccinct comp target boundedTys = case (comp, target) of
               resultMap = [assign (Set.toList freeVars) c t | c <- finalCons, t <- finalTys,
                                                               (foldl (\acc (x,y) -> acc && (isValid x y)) True (zip c t))]
           in resultMap
+
+getDestructors :: Id -> RType -> Map Id RType
+getDestructors name ty = case ty of
+  FunctionT _ tArg tRet -> let 
+    retTy = getFunRet ty
+    resMap = getDestructors name tRet
+    in
+    Map.insert (name++"_match_"++(show (Map.size resMap))) (FunctionT "x" retTy tArg) resMap
+  _ -> Map.empty
+  where
+    getFunRet t = case t of
+      FunctionT _ _ t' -> getFunRet t'
+      _ -> t
 
 getSuccinctDestructors :: Id -> RSuccinctType -> Set RSuccinctType
 getSuccinctDestructors name sty = case sty of
@@ -281,16 +296,21 @@ getInhabitedNodes graph = Set.filter filter_fun allNodes
       SuccinctInhabited _ -> True
       _ -> False
 
-findDstNodesInGraph :: Map RSuccinctType (Map RSuccinctType (Set Id)) -> RSuccinctType -> Map RSuccinctType (Set Id)
-findDstNodesInGraph graph typ = let
-  filter_fun k v = case typ of
-    SuccinctDatatype ids tys _ -> case k of
-      SuccinctDatatype ids' tys' _ -> ids == ids' && tys == tys'
-      _ -> False
-    SuccinctAll _ ty -> let (res,_) = unifySuccinct ty k [] in res 
-    _ -> k == typ
-  candidateMap = Map.filterWithKey filter_fun graph
-  in Map.foldl (\acc m -> Map.foldlWithKey (\accM kty set -> Map.insertWith Set.union kty set accM) acc m) Map.empty candidateMap
+isSuccinctAll (SuccinctAll _ _) = True
+isSuccinctAll _ = False
+
+findDstNodesInGraph :: Map RSuccinctType (Map RSuccinctType (Set Id)) -> RSuccinctType -> [Id] -> Map RSuccinctType (Set Id)
+findDstNodesInGraph graph typ boundTypeVars = case typ of
+  SuccinctLet _ _ ty -> findDstNodesInGraph graph ty boundTypeVars
+  _ -> let
+    filter_fun k v = case typ of
+      SuccinctDatatype ids tys _ -> case k of
+        SuccinctDatatype ids' tys' _ -> ids == ids' && tys == tys'
+        _ -> False
+      SuccinctAll _ ty -> let (res,_) = unifySuccinct ty k boundTypeVars in res 
+      _ -> k == typ
+    candidateMap = Map.filterWithKey filter_fun graph
+    in Map.foldl (\acc m -> Map.foldlWithKey (\accM kty set -> Map.insertWith Set.union kty set accM) acc m) Map.empty candidateMap
 
 getReachableNodes :: Map RSuccinctType (Map RSuccinctType (Set Id)) -> Set RSuccinctType
 getReachableNodes graph = getReachableNodesHelper graph Set.empty (getInhabitedNodes graph)
@@ -301,7 +321,7 @@ getReachableNodes graph = getReachableNodesHelper graph Set.empty (getInhabitedN
         else let curr = Set.findMin toVisit
           in if Set.member curr visited 
             then rmUnreachableComposite $ getReachableNodesHelper g visited (Set.delete curr toVisit)
-            else rmUnreachableComposite $ getReachableNodesHelper g (Set.insert curr visited) (Map.keysSet (findDstNodesInGraph graph curr) `Set.union` (Set.delete curr toVisit))
+            else rmUnreachableComposite $ getReachableNodesHelper g (Set.insert curr visited) (Map.keysSet (findDstNodesInGraph graph curr []) `Set.union` (Set.delete curr toVisit))
 
 rmUnreachableComposite :: Set RSuccinctType -> Set RSuccinctType
 rmUnreachableComposite reachableSet = Set.foldl (\acc t -> if isCompositeReachable t then acc else Set.delete t acc) reachableSet (compositeNodes)
