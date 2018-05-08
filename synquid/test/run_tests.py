@@ -20,7 +20,7 @@ COMMON_OPTS = ['-z']
 TIMEOUT_COMMAND = 'timeout'
 TIMEOUT= '120'
 
-SECTIONS = ['.', 'sygus', 'rbt', 'AVL']
+SECTIONS = ['.', 'sygus', 'rbt', 'AVL', 'succinct']
 
 BENCHMARKS = {
   '.' : [
@@ -37,7 +37,7 @@ BENCHMARKS = {
               ('List-Drop',       []),
               ('List-Delete',     []),
               ('List-Map',        []),
-              ('List-ZipWith',    []),
+#              ('List-ZipWith',    []),
               ('List-Zip',        []),
               ('List-ToNat',      ['-m 0']),
               ('List-Product',    []),
@@ -50,8 +50,8 @@ BENCHMARKS = {
               ('List-ElemIndex',      []),
               ('List-Snoc',           []),
               ('List-Reverse',        []),
-              # ('List-Range',          []),
-              # ('List-Filter',         ['-g=False']),
+#              ('List-Range',          []),
+#              ('List-Filter',         ['-g=False']),
               # Unique lists
               ('UniqueList-Insert',   []),
               ('UniqueList-Delete',   []),
@@ -117,7 +117,13 @@ BENCHMARKS = {
     ('RBT-BalanceL',        ['-a 2', '-u', '-z']),
     ('RBT-BalanceR',        ['-a 2', '-u', '-z']),
     ('RBT-Insert',          ['-a 2', '-m 1', '-z']),
-          ]
+          ],
+  'succinct' : [
+    ('AddressBook-Make',  ['-a 2']),
+    ('AddressBook-Make',  ['-a 3']),
+    ('AddressBook-Make',  ['-a 4']),
+    ('AddressBook-Make',  ['-a 5']),
+               ]
 }
 
 # RBT_BENCHMARKS = [
@@ -168,7 +174,7 @@ def run_benchmark(name, opts, path='.'):
     with open(LOGFILE_NAME, 'a+') as logfile:
       start = time.time()
       logfile.seek(0, os.SEEK_END)
-      return_code = call([synquid_path] + COMMON_OPTS + opts + [os.path.join (path, name + '.sq')], stdout=logfile, stderr=logfile)
+      return_code = call([TIMEOUT_COMMAND, TIMEOUT, 'stack', 'exec', '--', synquid_path] + COMMON_OPTS + opts + [os.path.join (path, name + '.sq')], stdout=logfile, stderr=logfile)
       end = time.time()
 
       t = end - start
@@ -186,7 +192,7 @@ def run_test(name, path='.'):
 
     with open(LOGFILE_NAME, 'a+') as logfile:
       logfile.seek(0, os.SEEK_END)
-      call([synquid_path] + COMMON_OPTS + [os.path.join (path, name + '.sq')], stdout=logfile, stderr=logfile)
+      call(['stack','exec','--',synquid_path] + COMMON_OPTS + [os.path.join (path, name + '.sq')], stdout=logfile, stderr=logfile)
 
 def write_times(benchmarks):
     with open(OUTFILE_NAME, 'w') as outfile:
@@ -288,5 +294,5 @@ if __name__ == '__main__':
 
         if sections == ['all']:
             write_times(sum(BENCHMARKS.values(), []))
-            check_diff()
+            #check_diff()
         os.chdir('..')

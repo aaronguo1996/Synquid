@@ -1,3 +1,5 @@
+{-# LANGUAGE BangPatterns #-}
+
 module Synquid.Succinct where
 
 import Synquid.Type hiding (set)
@@ -114,7 +116,7 @@ type SuccTypeSubstitution = Map Id RSuccinctType
 succinctTypeSubstitute :: SuccTypeSubstitution -> RSuccinctType -> RSuccinctType
 succinctTypeSubstitute subst (SuccinctScalar baseT) = case baseT of
   TypeVarT _ a -> case Map.lookup a subst of
-    Just t -> simplifySuccinctType $ succinctTypeSubstitute subst t -- TODO remove this key/value pair after we finish this substitution
+    Just t -> simplifySuccinctType $ succinctTypeSubstitute subst t
     Nothing -> SuccinctScalar baseT
   _ -> SuccinctScalar baseT
 succinctTypeSubstitute subst (SuccinctFunction tArgs tRes) = simplifySuccinctType $ SuccinctFunction tArgs' tRes'
@@ -164,7 +166,11 @@ succinctTypeSubstitute subst (SuccinctInhabited t) = simplifySuccinctType $ Succ
 
 unifySuccinct :: RSuccinctType -> RSuccinctType -> [Id] -> (Bool, [SuccTypeSubstitution])
 unifySuccinct comp target boundedTys = case (comp, target) of
-  (SuccinctScalar (TypeVarT _ id), target) -> if id `elem` boundedTys then (False, [Map.empty]) else (True, [Map.singleton id target])
+  (SuccinctScalar (TypeVarT _ id), target) -> if id `elem` boundedTys 
+    then if comp == target
+      then (True, [Map.empty])
+      else (False, [Map.empty]) 
+    else (True, [Map.singleton id target])
   (SuccinctScalar t1, SuccinctScalar t2) -> (t1 == t2, [Map.empty])
   (SuccinctDatatype idSet1 tySet1 consMap1, SuccinctDatatype idSet2 tySet2 consMap2) -> 
     if idSet1 `Set.isSubsetOf` idSet2
@@ -237,10 +243,11 @@ unifySuccinct comp target boundedTys = case (comp, target) of
                   else Map.insert id (SuccinctDatatype xx yy Map.empty) (assign vs xs ys)
                 _ -> Map.empty
               isValid x y = if Set.null x
-                then True
+                then Set.size y == 1
                 else let cnt = Set.foldl (\acc (_,n)->if n>acc then n else acc) 0 x
                          len = (Set.size y) + (Set.foldl (\acc (_,n)->if n==0 then acc+1 else acc) 0 x)
-                     in (cnt > 1 && len >= 1) || (cnt == 0 && (len == 0 || len == 1)) || (cnt == 1 && len == 1)
+                    -- in (cnt > 1 && len >= 1) || (cnt == 0 && (len == 0 || len == 1)) || (cnt == 1 && len == 1)
+                     in (cnt > 1 && len >= 1) || (cnt == 0 && len == 0) || (cnt == 1 && len == 1)
               resultMap = [assign (Set.toList freeVars) c t | c <- finalCons, t <- finalTys,
                                                               (foldl (\acc (x,y) -> acc && (isValid x y)) True (zip c t))]
           in resultMap
@@ -263,27 +270,61 @@ getSuccinctDestructors name sty = case sty of
   SuccinctFunction params ret -> case ret of
     SuccinctDatatype ids tys consMap -> let
       (datatypeName, _) = Set.findMin ids
-      destructors = Set.map (\param -> SuccinctFunction (Set.singleton (SuccinctDatatype ids tys (Map.singleton datatypeName (Set.singleton name)))) param) params
+      -- TODO how to deal with the destructor name here
+      destructors = Set.map (\param -> SuccinctFunction (Set.singleton ret) param) params
       in destructors
     _ -> Set.empty
   _ -> Set.empty
 
-reverseGraph :: Map RSuccinctType (Map RSuccinctType (Set Id)) -> Map RSuccinctType (Map RSuccinctType (Set Id))
+-- type Vertex = Int
+-- type Table a = Array Vertex a
+-- type Graph e = Table [(e, Vertex)]
+-- type Bounds  = (Vertex, Vertex)
+-- type Edge e = (Vertex, e, Vertex)
+
+-- type Labeling a = Vertex -> a
+-- data LabGraph n e = LabGraph (Graph e) (Labeling n)
+
+-- vertices (LabGraph gr _) = indices gr
+
+-- edges :: Graph e -> [Edge e]
+-- edges g = [ (v, l, w) | v <- indices g, (l, w) <- g!v ]
+
+-- labels (LabGraph gr l) = map l (indices gr)
+
+-- -- | Build a graph from a list of edges.
+-- buildG :: Bounds -> [Edge e] -> Graph e
+-- buildG bounds0 edges0 = accumArray (flip (:)) [] bounds0 [(v, (l,w)) | (v,l,w) <- edges0]
+ 
+-- -- | The graph obtained by reversing all edges.
+-- transposeG  :: Graph e -> Graph e
+-- transposeG g = buildG (bounds g) (reverseE g)
+ 
+-- reverseE    :: Graph e -> [Edge e]
+-- reverseE g   = [ (w, l, v) | (v, l, w) <- edges g ]
+
+
+-- | when the graph is too large, this step consumes too much time, try a new way to traverse the graph 
+-- reverseGraph :: (Ord a) => Map a (Map a (Set Id)) -> Map a (Map a (Set Id))
 reverseGraph graph = reverseGraphHelper Map.empty graph
   where
     fold_fun acc k v = Map.foldlWithKey' (\tmap k' v' -> Map.insertWith mergeMapOfSet k' v' tmap) acc (Map.map (\s -> Map.singleton k s) v)
     reverseGraphHelper acc g = Map.foldlWithKey' fold_fun Map.empty g
 
-allSuccinctNodes :: Map RSuccinctType (Map RSuccinctType (Set Id)) -> Set RSuccinctType
-allSuccinctNodes graph = let 
-  filter_fun ty = case ty of
-    SuccinctComposite _ -> False
-    SuccinctInhabited _ -> False
-    _ -> True
-  allNodes = Map.foldl' (\acc map -> (Map.keysSet map) `Set.union` acc) (Map.keysSet graph) graph
-  in Set.filter filter_fun allNodes
+allSuccinctIndices :: Map RSuccinctType Int -> Set Int
+allSuccinctIndices nodesMap = Set.fromList $ Map.elems nodesMap
 
-mergeMapOfSet :: Map RSuccinctType (Set Id) -> Map RSuccinctType (Set Id) -> Map RSuccinctType (Set Id)
+allSuccinctNodes :: Map RSuccinctType Int -> Set RSuccinctType
+allSuccinctNodes nodesMap = Map.keysSet nodesMap
+-- allSuccinctNodes graph = let 
+--   filter_fun ty = case ty of
+--     SuccinctComposite _ -> False
+--     SuccinctInhabited _ -> False
+--     _ -> True
+--   allNodes = Map.foldl' (\acc map -> (Map.keysSet map) `Set.union` acc) (Map.keysSet graph) graph
+--   in Set.filter filter_fun allNodes
+
+mergeMapOfSet :: (Ord a) => Map a (Set Id) -> Map a (Set Id) -> Map a (Set Id)
 mergeMapOfSet new old = Map.foldlWithKey' fold_fun old new
   where
     fold_fun accMap kty idSet = Map.insert kty ((Map.findWithDefault Set.empty kty accMap) `Set.union` idSet) accMap
@@ -299,29 +340,22 @@ getInhabitedNodes graph = Set.filter filter_fun allNodes
 isSuccinctAll (SuccinctAll _ _) = True
 isSuccinctAll _ = False
 
-findDstNodesInGraph :: Map RSuccinctType (Map RSuccinctType (Set Id)) -> RSuccinctType -> [Id] -> Map RSuccinctType (Set Id)
-findDstNodesInGraph graph typ boundTypeVars = case typ of
-  SuccinctLet _ _ ty -> findDstNodesInGraph graph ty boundTypeVars
-  _ -> let
-    filter_fun k v = case typ of
-      SuccinctDatatype ids tys _ -> case k of
-        SuccinctDatatype ids' tys' _ -> ids == ids' && tys == tys'
-        _ -> False
-      SuccinctAll _ ty -> let (res,_) = unifySuccinct ty k boundTypeVars in res 
-      _ -> k == typ
-    candidateMap = Map.filterWithKey filter_fun graph
-    in Map.foldl (\acc m -> Map.foldlWithKey (\accM kty set -> Map.insertWith Set.union kty set accM) acc m) Map.empty candidateMap
+isSuccinctConcrete (SuccinctInhabited _) = False
+isSuccinctConcrete (SuccinctComposite _) = False
+isSuccinctConcrete (SuccinctFunction _ _) = False
+isSuccinctConcrete _ = True
 
-getReachableNodes :: Map RSuccinctType (Map RSuccinctType (Set Id)) -> Set RSuccinctType
-getReachableNodes graph = getReachableNodesHelper graph Set.empty (getInhabitedNodes graph)
-  where
-    getReachableNodesHelper g visited toVisit = 
-      if Set.size toVisit == 0
-        then visited
-        else let curr = Set.findMin toVisit
-          in if Set.member curr visited 
-            then rmUnreachableComposite $ getReachableNodesHelper g visited (Set.delete curr toVisit)
-            else rmUnreachableComposite $ getReachableNodesHelper g (Set.insert curr visited) (Map.keysSet (findDstNodesInGraph graph curr []) `Set.union` (Set.delete curr toVisit))
+  -- where
+    -- allNodes = Map.foldl' (\acc map -> (Map.keysSet map) `Set.union` acc) (Map.keysSet graph) graph
+  -- getReachableNodesHelper graph Set.empty (getInhabitedNodes graph)
+  -- where
+  --   getReachableNodesHelper g visited !toVisit = 
+  --     if Set.size toVisit == 0
+  --       then visited
+  --       else let curr = Set.findMin toVisit
+  --         in if Set.member curr visited 
+  --           then rmUnreachableComposite $ getReachableNodesHelper g visited (Set.delete curr toVisit)
+  --           else rmUnreachableComposite $ getReachableNodesHelper g (Set.insert curr visited) (Map.keysSet (findDstNodesInGraph graph curr []) `Set.union` (Set.delete curr toVisit))
 
 rmUnreachableComposite :: Set RSuccinctType -> Set RSuccinctType
 rmUnreachableComposite reachableSet = Set.foldl (\acc t -> if isCompositeReachable t then acc else Set.delete t acc) reachableSet (compositeNodes)
@@ -332,9 +366,6 @@ rmUnreachableComposite reachableSet = Set.foldl (\acc t -> if isCompositeReachab
     compositeNodes = Set.filter isCompositeNode reachableSet
     isCompositeReachable t = let SuccinctComposite tySet = t in 
       Set.foldl (\acc b -> acc && (Set.member b reachableSet)) True tySet
-
-isReachable :: Map RSuccinctType (Map RSuccinctType (Set Id)) -> RSuccinctType -> Bool
-isReachable graph ty = Set.member ty $ getReachableNodes graph
 
 -- | function for debug
 printGraph :: Map RSuccinctType (Map RSuccinctType (Set Id)) -> String

@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, FlexibleContexts, TupleSections #-}
+{-# LANGUAGE TemplateHaskell, FlexibleContexts, TupleSections, BangPatterns #-}
 
 -- | Generating synthesis constraints from specifications, qualifiers, and program templates
 module Synquid.Explorer where
@@ -480,9 +480,9 @@ enumerateAt env typ 0 = do
     msum $ map pickSymbol sortedSymbols
     -- msum $ map pickSymbol symbols
   where
-    targetMap = findDstNodesInGraph (env ^. succinctGraph) (rtypeToSuccinctType (if arity typ == 0 then typ else lastType typ)) (env ^. boundTypeVars)
+    targetMap = findDstNodesInGraph env (rtypeToSuccinctType (if arity typ == 0 then typ else lastType typ)) (env ^. boundTypeVars)
     reachableList = Map.foldl (\acc set -> acc `Set.union` set) Set.empty $ Map.filterWithKey (\k v -> Set.member k (env ^. reachableSymbols)) targetMap
-    goalMap = case Map.lookup (rtypeToSuccinctType typ) (env ^. succinctGraph) of
+    goalMap = case Map.lookup (getTyIndex env (rtypeToSuccinctType typ)) (env ^. succinctGraph) of
       Just m -> m
       Nothing -> Map.empty
     pickSymbol (name, sch) = do
@@ -728,13 +728,19 @@ addSuccinctSymbol name t env = do
       env' <- addSuccinctSymbol id (Monotype tDef) env
       addSuccinctSymbol name (Monotype tBody) env'
     _ -> do
-      let envWithDestructors = getEnvWithDestructors succinctTy
-      let envWithSelf = addEdge name succinctTy envWithDestructors
-      let iteratedEnv = iteration env envWithSelf
-      let addedTys = (allSuccinctNodes (iteratedEnv ^. succinctGraph)) `Set.difference` (allSuccinctNodes (env ^. succinctGraph))
-      let (envWithAll,_) = Set.foldl' fold_fun (iteratedEnv, addedTys) (iteratedEnv ^. undecidableSymbols)
-      let reachableSet = getReachableNodes $ reverseGraph (envWithAll ^. succinctGraph)
-      let prunedEnv = (reachableSymbols %~ Set.union reachableSet) envWithAll
+      writeLog 2 $ text "TRYING ADD" <+> text name <+> text ":" <+> text (show $ succinctTy)
+      let !envWithDestructors = getEnvWithDestructors succinctTy
+      writeLog 2 $ text "TRYING ADD SELF"
+      let !envWithSelf = addEdge name succinctTy envWithDestructors
+      writeLog 2 $ text "TRYING ITERATION"
+      let !iteratedEnv = iteration env envWithSelf
+      let !addedTys = Set.filter isSuccinctConcrete $ (allSuccinctNodes (iteratedEnv ^. succinctNodes)) `Set.difference` (allSuccinctNodes (env ^. succinctNodes))
+      writeLog 2 $ text "TRYING ADD UNDECIDABLE SYMBOLS"
+      let (!envWithAll,_) = Map.foldlWithKey' fold_fun (iteratedEnv, addedTys) (iteratedEnv ^. undecidableSymbols)
+      writeLog 2 $ text "TRYING REACHABLE SET"
+      let !reachableSet = getReachableNodes envWithAll
+      writeLog 2 $ text "TRYING PRUNE"
+      let !prunedEnv = (reachableSymbols %~ Set.union reachableSet) envWithAll
       return $ (succinctSymbols %~ Map.insert name succinctTy) prunedEnv
   where
     getSuccinctTy tt = case toSuccinctType tt of
@@ -750,23 +756,25 @@ addSuccinctSymbol name t env = do
         else env
     -- then foldM (\accEnv (n,tt) -> addSuccinctSymbol n (addBoundVars t tt) accEnv) env $ Map.toList (getDestructors name (toMonotype t))
     -- else return env
-    iteration oldEnv newEnv = let
-      diffTys = (allSuccinctNodes (newEnv ^. succinctGraph)) `Set.difference` (allSuccinctNodes (oldEnv ^. succinctGraph))
+    iteration !oldEnv !newEnv = let
+      diffTys = Set.filter isSuccinctConcrete $ (allSuccinctNodes (newEnv ^. succinctNodes)) `Set.difference` (allSuccinctNodes (oldEnv ^. succinctNodes))
       in if Set.size diffTys == 0
         then newEnv
         else iteration newEnv $ Map.foldlWithKey' (\accEnv name ty -> addPolyEdge name ty accEnv diffTys) newEnv (Map.filter isSuccinctAll (newEnv ^. succinctSymbols))
-    fold_fun (accEnv, addedTys) elmt = let
-      (ty,ty',id) = elmt
-      tyVars = extractSuccinctTyVars ty'
-      substs = map (\ts -> foldl' (\acc (x,y) -> Map.insert x y acc) Map.empty (zip (Set.toList tyVars) ts)) $ sequence (replicate (Set.size tyVars) (Set.toList addedTys))
-      tys = map (\substitution -> succinctTypeSubstitute substitution ty') substs
-      in (foldl' (\acc typ -> (succinctGraph %~ Map.insertWith mergeMapOfSet ty (Map.singleton typ (Set.singleton id))) acc) accEnv tys, addedTys)
+    fold_fun (accEnv, addedTys) ty tyMap = 
+      (Map.foldlWithKey (\env' ty' ids -> let
+        tyVars = extractSuccinctTyVars ty' `Set.difference` Set.fromList (env' ^. boundTypeVars)
+        substs = map (\ts -> foldl' (\acc (x,y) -> Map.insert x y acc) Map.empty (zip (Set.toList tyVars) ts)) $ sequence (replicate (Set.size tyVars) (Set.toList addedTys))
+        tys = map (\substitution -> succinctTypeSubstitute substitution ty') substs
+        in foldl' (\acc typ -> let
+          nodesAcc = addNode typ acc
+          in (succinctGraph %~ Map.insertWith mergeMapOfSet (getTyIndex nodesAcc ty) (Map.singleton (getTyIndex nodesAcc typ) ids)) nodesAcc) (addNode ty env') tys)  accEnv tyMap, addedTys)
 
 refineSuccinctDatatype :: Id -> RSuccinctType -> Environment -> RSuccinctType
 refineSuccinctDatatype name sty env = case sty of
   SuccinctDatatype ids tys cons -> let
     consMap = Set.foldl' (\accMap (id,_) -> foldl (\acc c -> Map.insert c id acc) accMap (case (Map.lookup id (env ^. datatypes)) of
-      Just dt -> dt ^. constructors
+      Just dt -> if length (dt ^. constructors) > 1 then dt ^. constructors else []
       Nothing -> [])) Map.empty ids
     -- consMap = Set.foldl' (\acc (id,set) -> Map.insert id set acc) Map.empty consSet
     -- (singleId,_) = Set.findMin ids
@@ -793,6 +801,11 @@ addDestructors name destructors env = let
   (env', _) = Set.foldl' (\(accEnv,idx) ty -> ((succinctSymbols %~ Map.insert (name++"_match_"++(show idx)) ty) accEnv, idx+1)) (resEnv, 0) destructors
   in env'
 
+datatypeEq env ty ty' = case (ty, ty') of
+  (SuccinctDatatype ids tys cons, SuccinctDatatype ids' tys' cons') -> ids == ids' && (Set.size ((extractSuccinctTyVars ty) `Set.difference` Set.fromList (env ^. boundTypeVars)) == Set.size ((extractSuccinctTyVars ty') `Set.difference` Set.fromList (env ^. boundTypeVars))) && cons == cons'
+  (SuccinctComposite tys, SuccinctComposite tys') -> foldl (\acc (x,y) -> (datatypeEq env x y) && acc) True (zip (Set.toList tys) (Set.toList tys'))
+  _ -> ty == ty'
+
 addPolyEdge :: Id -> RSuccinctType -> Environment -> Set RSuccinctType -> Environment
 addPolyEdge name (SuccinctAll idSet ty) env targets = 
   -- if all the type vars are bound in the env, treat it as none-all type
@@ -802,51 +815,87 @@ addPolyEdge name (SuccinctAll idSet ty) env targets =
       SuccinctFunction pty rty -> let 
         fold_fun accEnv sty = let 
           (unified, substitutions) = unifySuccinct rty sty (accEnv ^. boundTypeVars)
-          pty' = map (\substitution -> Set.map (succinctTypeSubstitute substitution) pty) substitutions -- list of possible ptys
+          pty' = Set.fromList $ map (\substitution -> Set.map (succinctTypeSubstitute substitution) pty) substitutions -- list of possible ptys
           in if unified 
-            then foldl' (\acc ptySet -> if Set.foldl (\acc t -> Set.size ((extractSuccinctTyVars t) `Set.difference` Set.fromList (accEnv ^. boundTypeVars)) > 0 || acc) False ptySet
+            then Set.foldl (\acc ptySet -> if Set.foldl (\acc t -> Set.size ((extractSuccinctTyVars t) `Set.difference` Set.fromList (accEnv ^. boundTypeVars)) > 0 || acc) False ptySet
               then let 
-                tyVars = Set.foldl (\set t -> set `Set.union` (extractSuccinctTyVars t)) Set.empty ptySet
-                substs = map (\ts -> foldl' (\acc (x,y) -> Map.insert x y acc) Map.empty (zip (Set.toList tyVars) ts)) $ sequence (replicate (Set.size tyVars) (Set.toList (allSuccinctNodes (acc ^. succinctGraph))))
-                tys = map (\substitution -> Set.map (succinctTypeSubstitute substitution) ptySet) substs
-                tmpEnv = foldl' (\acc' typ -> (succinctGraph %~ Map.insertWith mergeMapOfSet sty (Map.singleton (if Set.size typ == 1 then Set.findMin typ else SuccinctComposite typ) (Set.singleton name))) acc') acc tys
-                in (undecidableSymbols %~ Set.insert (sty, if Set.size ptySet == 1 then Set.findMin ptySet else SuccinctComposite ptySet, name)) tmpEnv
+                tyVars = Set.foldl (\set t -> set `Set.union` ((extractSuccinctTyVars t) `Set.difference` Set.fromList (accEnv ^. boundTypeVars))) Set.empty ptySet
+                substs = map (\ts -> foldl' (\acc (x,y) -> Map.insert x y acc) Map.empty (zip (Set.toList tyVars) ts)) $ sequence (replicate (Set.size tyVars) (Set.toList targets))
+                tys = Set.fromList $ map (\substitution -> Set.map (succinctTypeSubstitute substitution) ptySet) substs
+                tmpEnv = Set.foldl (\acc' typ -> let 
+                  argTy = if Set.size typ == 1 then Set.findMin typ else SuccinctComposite typ
+                  accNodes = addNode argTy acc'
+                  in (succinctGraph %~ Map.insertWith mergeMapOfSet (getTyIndex accNodes sty) (Map.singleton (getTyIndex accNodes argTy) (Set.singleton name))) accNodes) (addNode sty acc) tys
+                tArg = if Set.size ptySet == 1 then Set.findMin ptySet else SuccinctComposite ptySet
+                filter_fun t = datatypeEq tmpEnv tArg t
+                dstTys = Set.filter filter_fun $ Map.keysSet $ Map.findWithDefault Map.empty sty (tmpEnv ^. undecidableSymbols)
+                in if Set.null dstTys
+                  then (undecidableSymbols %~ Map.insertWith mergeMapOfSet sty (Map.singleton tArg (Set.singleton name))) tmpEnv
+                  else (undecidableSymbols %~ Map.insertWith mergeMapOfSet sty (Map.singleton (Set.findMin dstTys) (Set.singleton name))) tmpEnv
               else addEdge name (SuccinctFunction ptySet sty) acc --(succinctGraph %~ Map.insertWith mergeMapOfSet sty (Map.singleton (if Set.size ptySet == 1 then Set.findMin ptySet else SuccinctComposite ptySet) (Set.singleton name))) acc
             ) accEnv pty'
             else accEnv
-        in Set.foldl' fold_fun env (allSuccinctNodes (env ^. succinctGraph))
+        in Set.foldl' fold_fun env targets --(allsuccinctNodes (env ^. succinctGraph))
       _                        -> let 
         fold_fun accEnv sty = let 
           (unified, substitutions) = unifySuccinct ty sty (accEnv ^. boundTypeVars)
-          tys = map (\substitution -> succinctTypeSubstitute substitution ty) substitutions
+          tys = Set.fromList $ map (\substitution -> succinctTypeSubstitute substitution ty) substitutions
           in if unified 
-            then foldl' (\acc ty' -> if Set.size ((extractSuccinctTyVars ty') `Set.difference` Set.fromList (accEnv ^. boundTypeVars)) > 0
+            then Set.foldl (\acc ty' -> if Set.size ((extractSuccinctTyVars ty') `Set.difference` Set.fromList (accEnv ^. boundTypeVars)) > 0
               then let 
-                tyVars = extractSuccinctTyVars ty'
-                substs = map (\ts -> foldl' (\acc (x,y) -> Map.insert x y acc) Map.empty (zip (Set.toList tyVars) ts)) $ sequence (replicate (Set.size tyVars) (Set.toList (allSuccinctNodes (acc ^. succinctGraph))))
-                substedTys = map (\substitution -> succinctTypeSubstitute substitution ty') substs
-                tmpEnv = foldl' (\acc' typ -> (succinctGraph %~ Map.insertWith mergeMapOfSet sty (Map.singleton (SuccinctInhabited typ) (Set.singleton name))) acc') acc substedTys
-                in (undecidableSymbols %~ Set.insert (sty, SuccinctInhabited ty', name)) tmpEnv
-              else (succinctGraph %~ Map.insertWith mergeMapOfSet sty (Map.singleton (SuccinctInhabited ty') (Set.singleton name))) acc
+                tyVars = (extractSuccinctTyVars ty') `Set.difference` Set.fromList (accEnv ^. boundTypeVars)
+                substs = map (\ts -> foldl' (\acc (x,y) -> Map.insert x y acc) Map.empty (zip (Set.toList tyVars) ts)) $ sequence (replicate (Set.size tyVars) (Set.toList targets))
+                substedTys = Set.fromList $ map (\substitution -> succinctTypeSubstitute substitution ty') substs
+                tmpEnv = Set.foldl (\acc' typ -> let
+                  nodesEnv = addNode (SuccinctInhabited typ) acc'
+                  in (succinctGraph %~ Map.insertWith mergeMapOfSet (getTyIndex nodesEnv sty) (Map.singleton (getTyIndex nodesEnv (SuccinctInhabited typ)) (Set.singleton name))) nodesEnv) (addNode sty acc) substedTys
+                in (undecidableSymbols %~ Map.insertWith mergeMapOfSet sty (Map.singleton (SuccinctInhabited ty') (Set.singleton name))) tmpEnv
+              else let
+                nodesEnv = addNode (SuccinctInhabited ty') (addNode sty acc)
+                in (succinctGraph %~ Map.insertWith mergeMapOfSet (getTyIndex nodesEnv sty) (Map.singleton (getTyIndex nodesEnv (SuccinctInhabited ty')) (Set.singleton name))) nodesEnv
             ) accEnv tys 
             else accEnv
         in Set.foldl' fold_fun env targets
   where
     isAllBound = Set.foldl (\acc id -> (isBound env id) && acc) True idSet
 
+getTyIndex :: Environment -> RSuccinctType -> Int
+getTyIndex env ty = Map.findWithDefault 0 ty (env ^. succinctNodes)
+
+getIndexTy :: Environment -> Int -> RSuccinctType
+getIndexTy env idx = Map.foldlWithKey' (\acc ty pos -> if pos == idx then ty else acc) SuccinctAny (env ^. succinctNodes)
+
+
+addNode :: RSuccinctType -> Environment -> Environment
+addNode ty env = let
+  env' = if getTyIndex env ty == 0 then (succinctNodes %~ Map.insert ty (Map.size (env ^. succinctNodes) + 1)) env else env
+  in case ty of
+    SuccinctComposite tys -> Set.foldl' (\acc t -> addNode t acc) env' tys
+    SuccinctInhabited t -> addNode t env'
+    _ -> env'
+
 addEdge :: Id -> RSuccinctType -> Environment -> Environment
 addEdge name (SuccinctFunction argSet retTy) env = 
   let
     argTy = if Set.size argSet == 1 then Set.findMin argSet else SuccinctComposite argSet
     --addedRetEnv = (succinctGraph %~ Map.insertWith Map.union retTy (Map.singleton argTy (Set.singleton name))) env
-    addedRetEnv = (succinctGraph %~ Map.insertWith mergeMapOfSet retTy (Map.singleton argTy (Set.singleton name))) env
+    addedNodesEnv = addNode argTy (addNode retTy env)
+    addedRetEnv = (succinctGraph %~ Map.insertWith mergeMapOfSet (getTyIndex addedNodesEnv retTy) (Map.singleton (getTyIndex addedNodesEnv argTy) (Set.singleton name))) addedNodesEnv
   in if Set.size argSet == 1
     then addedRetEnv
-    else Set.foldl' (\acc elem -> (succinctGraph %~ Map.insertWith mergeMapOfSet (SuccinctComposite argSet) (Map.singleton elem (Set.singleton ""))) acc) addedRetEnv argSet
-addEdge name typ@(SuccinctAll idSet ty) env = addPolyEdge name typ env (allSuccinctNodes (env ^. succinctGraph))
+    else Set.foldl' (\acc elem -> (succinctGraph %~ Map.insertWith mergeMapOfSet (getTyIndex acc argTy) (Map.singleton (getTyIndex acc elem) (Set.singleton ""))) acc) addedRetEnv argSet
+addEdge name typ@(SuccinctAll idSet ty) env = 
+  let 
+    polyEnv = addPolyEdge name typ env $ Set.filter isSuccinctConcrete (allSuccinctNodes (env ^. succinctNodes))
+  in case ty of
+    SuccinctFunction pty rty -> if Set.null ((extractSuccinctTyVars rty) `Set.difference` Set.fromList (env ^. boundTypeVars))
+      then (undecidableSymbols %~ Map.insertWith mergeMapOfSet rty (Map.singleton (if Set.size pty == 1 then Set.findMin pty else SuccinctComposite pty) (Set.singleton name))) polyEnv
+      else polyEnv
+    _ -> polyEnv
 addEdge name typ env = 
   let
-    inhabitedEnv = (succinctGraph %~ Map.insertWith mergeMapOfSet typ (Map.singleton (SuccinctInhabited typ) (Set.singleton name))) env
+    inhabitedNodesEnv = addNode (SuccinctInhabited typ) env
+    inhabitedEnv = (succinctGraph %~ Map.insertWith mergeMapOfSet (getTyIndex inhabitedNodesEnv typ) (Map.singleton (getTyIndex inhabitedNodesEnv (SuccinctInhabited typ)) (Set.singleton name))) inhabitedNodesEnv
     isPolyTypes ty = case ty of
       SuccinctAll _ _ -> True
       _               -> False
@@ -854,29 +903,75 @@ addEdge name typ env =
     env' = Map.foldlWithKey (\accEnv k v -> case v of
       SuccinctAll _ (SuccinctFunction pty rty) -> let
         (unified, substitutions) = unifySuccinct rty typ (accEnv ^. boundTypeVars)
-        pty' = map (\substitution -> Set.map (succinctTypeSubstitute substitution) pty) substitutions
+        pty' = Set.fromList $ map (\substitution -> Set.map (succinctTypeSubstitute substitution) pty) substitutions
         in if unified
-          then foldl' (\acc ptySet -> if Set.foldl (\acc t -> Set.size ((extractSuccinctTyVars t) `Set.difference` Set.fromList (accEnv ^. boundTypeVars)) > 0 || acc) False ptySet
+          then Set.foldl (\acc ptySet -> if Set.foldl (\hasFreeVar t -> Set.size ((extractSuccinctTyVars t) `Set.difference` Set.fromList (accEnv ^. boundTypeVars)) > 0 || hasFreeVar) False ptySet
             then let 
-              tyVars = Set.foldl (\set t -> set `Set.union` (extractSuccinctTyVars t)) Set.empty ptySet
-              substs = map (\ts -> foldl' (\acc (x,y) -> Map.insert x y acc) Map.empty (zip (Set.toList tyVars) ts)) $ sequence (replicate (Set.size tyVars) (Set.toList (allSuccinctNodes (acc ^. succinctGraph))))
-              substedTys = map (\substitution -> Set.map (succinctTypeSubstitute substitution) ptySet) substs
-              tmpEnv = foldl' (\acc' tySet -> (succinctGraph %~ Map.insertWith mergeMapOfSet typ (Map.singleton (if Set.size tySet == 1 then Set.findMin tySet else SuccinctComposite tySet) (Set.singleton k))) acc') acc substedTys
-              in (undecidableSymbols %~ Set.insert (typ, if Set.size ptySet == 1 then Set.findMin ptySet else SuccinctComposite ptySet, k)) tmpEnv
-            else addEdge k (SuccinctFunction ptySet typ) acc --(succinctGraph %~ Map.insertWith mergeMapOfSet typ (Map.singleton (if Set.size ptySet == 1 then Set.findMin ptySet else SuccinctComposite ptySet) (Set.singleton k))) acc
+              tyVars = Set.foldl (\set t -> set `Set.union` ((extractSuccinctTyVars t) `Set.difference` Set.fromList (accEnv ^. boundTypeVars))) Set.empty ptySet
+              substs = map (\ts -> foldl' (\acc (x,y) -> Map.insert x y acc) Map.empty (zip (Set.toList tyVars) ts)) $ sequence (replicate (Set.size tyVars) (Set.toList (Set.filter isSuccinctConcrete (allSuccinctNodes (acc ^. succinctNodes)))))
+              substedTys = Set.fromList $ map (\substitution -> Set.map (succinctTypeSubstitute substitution) ptySet) substs
+              tmpEnv = Set.foldl (\acc' tySet -> let 
+                argTy = if Set.size tySet == 1 then Set.findMin tySet else SuccinctComposite tySet
+                accNodes = addNode argTy acc'
+                in (succinctGraph %~ Map.insertWith mergeMapOfSet (getTyIndex accNodes typ) (Map.singleton (getTyIndex accNodes argTy) (Set.singleton k))) accNodes) (addNode typ acc) substedTys
+              in (undecidableSymbols %~ Map.insertWith mergeMapOfSet typ (Map.singleton (if Set.size ptySet == 1 then Set.findMin ptySet else SuccinctComposite ptySet) (Set.singleton k))) tmpEnv
+            else addEdge k (SuccinctFunction ptySet typ) acc--(succinctGraph %~ Map.insertWith mergeMapOfSet typ (Map.singleton (if Set.size ptySet == 1 then Set.findMin ptySet else SuccinctComposite ptySet) (Set.singleton k))) acc
           ) accEnv pty'
           else accEnv
       SuccinctAll _ tt -> let
         (unified, substitutions) = unifySuccinct tt typ (env ^. boundTypeVars)
-        tys = map (\substitution -> succinctTypeSubstitute substitution tt) substitutions
+        tys = Set.fromList $ map (\substitution -> succinctTypeSubstitute substitution tt) substitutions
         in if unified
-          then foldl' (\acc ty' -> if Set.size ((extractSuccinctTyVars ty') `Set.difference` Set.fromList (accEnv ^. boundTypeVars)) > 0
+          then Set.foldl (\acc ty' -> if Set.size ((extractSuccinctTyVars ty') `Set.difference` Set.fromList (accEnv ^. boundTypeVars)) > 0
             then let 
-              tyVars = extractSuccinctTyVars ty'
-              substs = map (\ts -> foldl' (\acc (x,y) -> Map.insert x y acc) Map.empty (zip (Set.toList tyVars) ts)) $ sequence (replicate (Set.size tyVars) (Set.toList (allSuccinctNodes (acc ^. succinctGraph))))
-              substedTys = map (\substitution -> succinctTypeSubstitute substitution ty') substs
-              tmpEnv = foldl' (\acc' ty -> (succinctGraph %~ Map.insertWith mergeMapOfSet typ (Map.singleton (SuccinctInhabited ty) (Set.singleton k))) acc') acc substedTys
-              in (undecidableSymbols %~ Set.insert (typ, SuccinctInhabited ty', k)) tmpEnv
-            else (succinctGraph %~ Map.insertWith mergeMapOfSet typ (Map.singleton (SuccinctInhabited ty') (Set.singleton k))) acc) accEnv tys
+              tyVars = (extractSuccinctTyVars ty') `Set.difference` Set.fromList (accEnv ^. boundTypeVars)
+              substs = map (\ts -> foldl' (\acc (x,y) -> Map.insert x y acc) Map.empty (zip (Set.toList tyVars) ts)) $ sequence (replicate (Set.size tyVars) (Set.toList (Set.filter isSuccinctConcrete (allSuccinctNodes (acc ^. succinctNodes)))))
+              substedTys = Set.fromList $ map (\substitution -> succinctTypeSubstitute substitution ty') substs
+              tmpEnv = Set.foldl (\acc' ty -> let
+                nodesEnv = addNode (SuccinctInhabited ty) acc'
+                in (succinctGraph %~ Map.insertWith mergeMapOfSet (getTyIndex nodesEnv typ) (Map.singleton (getTyIndex nodesEnv (SuccinctInhabited ty)) (Set.singleton k))) nodesEnv) (addNode typ acc) substedTys
+              in (undecidableSymbols %~ Map.insertWith mergeMapOfSet typ (Map.singleton (SuccinctInhabited ty') (Set.singleton k))) tmpEnv
+            else let
+              nodesEnv = addNode typ (addNode (SuccinctInhabited ty') acc)
+              in (succinctGraph %~ Map.insertWith mergeMapOfSet (getTyIndex nodesEnv typ) (Map.singleton (getTyIndex nodesEnv (SuccinctInhabited ty')) (Set.singleton k))) nodesEnv) accEnv tys
           else accEnv) inhabitedEnv polyTypes
     in env'
+
+isReachable :: Environment -> Int -> Bool
+isReachable env idx = isReachableHelper (env ^. succinctGraph) Set.empty idx
+  where
+    isReachableHelper g visited idx' = case getIndexTy env idx' of
+      SuccinctInhabited _ -> True
+      -- SuccinctScalar BoolT -> True -- for if conditions
+      -- SuccinctFunction _ _ -> True --Set.foldl' (\acc t -> acc && isReachableHelper g (Set.insert idx' visited) (getTyIndex env t)) True paramTy
+      SuccinctComposite tys -> Set.foldl' (\acc t -> acc && isReachableHelper g (Set.insert idx' visited) (getTyIndex env t)) True tys
+      _ -> Map.foldlWithKey' (\acc i _ -> acc || isReachableHelper g (Set.insert idx' visited) i) False (if Set.member idx' visited then Map.empty else Map.findWithDefault Map.empty idx' g)
+
+isSuccinctFunction ty@(SuccinctFunction _ _) = True
+isSuccinctFunction ty = False
+
+isSuccinctComposite ty@(SuccinctComposite _) = True
+isSuccinctComposite ty = False
+
+getCompositeWithFunction :: Environment -> Set Int
+getCompositeWithFunction env = Set.filter (\idx -> case getIndexTy env idx of
+  SuccinctComposite tys -> Set.foldl (\acc ty -> acc || isSuccinctFunction ty) True tys
+  _ -> False) $ allSuccinctIndices (env ^. succinctNodes)
+
+getReachableNodes :: Environment -> Set Int
+getReachableNodes env = let
+  composites = getCompositeWithFunction env
+  in composites `Set.union` Set.filter (isReachable env) (allSuccinctIndices (env ^. succinctNodes) `Set.difference` (composites `Set.union` (env ^. reachableSymbols)))
+
+findDstNodesInGraph :: Environment -> RSuccinctType -> [Id] -> Map Int (Set Id)
+findDstNodesInGraph env typ boundTypeVars = case typ of
+  SuccinctLet _ _ ty -> findDstNodesInGraph env ty boundTypeVars
+  _ -> let
+    filter_fun k v = case typ of
+      SuccinctDatatype ids tys _ -> case getIndexTy env k of
+        SuccinctDatatype ids' tys' _ -> ids == ids' && tys == tys'
+        _ -> False
+      SuccinctAll _ ty -> let (res,_) = unifySuccinct ty (getIndexTy env k) boundTypeVars in res 
+      _ -> getIndexTy env k == typ
+    candidateMap = Map.filterWithKey filter_fun (env ^. succinctGraph)
+    in Map.foldl (\acc m -> Map.foldlWithKey (\accM kty set -> Map.insertWith Set.union kty set accM) acc m) Map.empty candidateMap
