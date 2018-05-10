@@ -28,7 +28,7 @@ import Control.Monad.Reader
 import Control.Applicative hiding (empty)
 import Control.Lens
 import Debug.Trace
-import Data.Time.Clock
+import Data.Time
 {- Interface -}
 
 -- | Choices for the type of terminating fixpoint operator
@@ -60,7 +60,8 @@ data ExplorerParams = ExplorerParams {
   _useMemoization :: Bool,                -- ^ Should enumerated terms be memoized?
   _symmetryReduction :: Bool,             -- ^ Should partial applications be memoized to check for redundancy?
   _sourcePos :: SourcePos,                -- ^ Source position of the current goal
-  _explorerLogLevel :: Int                -- ^ How verbose logging is
+  _explorerLogLevel :: Int,               -- ^ How verbose logging is
+  _useSuccinct :: Bool
 }
 
 makeLenses ''ExplorerParams
@@ -132,7 +133,9 @@ generateI :: MonadHorn s => Environment -> RType -> Explorer s RProgram
 generateI env t@(FunctionT x tArg tRes) = do
   let ctx = \p -> Program (PFun x p) t
   --let env' = if Map.null (env ^. succinctGraph) then Map.foldlWithKey (\accEnv name ty -> addPolySuccinctSymbol name ty accEnv) env $ allSymbols env else env
-  env' <- addSuccinctSymbol x (Monotype tArg) env
+  useSucc <- asks . view $ _1 . useSuccinct
+  -- let useSucc = True
+  env' <- if useSucc then addSuccinctSymbol x (Monotype tArg) env else return env
   -- let env' = env
   pBody <- inContext ctx $ generateI (unfoldAllVariables $ addVariable x tArg $ env') tRes
   return $ ctx pBody
@@ -230,8 +233,10 @@ generateFirstCase env scrVar pScrutinee t consName = do
       consT' <- runInSolver $ currentAssignment consT
       binders <- replicateM (arity consT') (freshVar env "x")
       (syms, ass) <- caseSymbols env scrVar binders consT'
-      let env' = foldr (uncurry addVariable) (addAssumption ass env) syms 
-      caseEnv <- foldM (\e (name, ty) -> addSuccinctSymbol name (Monotype ty) e) env' syms
+      let env' = foldr (uncurry addVariable) (addAssumption ass env) syms
+      useSucc <- asks . view $ _1 . useSuccinct
+      -- let useSucc = True
+      caseEnv <- if useSucc then foldM (\e (name, ty) -> addSuccinctSymbol name (Monotype ty) e) env' syms else return env'
       -- let caseEnv =  env'
       ifte  (do -- Try to find a vacuousness condition:
               deadUnknown <- Unknown Map.empty <$> freshId "C"
@@ -264,7 +269,9 @@ generateCase env scrVar pScrutinee t consName = do
       runInSolver $ addFixedUnknown (unknownName cUnknown) (Set.singleton ass) -- Create a fixed-valuation unknown to assume @ass@
 
       let env' = (if unfoldSyms then unfoldAllVariables else id) $ foldr (uncurry addVariable) (addAssumption cUnknown env) syms
-      caseEnv <- foldM (\e (name, ty) -> addSuccinctSymbol name (Monotype ty) e) env' syms
+      useSucc <- asks . view $ _1 . useSuccinct
+      -- let useSucc = True
+      caseEnv <- if useSucc then foldM (\e (name, ty) -> addSuccinctSymbol name (Monotype ty) e) env' syms else return env'
       -- let caseEnv = env'
       pCaseExpr <- optionalInPartial t $ local (over (_1 . matchDepth) (-1 +))
                                        $ inContext (\p -> Program (PMatch pScrutinee [Case consName binders p]) t)
@@ -472,7 +479,8 @@ enumerateAt :: MonadHorn s => Environment -> RType -> Int -> Explorer s RProgram
 enumerateAt env typ 0 = do
     let symbols = Map.toList $ symbolsOfArity (arity typ) env
     -- let filteredSymbols = symbols
-    let filteredSymbols = filter (\(id,_) -> elem id reachableList) symbols
+    useFilter <- asks . view $ _1 . useSuccinct
+    let filteredSymbols = if useFilter then filter (\(id,_) -> elem id reachableList) symbols else symbols
     useCounts <- use symbolUseCount
     let sortedSymbols = if arity typ == 0
                       then sortBy (mappedCompare (\(x, _) -> (Set.member x (env ^. constants), Map.findWithDefault 0 x useCounts))) filteredSymbols
@@ -719,8 +727,6 @@ writeLog level msg = do
 -- Succinct type operations
 addSuccinctSymbol :: MonadHorn s => Id -> RSchema -> Environment -> Explorer s Environment
 addSuccinctSymbol name t env = do
-  -- polymorphic <- asks . view $ _1 . polyRecursion
-  -- let typeGeneralized sch = if polymorphic then foldr ForallT sch (env ^. boundTypeVars) else sch
   newt <- instantiate env (t) True []
   let succinctTy = getSuccinctTy (Monotype newt)
   case newt of 
@@ -754,8 +760,6 @@ addSuccinctSymbol name t env = do
           SuccinctAll vars ty -> addDestructors name (Set.map (\t -> SuccinctAll vars t) (getSuccinctDestructors name ty)) env
           _ -> addDestructors name (getSuccinctDestructors name sty) env
         else env
-    -- then foldM (\accEnv (n,tt) -> addSuccinctSymbol n (addBoundVars t tt) accEnv) env $ Map.toList (getDestructors name (toMonotype t))
-    -- else return env
     iteration !oldEnv !newEnv = let
       diffTys = Set.filter isSuccinctConcrete $ (allSuccinctNodes (newEnv ^. succinctNodes)) `Set.difference` (allSuccinctNodes (oldEnv ^. succinctNodes))
       in if Set.size diffTys == 0

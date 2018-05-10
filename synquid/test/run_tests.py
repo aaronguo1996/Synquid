@@ -155,6 +155,7 @@ def cmdline():
     a.add_argument('--unit', action='store_true', help='run unit tests')
     a.add_argument('--check', action='store_true', help='run type checking tests')
     a.add_argument('--synt', action='store_true', help='run synthesis tests')
+    a.add_argument('--succ', action='store_true', help='run synthesis tests with succinct graph')
     a.add_argument('--sections', nargs="*", choices=SECTIONS + ['all'], default=['all'], help=('which synthesis tests to run'))
     return a.parse_args()
 
@@ -247,6 +248,9 @@ if __name__ == '__main__':
     else:
         synquid_path = SYNQUID_PATH_WINDOWS
 
+    if a.succ:
+        COMMON_OPTS.append('-succ')
+        
     # By default enable all tests:
     if not (a.unit or a.check or a.synt):
       a.unit = True

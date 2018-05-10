@@ -45,7 +45,7 @@ main = do
   res <- cmdArgsRun $ mode
   case res of
     (Synthesis file libs onlyGoals
-               appMax scrutineeMax matchMax auxMax fix genPreds explicitMatch unfoldLocals partial incremental consistency memoize symmetry
+               appMax scrutineeMax matchMax auxMax fix genPreds explicitMatch unfoldLocals partial incremental consistency memoize symmetry succinct
                lfp bfs
                out_file out_module outFormat resolve
                print_spec print_stats log_) -> do
@@ -63,7 +63,8 @@ main = do
                     _consistencyChecking = consistency,
                     _useMemoization = memoize,
                     _symmetryReduction = symmetry,
-                    _explorerLogLevel = log_
+                    _explorerLogLevel = log_,
+                    _useSuccinct = succinct
                     }
                   let solverParams = defaultHornSolverParams {
                     isLeastFixpoint = lfp,
@@ -114,6 +115,7 @@ data CommandLineArgs
         consistency :: Bool,
         memoize :: Bool,
         symmetry :: Bool,
+        succinct :: Bool,
         -- | Solver params
         lfp :: Bool,
         bfs_solver :: Bool,
@@ -153,7 +155,8 @@ synt = Synthesis {
   output              = defaultFormat   &= help ("Output format: Plain, Ansi or Html (default: " ++ show defaultFormat ++ ")") &= typ "FORMAT",
   print_spec          = True            &= help ("Show specification of each synthesis goal (default: True)"),
   print_stats         = False           &= help ("Show specification and solution size (default: False)"),
-  log_                = 0               &= help ("Logger verboseness level (default: 0)") &= name "l"
+  log_                = 0               &= help ("Logger verboseness level (default: 0)") &= name "l",
+  succinct            = True           &= help ("Use succinct graph (default: False)") &= name "succinct"
   } &= auto &= help "Synthesize goals specified in the input file"
     where
       defaultFormat = outputFormat defaultSynquidParams
@@ -183,7 +186,8 @@ defaultExplorerParams = ExplorerParams {
   _symmetryReduction = False,
   _context = id,
   _sourcePos = noPos,
-  _explorerLogLevel = 0
+  _explorerLogLevel = 0,
+  _useSuccinct = False
 }
 
 -- | Parameters for constraint solving
