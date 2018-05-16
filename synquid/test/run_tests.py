@@ -20,7 +20,7 @@ COMMON_OPTS = ['-z']
 TIMEOUT_COMMAND = 'timeout'
 TIMEOUT= '120'
 
-SECTIONS = ['.', 'sygus', 'rbt', 'AVL', 'succinct']
+SECTIONS = ['.', 'sygus', 'rbt', 'AVL']
 
 BENCHMARKS = {
   '.' : [
@@ -37,7 +37,7 @@ BENCHMARKS = {
               ('List-Drop',       []),
               ('List-Delete',     []),
               ('List-Map',        []),
-#              ('List-ZipWith',    []),
+              ('List-ZipWith',    []),
               ('List-Zip',        []),
               ('List-ToNat',      ['-m 0']),
               ('List-Product',    []),
@@ -117,13 +117,7 @@ BENCHMARKS = {
     ('RBT-BalanceL',        ['-a 2', '-u', '-z']),
     ('RBT-BalanceR',        ['-a 2', '-u', '-z']),
     ('RBT-Insert',          ['-a 2', '-m 1', '-z']),
-          ],
-  'succinct' : [
-    ('AddressBook-Make',  ['-a 2']),
-    ('AddressBook-Make',  ['-a 3']),
-    ('AddressBook-Make',  ['-a 4']),
-    ('AddressBook-Make',  ['-a 5']),
-               ]
+          ]
 }
 
 # RBT_BENCHMARKS = [
@@ -155,7 +149,8 @@ def cmdline():
     a.add_argument('--unit', action='store_true', help='run unit tests')
     a.add_argument('--check', action='store_true', help='run type checking tests')
     a.add_argument('--synt', action='store_true', help='run synthesis tests')
-    a.add_argument('--succ', action='store_true', help='run synthesis tests with succinct graph')
+    a.add_argument('--succ', action='store_true', help='run synthesis tests with succinct graph and pruning')
+    a.add_argument('--graph', action='store_true', help='run synthesis tests with succinct graph')
     a.add_argument('--sections', nargs="*", choices=SECTIONS + ['all'], default=['all'], help=('which synthesis tests to run'))
     return a.parse_args()
 
@@ -249,7 +244,10 @@ if __name__ == '__main__':
         synquid_path = SYNQUID_PATH_WINDOWS
 
     if a.succ:
-        COMMON_OPTS.append('-succ')
+        COMMON_OPTS.append('--succinct')
+
+    if a.graph:
+        COMMON_OPTS.append('--graph')
         
     # By default enable all tests:
     if not (a.unit or a.check or a.synt):

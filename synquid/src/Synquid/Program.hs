@@ -216,11 +216,12 @@ makeLenses ''MeasureDef
 data Environment = Environment {
   -- | Variable part:
   _symbols :: Map Int (Map Id RSchema),    -- ^ Variables and constants (with their refinement types), indexed by arity
-  _succinctSymbols :: Map Id RSuccinctType,    -- ^ Symbols with succinct types
-  _succinctGraph :: Map Int (Map Int (Set Id)), -- ^ Graph built upon succinct types
-  _undecidableSymbols :: Map RSuccinctType (Map RSuccinctType (Set Id)), -- ^ the going to type has some variable in it to be decided until the graph is built
+  _succinctSymbols :: Map Id SuccinctType,    -- ^ Symbols with succinct types
+  _succinctGraph :: Map Int (Map (Int,Bool) (Set Id)), -- ^ Graph built upon succinct types
+  _succinctGraphRev :: Map Int (Set Int), -- ^ Graph for reachability check
+  _undecidableSymbols :: Map SuccinctType (Map SuccinctType (Set Id)), -- ^ the going to type has some variable in it to be decided until the graph is built
   _reachableSymbols :: Set Int, -- ^ reachable symbols in the succinct graph
-  _succinctNodes :: Map RSuccinctType Int, -- ^ All succinct nodes in succinct graph
+  _succinctNodes :: Map SuccinctType Int, -- ^ All succinct nodes in succinct graph
   _boundTypeVars :: [Id],                  -- ^ Bound type variables
   _boundPredicates :: [PredSig],           -- ^ Argument sorts of bound abstract refinements
   _assumptions :: Set Formula,             -- ^ Unknown assumptions
@@ -250,6 +251,7 @@ emptyEnv = Environment {
   _symbols = Map.empty,
   _succinctSymbols = Map.empty,
   _succinctGraph = Map.empty,
+  _succinctGraphRev = Map.empty,
   _undecidableSymbols = Map.empty,
   _reachableSymbols = Set.empty,
   _succinctNodes = Map.empty,

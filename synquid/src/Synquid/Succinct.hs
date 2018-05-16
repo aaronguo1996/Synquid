@@ -1,5 +1,3 @@
-{-# LANGUAGE BangPatterns #-}
-
 module Synquid.Succinct where
 
 import Synquid.Type hiding (set)
@@ -14,15 +12,15 @@ import Data.List as List
 import Data.Maybe
 import Control.Lens as Lens
 
-data SuccinctType r = 
-  SuccinctScalar (BaseType r) |
-  SuccinctFunction (Set (SuccinctType r)) (SuccinctType r) |
-  SuccinctDatatype (Set (Id, Int)) (Set (SuccinctType r)) (Map Id (Set Id)) | -- Datatype names, included types and datatype constructors
-  SuccinctAll (Set Id) (SuccinctType r) |
-  SuccinctComposite (Set (SuccinctType r)) |
-  SuccinctLet Id (SuccinctType r) (SuccinctType r) |
+data SuccinctType = 
+  SuccinctScalar (BaseType ()) |
+  SuccinctFunction (Set SuccinctType) SuccinctType |
+  SuccinctDatatype (Set (Id, Int)) (Set SuccinctType) (Map Id (Set Id)) | -- Datatype names, included types and datatype constructors
+  SuccinctAll (Set Id) SuccinctType |
+  SuccinctComposite (Set SuccinctType) |
+  SuccinctLet Id SuccinctType SuccinctType |
   SuccinctAny |
-  SuccinctInhabited (SuccinctType r)
+  SuccinctInhabited SuccinctType
   deriving (Show, Eq, Ord)
 
 -- instance Eq (SuccinctType r) where
@@ -33,19 +31,17 @@ data SuccinctType r =
 --   SuccinctDatatype ids1 tys1 cons1 <= SuccinctDatatype ids2 tys2 cons2 = ids1 <= ids2 && tys1 <= tys2
 --   sty1 <= sty2 = sty1 <= sty2
 
-type RSuccinctType = SuccinctType Formula
-
-extractBaseTyVars :: BaseType Formula -> Set Id
+extractBaseTyVars :: BaseType () -> Set Id
 extractBaseTyVars (TypeVarT _ id) = Set.singleton id
-extractBaseTyVars (DatatypeT id ts _) = foldl (\acc t -> acc `Set.union` (extractRTyVars t)) Set.empty ts
+extractBaseTyVars (DatatypeT id ts _) = foldl (\acc t -> acc `Set.union` (extractSTyVars t)) Set.empty ts
 extractBaseTyVars _ = Set.empty
 
-extractRTyVars :: RType -> Set Id
-extractRTyVars (ScalarT bt _) = extractBaseTyVars bt
-extractRTyVars (FunctionT _ param ret) = (extractRTyVars param) `Set.union` (extractRTyVars ret)
-extractRTyVars _ = Set.empty
+extractSTyVars :: SType -> Set Id
+extractSTyVars (ScalarT bt _) = extractBaseTyVars bt
+extractSTyVars (FunctionT _ param ret) = (extractSTyVars param) `Set.union` (extractSTyVars ret)
+extractSTyVars _ = Set.empty
 
-extractSuccinctTyVars :: RSuccinctType -> Set Id
+extractSuccinctTyVars :: SuccinctType -> Set Id
 extractSuccinctTyVars (SuccinctScalar t) = extractBaseTyVars t
 extractSuccinctTyVars (SuccinctFunction args ret) = foldl (\acc t -> (extractSuccinctTyVars t) `Set.union` acc) (extractSuccinctTyVars ret) args
 extractSuccinctTyVars (SuccinctDatatype _ tys _) = foldl (\acc t -> (extractSuccinctTyVars t) `Set.union` acc) Set.empty tys
@@ -53,48 +49,48 @@ extractSuccinctTyVars (SuccinctAll ids _) = ids
 extractSuccinctTyVars (SuccinctComposite tys) = foldl (\acc t -> (extractSuccinctTyVars t) `Set.union` acc) Set.empty tys
 extractSuccinctTyVars _ = Set.empty
 
-baseToSuccinctType :: BaseType Formula -> RSuccinctType
+baseToSuccinctType :: BaseType () -> SuccinctType
 baseToSuccinctType (DatatypeT id ts _) = if "_" == id 
-  then SuccinctAll (Set.singleton "_") (SuccinctScalar (TypeVarT Map.empty "_"))
+  then SuccinctAny --SuccinctAll (Set.singleton "_") (SuccinctScalar (TypeVarT Map.empty "_"))
   else SuccinctDatatype resIds resTys Map.empty
   where
-    mergeDt (accIds, accTys) t = case outOfSuccinctAll (rtypeToSuccinctType t) of
+    mergeDt (accIds, accTys) t = case outOfSuccinctAll (toSuccinctType t) of
       SuccinctDatatype ids tys _ -> (ids `Set.union` accIds, tys `Set.union` accTys)
       ty                         -> (accIds, Set.singleton ty `Set.union` accTys)
     (resIds, resTys) = foldl mergeDt (Set.singleton (id, length ts), Set.empty) ts
 baseToSuccinctType t = SuccinctScalar t
 
-rtypeToSuccinctType :: RType -> RSuccinctType
-rtypeToSuccinctType t@(ScalarT bt _) = let 
-  vars = extractRTyVars t 
+toSuccinctType :: SType -> SuccinctType
+toSuccinctType t@(ScalarT bt _) = let 
+  vars = extractSTyVars t 
   ty = baseToSuccinctType bt
   in if Set.size vars == 0 then ty else simplifySuccinctType $ SuccinctAll vars ty
-rtypeToSuccinctType t@(FunctionT _ param ret) = let
-  vars = extractRTyVars t
-  ty = case outOfSuccinctAll (rtypeToSuccinctType ret) of
-    SuccinctFunction paramSet retTy -> SuccinctFunction (Set.singleton (rtypeToSuccinctType param) `Set.union` paramSet) retTy
-    ty'                             -> SuccinctFunction (Set.singleton (rtypeToSuccinctType param)) ty'
+toSuccinctType t@(FunctionT _ param ret) = let
+  vars = extractSTyVars t
+  ty = case outOfSuccinctAll (toSuccinctType ret) of
+    SuccinctFunction paramSet retTy -> SuccinctFunction (Set.singleton (toSuccinctType param) `Set.union` paramSet) retTy
+    ty'                             -> SuccinctFunction (Set.singleton (toSuccinctType param)) ty'
   in if Set.size vars == 0 then ty else simplifySuccinctType $ SuccinctAll vars ty
-rtypeToSuccinctType t@(LetT id varty bodyty) = let
-  vars = extractRTyVars t
-  ty = SuccinctLet id (rtypeToSuccinctType varty) (rtypeToSuccinctType bodyty)
+toSuccinctType t@(LetT id varty bodyty) = let
+  vars = extractSTyVars t
+  ty = SuccinctLet id (toSuccinctType varty) (toSuccinctType bodyty)
   in if Set.size vars == 0 then ty else simplifySuccinctType $ SuccinctAll vars ty
-rtypeToSuccinctType AnyT = SuccinctAny
+toSuccinctType AnyT = SuccinctAny
 
-toSuccinctType :: RSchema -> RSuccinctType
-toSuccinctType (Monotype t) = rtypeToSuccinctType t
-toSuccinctType (ForallT id t) = case toSuccinctType t of
-  SuccinctAll ids ty -> SuccinctAll (Set.singleton id `Set.union` ids) ty
-  ty                 -> SuccinctAll (Set.singleton id) ty
-toSuccinctType (ForallP _ t) = toSuccinctType t
+-- toSuccinctType :: RSchema -> RSuccinctType
+-- toSuccinctType (Monotype t) = rtypeToSuccinctType t
+-- toSuccinctType (ForallT id t) = case toSuccinctType t of
+--   SuccinctAll ids ty -> SuccinctAll (Set.singleton id `Set.union` ids) ty
+--   ty                 -> SuccinctAll (Set.singleton id) ty
+-- toSuccinctType (ForallP _ t) = toSuccinctType t
 
-outOfSuccinctAll :: RSuccinctType -> RSuccinctType
+outOfSuccinctAll :: SuccinctType -> SuccinctType
 outOfSuccinctAll (SuccinctFunction paramSet ret) = SuccinctFunction (Set.map outOfSuccinctAll paramSet) (outOfSuccinctAll ret)
 outOfSuccinctAll (SuccinctDatatype ids tys cons) = SuccinctDatatype ids (Set.map outOfSuccinctAll tys) cons
 outOfSuccinctAll (SuccinctAll ids ty) = ty
 outOfSuccinctAll ty = ty
 
-simplifySuccinctType :: RSuccinctType -> RSuccinctType
+simplifySuccinctType :: SuccinctType -> SuccinctType
 simplifySuccinctType t@(SuccinctFunction paramSet ret) = case ret of
   SuccinctFunction ps rt -> SuccinctFunction (paramSet `Set.union` ps) rt
   _ -> t
@@ -111,9 +107,9 @@ simplifySuccinctType t@(SuccinctComposite tys) = SuccinctComposite (Set.map simp
 simplifySuccinctType t@(SuccinctInhabited ty) = SuccinctInhabited (simplifySuccinctType ty)
 simplifySuccinctType t = t
 
-type SuccTypeSubstitution = Map Id RSuccinctType
+type SuccTypeSubstitution = Map Id SuccinctType
 
-succinctTypeSubstitute :: SuccTypeSubstitution -> RSuccinctType -> RSuccinctType
+succinctTypeSubstitute :: SuccTypeSubstitution -> SuccinctType -> SuccinctType
 succinctTypeSubstitute subst (SuccinctScalar baseT) = case baseT of
   TypeVarT _ a -> case Map.lookup a subst of
     Just t -> simplifySuccinctType $ succinctTypeSubstitute subst t
@@ -164,7 +160,7 @@ succinctTypeSubstitute subst (SuccinctInhabited t) = simplifySuccinctType $ Succ
 --           in (succinctSymbols %~ Map.insert name (SuccinctDatatype ids tys consMap)) env
 --         else env
 
-unifySuccinct :: RSuccinctType -> RSuccinctType -> [Id] -> (Bool, [SuccTypeSubstitution])
+unifySuccinct :: SuccinctType -> SuccinctType -> [Id] -> (Bool, [SuccTypeSubstitution])
 unifySuccinct comp target boundedTys = case (comp, target) of
   (SuccinctScalar (TypeVarT _ id), target) -> if id `elem` boundedTys 
     then if comp == target
@@ -219,7 +215,7 @@ unifySuccinct comp target boundedTys = case (comp, target) of
           mergeRemain s acc ss = acc ++ (List.map ((:) s) (distribute (n-1) ss))
       in Set.foldl (\acc s -> acc ++ (List.foldl (mergeRemain s) [] (allRemain s))) [] pset
 
-    allCombos :: Set (Id,Int) -> Set RSuccinctType -> Set RSuccinctType -> Set (Id,Int) -> Set RSuccinctType -> [SuccTypeSubstitution]
+    allCombos :: Set (Id,Int) -> Set SuccinctType -> Set SuccinctType -> Set (Id,Int) -> Set SuccinctType -> [SuccTypeSubstitution]
     allCombos cons tys freeVars tcons tty =
       if length freeVars == 0 -- (length cons /= 0 || length tys /= 0) && (length freeVars == 0) -- no freeVars to fill
         then [Map.empty]
@@ -252,7 +248,7 @@ unifySuccinct comp target boundedTys = case (comp, target) of
                                                               (foldl (\acc (x,y) -> acc && (isValid x y)) True (zip c t))]
           in resultMap
 
-getDestructors :: Id -> RType -> Map Id RType
+getDestructors :: Id -> SType -> Map Id SType
 getDestructors name ty = case ty of
   FunctionT _ tArg tRet -> let 
     retTy = getFunRet ty
@@ -265,7 +261,7 @@ getDestructors name ty = case ty of
       FunctionT _ _ t' -> getFunRet t'
       _ -> t
 
-getSuccinctDestructors :: Id -> RSuccinctType -> Set RSuccinctType
+getSuccinctDestructors :: Id -> SuccinctType -> Set SuccinctType
 getSuccinctDestructors name sty = case sty of
   SuccinctFunction params ret -> case ret of
     SuccinctDatatype ids tys consMap -> let
@@ -311,10 +307,10 @@ reverseGraph graph = reverseGraphHelper Map.empty graph
     fold_fun acc k v = Map.foldlWithKey' (\tmap k' v' -> Map.insertWith mergeMapOfSet k' v' tmap) acc (Map.map (\s -> Map.singleton k s) v)
     reverseGraphHelper acc g = Map.foldlWithKey' fold_fun Map.empty g
 
-allSuccinctIndices :: Map RSuccinctType Int -> Set Int
+allSuccinctIndices :: Map SuccinctType Int -> Set Int
 allSuccinctIndices nodesMap = Set.fromList $ Map.elems nodesMap
 
-allSuccinctNodes :: Map RSuccinctType Int -> Set RSuccinctType
+allSuccinctNodes :: Map SuccinctType Int -> Set SuccinctType
 allSuccinctNodes nodesMap = Map.keysSet nodesMap
 -- allSuccinctNodes graph = let 
 --   filter_fun ty = case ty of
@@ -329,7 +325,7 @@ mergeMapOfSet new old = Map.foldlWithKey' fold_fun old new
   where
     fold_fun accMap kty idSet = Map.insert kty ((Map.findWithDefault Set.empty kty accMap) `Set.union` idSet) accMap
 
-getInhabitedNodes :: Map RSuccinctType (Map RSuccinctType (Set Id)) -> Set RSuccinctType
+getInhabitedNodes :: Map SuccinctType (Map SuccinctType (Set Id)) -> Set SuccinctType
 getInhabitedNodes graph = Set.filter filter_fun allNodes
   where
     allNodes = Map.foldl' (\acc map -> (Map.keysSet map) `Set.union` acc) (Map.keysSet graph) graph
@@ -337,12 +333,22 @@ getInhabitedNodes graph = Set.filter filter_fun allNodes
       SuccinctInhabited _ -> True
       _ -> False
 
+isSuccinctInhabited ty@(SuccinctInhabited _) = True
+isSuccinctInhabited ty = False
+
+isSuccinctFunction ty@(SuccinctFunction _ _) = True
+isSuccinctFunction ty = False
+
+isSuccinctComposite ty@(SuccinctComposite _) = True
+isSuccinctComposite ty = False
+
 isSuccinctAll (SuccinctAll _ _) = True
 isSuccinctAll _ = False
 
 isSuccinctConcrete (SuccinctInhabited _) = False
 isSuccinctConcrete (SuccinctComposite _) = False
 isSuccinctConcrete (SuccinctFunction _ _) = False
+isSuccinctConcrete (SuccinctAny) = False
 isSuccinctConcrete _ = True
 
   -- where
@@ -357,7 +363,7 @@ isSuccinctConcrete _ = True
   --           then rmUnreachableComposite $ getReachableNodesHelper g visited (Set.delete curr toVisit)
   --           else rmUnreachableComposite $ getReachableNodesHelper g (Set.insert curr visited) (Map.keysSet (findDstNodesInGraph graph curr []) `Set.union` (Set.delete curr toVisit))
 
-rmUnreachableComposite :: Set RSuccinctType -> Set RSuccinctType
+rmUnreachableComposite :: Set SuccinctType -> Set SuccinctType
 rmUnreachableComposite reachableSet = Set.foldl (\acc t -> if isCompositeReachable t then acc else Set.delete t acc) reachableSet (compositeNodes)
   where
     isCompositeNode ty = case ty of
@@ -368,8 +374,20 @@ rmUnreachableComposite reachableSet = Set.foldl (\acc t -> if isCompositeReachab
       Set.foldl (\acc b -> acc && (Set.member b reachableSet)) True tySet
 
 -- | function for debug
-printGraph :: Map RSuccinctType (Map RSuccinctType (Set Id)) -> String
+printGraph :: Map SuccinctType (Map SuccinctType (Set Id)) -> String
 printGraph graph = Map.foldlWithKey' printMap "" graph
   where
     printMap acc k v = Set.foldl (\tmp x -> tmp ++ (show k) ++ x) acc (Map.foldlWithKey' printSet Set.empty v)
     printSet acc k s = acc `Set.union` Set.map (\x -> "--" ++ x ++ "-->" ++ (show k) ++ "\n") s
+
+succinctAnyEq :: SuccinctType -> SuccinctType -> Bool
+succinctAnyEq (SuccinctScalar t1) (SuccinctScalar t2) = t1 == t2
+succinctAnyEq (SuccinctFunction targ1 tret1) (SuccinctFunction targ2 tret2) = (succinctAnyEq (SuccinctComposite targ1) (SuccinctComposite targ2)) && (tret1 == tret2 || (tret1 == SuccinctAny) || (tret2 == SuccinctAny))
+succinctAnyEq (SuccinctDatatype ids1 tys1 cons1) (SuccinctDatatype ids2 tys2 cons2) = (succinctAnyEq (SuccinctComposite tys1) (SuccinctComposite tys2)) && ids1 == ids2
+succinctAnyEq (SuccinctComposite tys1) (SuccinctComposite tys2) =
+  if Set.member SuccinctAny tys1
+    then let diff = tys1 `Set.difference` tys2 in Set.size diff == 0 || (Set.size diff == 1 && Set.findMin diff == SuccinctAny)
+    else let diff = tys2 `Set.difference` tys1 in Set.size diff == 0 || (Set.size diff == 1 && Set.findMin diff == SuccinctAny)
+succinctAnyEq SuccinctAny _ = True
+succinctAnyEq _ SuccinctAny = True
+succinctAnyEq _ _ = False

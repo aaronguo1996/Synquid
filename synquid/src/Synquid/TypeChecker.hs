@@ -55,12 +55,12 @@ reconstructTopLevel (Goal funName env (Monotype typ@(FunctionT _ _ _)) impl dept
       let typeGeneralized sch = if polymorphic then foldr ForallT sch tvs else sch -- Version of @t'@ generalized in bound type variables of the enclosing function
       let env' = foldr (\(f, t) -> addPolyVariable f (typeGeneralized . predGeneralized . Monotype $ t) . (shapeConstraints %~ Map.insert f (shape typ'))) env recCalls
       -- env'' <- foldM (\e (f, t) -> addSuccinctSymbol f (typeGeneralized . predGeneralized . Monotype $ t) e) env' recCalls
-      useSucc <- asks . view $ _1 . useSuccinct
+      useSucc <- asks . view $ _1 . buildGraph
       -- let useSucc = True
       envAll <- if useSucc then foldM (\e (f, t) -> addSuccinctSymbol f t e) env' (Map.toList (allSymbols env')) else return env'
-      -- envGoal <- addSuccinctSymbol "__goal__" (Monotype (lastType typ)) envAll
+      envGoal <- if useSucc then addSuccinctSymbol "__goal__" (Monotype (lastType typ)) envAll else return envAll
       let ctx = \p -> if null recCalls then p else Program (PFix (map fst recCalls) p) typ'
-      p <- inContext ctx  $ reconstructI envAll typ' impl
+      p <- inContext ctx  $ reconstructI envGoal typ' impl
       return $ ctx p 
 
     -- | 'recursiveCalls' @t@: name-type pairs for recursive calls to a function with type @t@ (0 or 1)
@@ -134,7 +134,7 @@ reconstructI' env t (PLet x iDef@(Program (PFun _ _) _) iBody) = do -- lambda-le
 reconstructI' env t@(FunctionT _ tArg tRes) impl = case impl of
   PFun y impl -> do
     let ctx = \p -> Program (PFun y p) t
-    useSucc <- asks . view $ _1 . useSuccinct
+    useSucc <- asks . view $ _1 . buildGraph
     -- let useSucc = True
     env' <- if useSucc then addSuccinctSymbol y (Monotype tArg) env else return env
     pBody <- inContext ctx $ reconstructI (unfoldAllVariables $ addVariable y tArg $ env') tRes impl
@@ -151,7 +151,7 @@ reconstructI' env t@(ScalarT _ _) impl = case impl of
   PLet x iDef iBody -> do -- E-term let (since lambda-let was considered before)
     pDef <- inContext (\p -> Program (PLet x p (Program PHole t)) t) $ reconstructETopLevel env AnyT iDef
     let (env', tDef) = embedContext env (typeOf pDef)
-    useSucc <- asks . view $ _1 . useSuccinct
+    useSucc <- asks . view $ _1 . buildGraph
     -- let useSucc = True
     env'' <- if useSucc then addSuccinctSymbol x (Monotype tDef) env' else return env'
     pBody <- inContext (\p -> Program (PLet x pDef p) t) $ reconstructI (addVariable x tDef env'') t iBody
@@ -216,7 +216,7 @@ reconstructCase env scrVar pScrutinee t (Case consName args iBody) consT = cut $
   consT' <- runInSolver $ currentAssignment consT
   (syms, ass) <- caseSymbols env scrVar args consT'
   let env' = foldr (uncurry addVariable) (addAssumption ass env) syms
-  useSucc <- asks . view $ _1 . useSuccinct
+  useSucc <- asks . view $ _1 . buildGraph
   -- let useSucc = True
   caseEnv <- if useSucc then foldM (\e (name,ty)-> addSuccinctSymbol name (Monotype ty) e) env' syms else return env'
   pCaseExpr <- local (over (_1 . matchDepth) (-1 +)) $
