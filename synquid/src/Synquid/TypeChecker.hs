@@ -57,10 +57,12 @@ reconstructTopLevel (Goal funName env (Monotype typ@(FunctionT _ _ _)) impl dept
       -- env'' <- foldM (\e (f, t) -> addSuccinctSymbol f (typeGeneralized . predGeneralized . Monotype $ t) e) env' recCalls
       useSucc <- asks . view $ _1 . buildGraph
       -- let useSucc = True
-      envAll <- if useSucc then foldM (\e (f, t) -> addSuccinctSymbol f t e) env' (Map.toList (allSymbols env')) else return env'
-      envGoal <- if useSucc then addSuccinctSymbol "__goal__" (Monotype (lastType typ)) envAll else return envAll
+      tass <- use (typingState . typeAssignment)
+      -- let typ' = typeSubstitute tass typ
+      envGoal <- if useSucc then addSuccinctSymbol "__goal__" (Monotype (typ)) env' else return env'
+      envAll <- if useSucc then foldM (\e (f, t) -> addSuccinctSymbol f t e) envGoal (Map.toList (allSymbols envGoal)) else return envGoal
       let ctx = \p -> if null recCalls then p else Program (PFix (map fst recCalls) p) typ'
-      p <- inContext ctx  $ reconstructI envGoal typ' impl
+      p <- inContext ctx  $ reconstructI envAll typ' impl
       return $ ctx p 
 
     -- | 'recursiveCalls' @t@: name-type pairs for recursive calls to a function with type @t@ (0 or 1)

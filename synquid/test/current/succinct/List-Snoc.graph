@@ -1,0 +1,185 @@
+digraph name{
+layout=dot;
+splines=true;
+margin="0.5,0.5";
+fontsize=16;
+dpi=250;
+concentrate=True;
+rankdir=BT;
+ratio=fill;
+size="8.5,11!";
+node  [style="rounded,filled,bold", shape=box, width=2, fontsize=20];
+edge [fontsize=20]
+"a"
+"{DSet*, | a, | }"
+"{DSet*, | a, | ,Emptyset}"
+"{DSet*, | a, | ,Insert}"
+"{DSet*, | a, | ,Singleton}"
+"{DSet*,List*, | a, | }"
+"{DSet*,List*, | a, | ,Emptyset}"
+"{DSet*,List*, | a, | ,Emptyset,Cons}"
+"{DSet*,List*, | a, | ,Insert}"
+"{DSet*,List*, | a, | ,Insert,Cons}"
+"{DSet*,List*, | a, | ,Insert,Nil}"
+"{DSet*,List*, | a, | ,Singleton}"
+"{DSet*,List*, | a, | ,Singleton,Cons}"
+"{DSet*,List*, | a, | ,Singleton,Nil}"
+"{DSet*,List*, | a, | ,Cons}"
+"{DSet*,List*, | a, | ,Nil}"
+"{List*, | a, | }"
+"{List*, | a, | ,Cons}"
+"{List*, | a, | ,Nil}"
+"{a,{DSet*, | a, | },}"
+"{a,{List*, | a, | },}"
+"{{DSet*, | a, | },{DSet*,List*, | a, | },}"
+"{{DSet*,List*, | a, | },{List*, | a, | },}"
+""
+""
+""
+""
+""
+""
+"{DSet*,List*, | a, | ,Emptyset,Cons}" -> "{DSet*,List*, | a, | ,Insert}" [label = ",Insert_match_1"];
+"{DSet*,List*, | a, | ,Emptyset,Cons}" -> "{{DSet*, | a, | },{DSet*,List*, | a, | },}" [label = ",Cons,snoc"];
+"{DSet*,List*, | a, | ,Emptyset,Cons}" -> "{DSet*,List*, | a, | }" [label = ",Cons,snoc"];
+"{DSet*,List*, | a, | ,Emptyset,Cons}" -> "{DSet*,List*, | a, | ,Insert,Cons}" [label = ",Insert_match_0"];
+"{DSet*,List*, | a, | ,Emptyset,Cons}" -> "{DSet*,List*, | a, | ,Singleton,Cons}" [label = ",Singleton_match_0"];
+"{DSet*,List*, | a, | ,Emptyset,Cons}" -> "{DSet*,List*, | a, | ,Cons}" [label = ",Cons_match_1"];
+"{DSet*,List*, | a, | ,Emptyset,Cons}" -> "" [label = ",Emptyset"];
+"{DSet*,List*, | a, | ,Emptyset,Cons}" -> "{DSet*,List*, | a, | ,Emptyset,Cons}" [label = ",Cons_match_0"];
+"{a,{DSet*, | a, | },}" -> "a" [label = ","];
+"{a,{DSet*, | a, | },}" -> "{DSet*, | a, | }" [label = ","];
+"{DSet*,List*, | a, | ,Emptyset}" -> "{DSet*,List*, | a, | ,Insert}" [label = ",Insert_match_0,Insert_match_1"];
+"{DSet*,List*, | a, | ,Emptyset}" -> "{DSet*,List*, | a, | ,Singleton}" [label = ",Singleton_match_0"];
+"{DSet*,List*, | a, | ,Emptyset}" -> "{{DSet*, | a, | },{DSet*,List*, | a, | },}" [label = ",Cons,snoc"];
+"{DSet*,List*, | a, | ,Emptyset}" -> "{DSet*,List*, | a, | }" [label = ",Cons,snoc"];
+"{DSet*,List*, | a, | ,Emptyset}" -> "{DSet*,List*, | a, | ,Cons}" [label = ",Cons_match_1"];
+"{DSet*,List*, | a, | ,Emptyset}" -> "" [label = ",Nil"];
+"{DSet*,List*, | a, | ,Emptyset}" -> "" [label = ",Emptyset"];
+"{DSet*,List*, | a, | ,Emptyset}" -> "{DSet*,List*, | a, | ,Emptyset,Cons}" [label = ",Cons_match_0"];
+"{DSet*, | a, | ,Emptyset}" -> "{DSet*, | a, | ,Insert}" [label = ",Insert_match_0,Insert_match_1"];
+"{DSet*, | a, | ,Emptyset}" -> "{DSet*, | a, | ,Singleton}" [label = ",Singleton_match_0"];
+"{DSet*, | a, | ,Emptyset}" -> "" [label = ",Emptyset"];
+"{DSet*, | a, | ,Emptyset}" -> "{DSet*,List*, | a, | ,Emptyset,Cons}" [label = ",Cons_match_0"];
+"{DSet*,List*, | a, | ,Singleton,Nil}" -> "{List*, | a, | }" [label = ",Singleton"];
+"{DSet*,List*, | a, | ,Singleton,Nil}" -> "{DSet*,List*, | a, | ,Insert}" [label = ",Insert_match_1"];
+"{DSet*,List*, | a, | ,Singleton,Nil}" -> "{{DSet*, | a, | },{DSet*,List*, | a, | },}" [label = ",snoc"];
+"{DSet*,List*, | a, | ,Singleton,Nil}" -> "{DSet*,List*, | a, | }" [label = ",Singleton,snoc"];
+"{DSet*,List*, | a, | ,Singleton,Nil}" -> "{DSet*,List*, | a, | ,Singleton,Cons}" [label = ",Cons_match_0"];
+"{DSet*,List*, | a, | ,Singleton,Nil}" -> "{DSet*,List*, | a, | ,Cons}" [label = ",Cons_match_1"];
+"{DSet*,List*, | a, | ,Singleton,Nil}" -> "{DSet*,List*, | a, | ,Insert,Nil}" [label = ",Insert_match_0"];
+"{DSet*,List*, | a, | ,Singleton,Nil}" -> "" [label = ",Nil"];
+"{DSet*,List*, | a, | ,Singleton,Nil}" -> "{DSet*,List*, | a, | ,Singleton,Nil}" [label = ",Singleton_match_0"];
+"{DSet*, | a, | ,Singleton}" -> "a" [label = ",Singleton"];
+"{DSet*, | a, | ,Singleton}" -> "{DSet*, | a, | }" [label = ",Singleton"];
+"{DSet*, | a, | ,Singleton}" -> "{DSet*,List*, | a, | ,Singleton,Cons}" [label = ",Cons_match_0"];
+"{DSet*, | a, | ,Singleton}" -> "{DSet*, | a, | ,Insert}" [label = ",Insert_match_0,Insert_match_1"];
+"{DSet*, | a, | ,Singleton}" -> "{DSet*, | a, | ,Singleton}" [label = ",Singleton_match_0"];
+"{DSet*,List*, | a, | ,Nil}" -> "{List*, | a, | }" [label = ",Singleton"];
+"{DSet*,List*, | a, | ,Nil}" -> "{DSet*,List*, | a, | ,Insert}" [label = ",Insert_match_1"];
+"{DSet*,List*, | a, | ,Nil}" -> "{{DSet*, | a, | },{DSet*,List*, | a, | },}" [label = ",snoc"];
+"{DSet*,List*, | a, | ,Nil}" -> "{DSet*,List*, | a, | }" [label = ",Insert,Singleton,snoc"];
+"{DSet*,List*, | a, | ,Nil}" -> "{DSet*,List*, | a, | ,Cons}" [label = ",Cons_match_0,Cons_match_1"];
+"{DSet*,List*, | a, | ,Nil}" -> "{{DSet*,List*, | a, | },{List*, | a, | },}" [label = ",Insert"];
+"{DSet*,List*, | a, | ,Nil}" -> "{DSet*,List*, | a, | ,Insert,Nil}" [label = ",Insert_match_0"];
+"{DSet*,List*, | a, | ,Nil}" -> "" [label = ",Nil"];
+"{DSet*,List*, | a, | ,Nil}" -> "{DSet*,List*, | a, | ,Singleton,Nil}" [label = ",Singleton_match_0"];
+"{DSet*,List*, | a, | ,Nil}" -> "" [label = ",Emptyset"];
+"{DSet*,List*, | a, | ,Insert,Nil}" -> "{DSet*,List*, | a, | ,Insert}" [label = ",Insert_match_1"];
+"{DSet*,List*, | a, | ,Insert,Nil}" -> "{{DSet*, | a, | },{DSet*,List*, | a, | },}" [label = ",snoc"];
+"{DSet*,List*, | a, | ,Insert,Nil}" -> "{DSet*,List*, | a, | }" [label = ",Insert,snoc"];
+"{DSet*,List*, | a, | ,Insert,Nil}" -> "{DSet*,List*, | a, | ,Insert,Cons}" [label = ",Cons_match_0"];
+"{DSet*,List*, | a, | ,Insert,Nil}" -> "{DSet*,List*, | a, | ,Cons}" [label = ",Cons_match_1"];
+"{DSet*,List*, | a, | ,Insert,Nil}" -> "{{DSet*,List*, | a, | },{List*, | a, | },}" [label = ",Insert"];
+"{DSet*,List*, | a, | ,Insert,Nil}" -> "{DSet*,List*, | a, | ,Insert,Nil}" [label = ",Insert_match_0"];
+"{DSet*,List*, | a, | ,Insert,Nil}" -> "" [label = ",Nil"];
+"{DSet*,List*, | a, | ,Insert,Nil}" -> "{DSet*,List*, | a, | ,Singleton,Nil}" [label = ",Singleton_match_0"];
+"{DSet*, | a, | ,Insert}" -> "{DSet*, | a, | }" [label = ",Insert"];
+"{DSet*, | a, | ,Insert}" -> "{DSet*,List*, | a, | ,Insert,Cons}" [label = ",Cons_match_0"];
+"{DSet*, | a, | ,Insert}" -> "{DSet*, | a, | ,Insert}" [label = ",Insert_match_0,Insert_match_1"];
+"{DSet*, | a, | ,Insert}" -> "{DSet*, | a, | ,Singleton}" [label = ",Singleton_match_0"];
+"{DSet*, | a, | ,Insert}" -> "{a,{DSet*, | a, | },}" [label = ",Insert"];
+"{{DSet*,List*, | a, | },{List*, | a, | },}" -> "{List*, | a, | }" [label = ","];
+"{{DSet*,List*, | a, | },{List*, | a, | },}" -> "{DSet*,List*, | a, | }" [label = ","];
+"{DSet*,List*, | a, | ,Cons}" -> "{List*, | a, | }" [label = ",Singleton"];
+"{DSet*,List*, | a, | ,Cons}" -> "{DSet*,List*, | a, | ,Insert}" [label = ",Insert_match_1"];
+"{DSet*,List*, | a, | ,Cons}" -> "{{DSet*, | a, | },{DSet*,List*, | a, | },}" [label = ",Cons,snoc"];
+"{DSet*,List*, | a, | ,Cons}" -> "{DSet*,List*, | a, | }" [label = ",Cons,Insert,Singleton,snoc"];
+"{DSet*,List*, | a, | ,Cons}" -> "{DSet*,List*, | a, | ,Insert,Cons}" [label = ",Insert_match_0"];
+"{DSet*,List*, | a, | ,Cons}" -> "{DSet*,List*, | a, | ,Singleton,Cons}" [label = ",Singleton_match_0"];
+"{DSet*,List*, | a, | ,Cons}" -> "{DSet*,List*, | a, | ,Cons}" [label = ",Cons_match_0,Cons_match_1"];
+"{DSet*,List*, | a, | ,Cons}" -> "{{DSet*,List*, | a, | },{List*, | a, | },}" [label = ",Insert"];
+"{DSet*,List*, | a, | ,Cons}" -> "" [label = ",Emptyset"];
+"{DSet*,List*, | a, | ,Singleton,Cons}" -> "{List*, | a, | }" [label = ",Singleton"];
+"{DSet*,List*, | a, | ,Singleton,Cons}" -> "{DSet*,List*, | a, | ,Insert}" [label = ",Insert_match_1"];
+"{DSet*,List*, | a, | ,Singleton,Cons}" -> "{{DSet*, | a, | },{DSet*,List*, | a, | },}" [label = ",Cons,snoc"];
+"{DSet*,List*, | a, | ,Singleton,Cons}" -> "{DSet*,List*, | a, | }" [label = ",Cons,Singleton,snoc"];
+"{DSet*,List*, | a, | ,Singleton,Cons}" -> "{DSet*,List*, | a, | ,Insert,Cons}" [label = ",Insert_match_0"];
+"{DSet*,List*, | a, | ,Singleton,Cons}" -> "{DSet*,List*, | a, | ,Singleton,Cons}" [label = ",Cons_match_0,Singleton_match_0"];
+"{DSet*,List*, | a, | ,Singleton,Cons}" -> "{DSet*,List*, | a, | ,Cons}" [label = ",Cons_match_1"];
+"{DSet*,List*, | a, | ,Insert,Cons}" -> "{DSet*,List*, | a, | ,Insert}" [label = ",Insert_match_1"];
+"{DSet*,List*, | a, | ,Insert,Cons}" -> "{{DSet*, | a, | },{DSet*,List*, | a, | },}" [label = ",Cons,snoc"];
+"{DSet*,List*, | a, | ,Insert,Cons}" -> "{DSet*,List*, | a, | }" [label = ",Cons,Insert,snoc"];
+"{DSet*,List*, | a, | ,Insert,Cons}" -> "{DSet*,List*, | a, | ,Insert,Cons}" [label = ",Cons_match_0,Insert_match_0"];
+"{DSet*,List*, | a, | ,Insert,Cons}" -> "{DSet*,List*, | a, | ,Singleton,Cons}" [label = ",Singleton_match_0"];
+"{DSet*,List*, | a, | ,Insert,Cons}" -> "{DSet*,List*, | a, | ,Cons}" [label = ",Cons_match_1"];
+"{DSet*,List*, | a, | ,Insert,Cons}" -> "{{DSet*,List*, | a, | },{List*, | a, | },}" [label = ",Insert"];
+"{DSet*,List*, | a, | }" -> "{List*, | a, | }" [label = ",Singleton"];
+"{DSet*,List*, | a, | }" -> "{DSet*,List*, | a, | ,Insert}" [label = ",Insert_match_0,Insert_match_1"];
+"{DSet*,List*, | a, | }" -> "{DSet*,List*, | a, | ,Singleton}" [label = ",Singleton_match_0"];
+"{DSet*,List*, | a, | }" -> "{{DSet*, | a, | },{DSet*,List*, | a, | },}" [label = ",Cons,snoc"];
+"{DSet*,List*, | a, | }" -> "{DSet*,List*, | a, | }" [label = ",Cons,Insert,Singleton,snoc"];
+"{DSet*,List*, | a, | }" -> "{DSet*,List*, | a, | ,Cons}" [label = ",Cons_match_0,Cons_match_1"];
+"{DSet*,List*, | a, | }" -> "{{DSet*,List*, | a, | },{List*, | a, | },}" [label = ",Insert"];
+"{DSet*,List*, | a, | }" -> "" [label = ",Nil"];
+"{DSet*,List*, | a, | }" -> "" [label = ",Emptyset"];
+"{DSet*, | a, | }" -> "a" [label = ",Singleton"];
+"{DSet*, | a, | }" -> "{DSet*, | a, | }" [label = ",Insert,Singleton"];
+"{DSet*, | a, | }" -> "{DSet*,List*, | a, | ,Cons}" [label = ",Cons_match_0"];
+"{DSet*, | a, | }" -> "{DSet*, | a, | ,Insert}" [label = ",Insert_match_0,Insert_match_1"];
+"{DSet*, | a, | }" -> "{DSet*, | a, | ,Singleton}" [label = ",Singleton_match_0"];
+"{DSet*, | a, | }" -> "" [label = ",Emptyset"];
+"{DSet*, | a, | }" -> "{a,{DSet*, | a, | },}" [label = ",Insert"];
+"{{DSet*, | a, | },{DSet*,List*, | a, | },}" -> "{DSet*, | a, | }" [label = ","];
+"{{DSet*, | a, | },{DSet*,List*, | a, | },}" -> "{DSet*,List*, | a, | }" [label = ","];
+"{DSet*,List*, | a, | ,Singleton}" -> "{List*, | a, | }" [label = ",Singleton"];
+"{DSet*,List*, | a, | ,Singleton}" -> "{DSet*,List*, | a, | ,Insert}" [label = ",Insert_match_0,Insert_match_1"];
+"{DSet*,List*, | a, | ,Singleton}" -> "{DSet*,List*, | a, | ,Singleton}" [label = ",Singleton_match_0"];
+"{DSet*,List*, | a, | ,Singleton}" -> "{{DSet*, | a, | },{DSet*,List*, | a, | },}" [label = ",Cons,snoc"];
+"{DSet*,List*, | a, | ,Singleton}" -> "{DSet*,List*, | a, | }" [label = ",Cons,Singleton,snoc"];
+"{DSet*,List*, | a, | ,Singleton}" -> "{DSet*,List*, | a, | ,Singleton,Cons}" [label = ",Cons_match_0"];
+"{DSet*,List*, | a, | ,Singleton}" -> "{DSet*,List*, | a, | ,Cons}" [label = ",Cons_match_1"];
+"{DSet*,List*, | a, | ,Singleton}" -> "" [label = ",Nil"];
+"{List*, | a, | ,Nil}" -> "{List*, | a, | }" [label = ",snoc"];
+"{List*, | a, | ,Nil}" -> "{a,{List*, | a, | },}" [label = ",snoc"];
+"{List*, | a, | ,Nil}" -> "{List*, | a, | ,Cons}" [label = ",Cons_match_0,Cons_match_1"];
+"{List*, | a, | ,Nil}" -> "" [label = ",Nil"];
+"{List*, | a, | ,Nil}" -> "{DSet*,List*, | a, | ,Insert,Nil}" [label = ",Insert_match_0"];
+"{List*, | a, | ,Nil}" -> "{DSet*,List*, | a, | ,Singleton,Nil}" [label = ",Singleton_match_0"];
+"{DSet*,List*, | a, | ,Insert}" -> "{DSet*,List*, | a, | ,Insert}" [label = ",Insert_match_0,Insert_match_1"];
+"{DSet*,List*, | a, | ,Insert}" -> "{DSet*,List*, | a, | ,Singleton}" [label = ",Singleton_match_0"];
+"{DSet*,List*, | a, | ,Insert}" -> "{{DSet*, | a, | },{DSet*,List*, | a, | },}" [label = ",Cons,snoc"];
+"{DSet*,List*, | a, | ,Insert}" -> "{DSet*,List*, | a, | }" [label = ",Cons,Insert,snoc"];
+"{DSet*,List*, | a, | ,Insert}" -> "{DSet*,List*, | a, | ,Insert,Cons}" [label = ",Cons_match_0"];
+"{DSet*,List*, | a, | ,Insert}" -> "{DSet*,List*, | a, | ,Cons}" [label = ",Cons_match_1"];
+"{DSet*,List*, | a, | ,Insert}" -> "{{DSet*,List*, | a, | },{List*, | a, | },}" [label = ",Insert"];
+"{DSet*,List*, | a, | ,Insert}" -> "" [label = ",Nil"];
+"{List*, | a, | ,Cons}" -> "{List*, | a, | }" [label = ",Cons,snoc"];
+"{List*, | a, | ,Cons}" -> "{a,{List*, | a, | },}" [label = ",Cons,snoc"];
+"{List*, | a, | ,Cons}" -> "{List*, | a, | ,Cons}" [label = ",Cons_match_0,Cons_match_1"];
+"{List*, | a, | ,Cons}" -> "{DSet*,List*, | a, | ,Insert,Cons}" [label = ",Insert_match_0"];
+"{List*, | a, | ,Cons}" -> "{DSet*,List*, | a, | ,Singleton,Cons}" [label = ",Singleton_match_0"];
+"a" -> "{List*, | a, | ,Cons}" [label = ",Cons_match_0"];
+"a" -> "{DSet*, | a, | ,Insert}" [label = ",Insert_match_0"];
+"a" -> "{DSet*, | a, | ,Singleton}" [label = ",Singleton_match_0"];
+"a" -> "" [label = ",x"];
+"{a,{List*, | a, | },}" -> "{List*, | a, | }" [label = ","];
+"{a,{List*, | a, | },}" -> "a" [label = ","];
+"{List*, | a, | }" -> "" [label = ",__goal__,xs"];
+"{List*, | a, | }" -> "{List*, | a, | }" [label = ",Cons,snoc"];
+"{List*, | a, | }" -> "{a,{List*, | a, | },}" [label = ",Cons,snoc"];
+"{List*, | a, | }" -> "{List*, | a, | ,Cons}" [label = ",Cons_match_0,Cons_match_1"];
+"{List*, | a, | }" -> "{DSet*,List*, | a, | ,Insert}" [label = ",Insert_match_0"];
+"{List*, | a, | }" -> "" [label = ",Nil"];
+"{List*, | a, | }" -> "{DSet*,List*, | a, | ,Singleton}" [label = ",Singleton_match_0"];
+}
