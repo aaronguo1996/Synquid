@@ -1,0 +1,34 @@
+digraph name{
+layout=dot;
+splines=true;
+margin="0.5,0.5";
+fontsize=16;
+dpi=250;
+concentrate=True;
+rankdir=BT;
+ratio=fill;
+size="8.5,11!";
+node  [style="rounded,filled,bold", shape=box, width=2, fontsize=20];
+edge [fontsize=20]
+"{MinPair*, | a,}" [label = "{MinPair*, | a,}",fillcolor="#ffffff", style=filled, fontname="Segeo UI",fontsize=20;];
+"{BST_node*,MinPair*, | a,}" [label = "{BST_node*,MinPair*, | a,}",fillcolor="#b2df8a", style=filled, fontname="Segeo UI",fontsize=20;];
+"{BST*, | a,}" [label = "{BST*, | a,}",fillcolor="#b2df8a", style=filled, fontname="Segeo UI",fontsize=20;];
+"{BST*,BST_node*, | a,}" [label = "{BST*,BST_node*, | a,}",fillcolor="#b2df8a", style=filled, fontname="Segeo UI",fontsize=20;];
+"{BST_empty*,BST_node*, | a,}" [label = "{BST_empty*,BST_node*, | a,}",fillcolor="#b2df8a", style=filled, fontname="Segeo UI",fontsize=20;];
+done5[shape=circle,width=0.25,fillcolor="#33a02c", style=filled, label = "",fontname="Segeo UI",fontsize=20;];
+"{BST_empty*, | a,}" [label = "{BST_empty*, | a,}",fillcolor="#b2df8a", style=filled, fontname="Segeo UI",fontsize=20;];
+done7[shape=circle,width=0.25,fillcolor="#33a02c", style=filled, label = "",fontname="Segeo UI",fontsize=20;];
+"{MinPair*, | a,}" -> "{BST*, | a,}" [label = "extractMin", fontname="Segeo UI",fontsize=20;];
+"{MinPair*, | a,}" -> "{BST_node*,MinPair*, | a,}" [label = "Node_v", fontname="Segeo UI",fontsize=20;];
+"{BST_node*,MinPair*, | a,}" -> "{BST*,BST_node*, | a,}" [label = "extractMin", fontname="Segeo UI",fontsize=20;];
+"{BST_node*,MinPair*, | a,}" -> "{BST_node*,MinPair*, | a,}" [label = "Node_v", fontname="Segeo UI",fontsize=20;];
+"{BST*, | a,}" -> done7 [label = "t", fontname="Segeo UI",fontsize=20;];
+"{BST*, | a,}" -> "{BST_empty*, | a,}" [label = "EmptyToBST", fontname="Segeo UI",fontsize=20;];
+"{BST*, | a,}" -> "{BST*,BST_node*, | a,}" [label = "Node_v", fontname="Segeo UI",fontsize=20;];
+"{BST*,BST_node*, | a,}" -> "{BST_empty*,BST_node*, | a,}" [label = "EmptyToBST", fontname="Segeo UI",fontsize=20;];
+"{BST*,BST_node*, | a,}" -> "{BST*,BST_node*, | a,}" [label = "Node_v", fontname="Segeo UI",fontsize=20;];
+"{BST_empty*,BST_node*, | a,}" -> "{BST_empty*,BST_node*, | a,}" [label = "Node_v", fontname="Segeo UI",fontsize=20;];
+"{BST_empty*,BST_node*, | a,}" -> done5 [label = "Empty", fontname="Segeo UI",fontsize=20;];
+"{BST_empty*, | a,}" -> "{BST_empty*,BST_node*, | a,}" [label = "Node_v", fontname="Segeo UI",fontsize=20;];
+"{BST_empty*, | a,}" -> done5 [label = "Empty", fontname="Segeo UI",fontsize=20;];
+}

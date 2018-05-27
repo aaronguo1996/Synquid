@@ -1,0 +1,41 @@
+digraph name{
+layout=dot;
+splines=true;
+margin="0.5,0.5";
+fontsize=16;
+dpi=250;
+rankdir=BT;
+ratio=fill;
+size="8.5,11!";
+node  [style="rounded,filled,bold", shape=box, width=2, fontsize=24];
+edge [fontsize=24]
+"{MinPair*, | a,}" [label = "{MinPair*, | a,}",fillcolor="#ffffff", style=filled, fontname="Segeo UI",fontsize=20;];
+"{BST*,MinPair*, | a,}" [label = "{BST*,MinPair*, | a,}",fillcolor="#b2df8a", style=filled, fontname="Segeo UI",fontsize=20;];
+"{a,{BST*, | a,},}" [label = "{a,{BST*, | a,},}",fillcolor="#1f78b4", fontcolor="#ffffff",style=filled, fontname="Segeo UI",fontsize=20;];
+"{BST*, | a,}" [label = "{BST*, | a,}",fillcolor="#b2df8a", style=filled, fontname="Segeo UI",fontsize=20;];
+done4[shape=circle,width=0.25,fillcolor="#33a02c", style=filled, label = "",fontname="Segeo UI",fontsize=20;];
+"{{MinPair*, | a,},{BST*,MinPair*, | a,},}" [label = "{{MinPair*, | a,},{BST*,MinPair*, | a,},}",fillcolor="#1f78b4", fontcolor="#ffffff",style=filled, fontname="Segeo UI",fontsize=20;];
+"{{BST*, | a,},{BST*, | a,},}" [label = "{{BST*, | a,},{BST*, | a,},}",fillcolor="#1f78b4", fontcolor="#ffffff",style=filled, fontname="Segeo UI",fontsize=20;];
+"a" [label = "a",fillcolor="#a6cee3", style=filled, fontname="Segeo UI",fontsize=20;];
+done8[shape=circle,width=0.25,fillcolor="#33a02c", style=filled, label = "",fontname="Segeo UI",fontsize=20;];
+"{MinPair*, | a,}" -> "{BST*, | a,}" [label = "extractMin", fontname="Segeo UI",fontsize=20;];
+"{MinPair*, | a,}" -> "{a,{BST*, | a,},}" [label = "MinPair", fontname="Segeo UI",fontsize=20;];
+"{MinPair*, | a,}" -> "{BST*,MinPair*, | a,}" [label = "Node_v", fontname="Segeo UI",fontsize=20;];
+"{BST*,MinPair*, | a,}" -> "{BST*, | a,}" [label = "extractMin", fontname="Segeo UI",fontsize=20;];
+"{BST*,MinPair*, | a,}" -> "{{BST*, | a,},{BST*, | a,},}" [label = "MinPair", fontname="Segeo UI",fontsize=20;];
+"{BST*,MinPair*, | a,}" -> "{BST*,MinPair*, | a,}" [label = "Node_tree", fontname="Segeo UI",fontsize=20;];
+"{BST*,MinPair*, | a,}" -> "{BST*,MinPair*, | a,}" [label = "Node_v", fontname="Segeo UI",fontsize=20;];
+"{BST*,MinPair*, | a,}" -> "{{MinPair*, | a,},{BST*,MinPair*, | a,},}" [label = "Node", fontname="Segeo UI",fontsize=20;];
+"{BST*,MinPair*, | a,}" -> done4 [label = "Empty", fontname="Segeo UI",fontsize=20;];
+"{a,{BST*, | a,},}" -> "{BST*, | a,}" [label = "", fontname="Segeo UI",fontsize=20;];
+"{a,{BST*, | a,},}" -> "a" [label = "", fontname="Segeo UI",fontsize=20;];
+"{BST*, | a,}" -> done8 [label = "t", fontname="Segeo UI",fontsize=20;];
+"{BST*, | a,}" -> "{BST*, | a,}" [label = "Node_tree", fontname="Segeo UI",fontsize=20;];
+"{BST*, | a,}" -> "{BST*, | a,}" [label = "Node_v", fontname="Segeo UI",fontsize=20;];
+"{BST*, | a,}" -> "{a,{BST*, | a,},}" [label = "Node", fontname="Segeo UI",fontsize=20;];
+"{BST*, | a,}" -> done4 [label = "Empty", fontname="Segeo UI",fontsize=20;];
+"{{MinPair*, | a,},{BST*,MinPair*, | a,},}" -> "{BST*,MinPair*, | a,}" [label = "", fontname="Segeo UI",fontsize=20;];
+"{{MinPair*, | a,},{BST*,MinPair*, | a,},}" -> "{MinPair*, | a,}" [label = "", fontname="Segeo UI",fontsize=20;];
+"{{BST*, | a,},{BST*, | a,},}" -> "{BST*, | a,}" [label = "", fontname="Segeo UI",fontsize=20;];
+"a" -> "{BST*, | a,}" [label = "Node_v", fontname="Segeo UI",fontsize=20;];
+}

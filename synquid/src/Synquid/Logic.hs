@@ -19,8 +19,8 @@ import Control.Monad
 
 -- | Sorts
 data Sort = BoolS | IntS | VarS Id | DataS Id [Sort] | SetS Sort | AnyS
-  deriving (Show, Eq, Ord)
-
+  deriving (Eq, Ord)
+  
 isSetS (SetS _) = True
 isSetS _ = False
 elemSort (SetS s) = s
@@ -31,14 +31,14 @@ varSortName (VarS name) = name
 
 -- | 'typeVarsOfSort' @s@ : all type variables in @s@
 typeVarsOfSort :: Sort -> Set Id
-typeVarsOfSort (VarS name) = Set.singleton name
+typeVarsOfSort (VarS name) = Set.singleton name  
 typeVarsOfSort (DataS _ sArgs) = Set.unions (map typeVarsOfSort sArgs)
 typeVarsOfSort (SetS s) = typeVarsOfSort s
 typeVarsOfSort _ = Set.empty
 
 -- Mapping from type variables to sorts
 type SortSubstitution = Map Id Sort
-
+  
 sortSubstitute :: SortSubstitution -> Sort -> Sort
 sortSubstitute subst s@(VarS a) = case Map.lookup a subst of
   Just s' -> sortSubstitute subst s'
@@ -47,87 +47,88 @@ sortSubstitute subst (DataS name args) = DataS name (map (sortSubstitute subst) 
 sortSubstitute subst (SetS el) = SetS (sortSubstitute subst el)
 sortSubstitute _ s = s
 
-distinctTypeVars = map (\i -> "A" ++ show i) [0..]
+distinctTypeVars = map (\i -> "A" ++ show i) [0..] 
 
-noncaptureSortSubst :: [Id] -> [Sort] -> Sort -> Sort
-noncaptureSortSubst sVars sArgs s =
+noncaptureSortSubst :: [Id] -> [Sort] -> Sort -> Sort  
+noncaptureSortSubst sVars sArgs s = 
   let sFresh = sortSubstitute (Map.fromList $ zip sVars (map VarS distinctTypeVars)) s
   in sortSubstitute (Map.fromList $ zip distinctTypeVars sArgs) sFresh
-
+  
 unifySorts :: Set Id -> [Sort] -> [Sort] -> Either (Sort, Sort) SortSubstitution
 unifySorts boundTvs = unifySorts' Map.empty
   where
-    unifySorts' subst [] []
+    unifySorts' subst [] []                                 
       = Right subst
-    unifySorts' subst (x : xs) (y : ys) | x == y
+    unifySorts' subst (x : xs) (y : ys) | x == y 
       = unifySorts' subst xs ys
-    unifySorts' subst (SetS x : xs) (SetS y : ys)
+    unifySorts' subst (SetS x : xs) (SetS y : ys)           
       = unifySorts' subst (x:xs) (y:ys)
-    unifySorts' subst (DataS name args : xs) (DataS name' args' :ys)
-      = if name == name'
-          then unifySorts' subst (args ++ xs) (args' ++ ys)
+    unifySorts' subst (DataS name args : xs) (DataS name' args' :ys) 
+      = if name == name' 
+          then unifySorts' subst (args ++ xs) (args' ++ ys) 
           else Left (DataS name [], DataS name' [])
     unifySorts' subst (AnyS : xs) (_ : ys) = unifySorts' subst xs ys
     unifySorts' subst (_ : xs) (AnyS : ys) = unifySorts' subst xs ys
-    unifySorts' subst (VarS x : xs) (y : ys)
+    unifySorts' subst (VarS x : xs) (y : ys)                 
       | not (Set.member x boundTvs)
       = case Map.lookup x subst of
             Just s -> unifySorts' subst (s : xs) (y : ys)
             Nothing -> if x `Set.member` typeVarsOfSort y
-              then Left (VarS x, y)
+              then Left (VarS x, y) 
               else unifySorts' (Map.insert x y subst) xs ys
     unifySorts' subst (x : xs) (VarS y : ys)
       | not (Set.member y boundTvs)
       = unifySorts' subst (VarS y : ys) (x:xs)
-    unifySorts' subst (x: _) (y: _)
+    unifySorts' subst (x: _) (y: _)                 
       = Left (x, y)
-
+      
 -- | Constraints generated during formula resolution
 data SortConstraint = SameSort Sort Sort  -- Two sorts must be the same
   | IsOrd Sort                            -- Sort must have comparisons
-
--- | Predicate signature: name and argument sorts
+  
+-- | Predicate signature: name and argument sorts  
 data PredSig = PredSig {
   predSigName :: Id,
   predSigArgSorts :: [Sort],
   predSigResSort :: Sort
-} deriving (Show, Eq, Ord)
+} deriving (Eq, Ord)  
 
 {- Formulas of the refinement logic -}
 
 -- | Unary operators
 data UnOp = Neg | Not
-  deriving (Show, Eq, Ord)
+  deriving (Eq, Ord)
 
--- | Binary operators
-data BinOp =
-    Times | Plus | Minus |          -- ^ Int -> Int -> Int
+-- | Binary operators  
+data BinOp = 
+    Times | Plus | Minus |          -- ^ Int -> Int -> Int     
     Eq | Neq |                      -- ^ a -> a -> Bool
     Lt | Le | Gt | Ge |             -- ^ Int -> Int -> Bool
     And | Or | Implies | Iff |      -- ^ Bool -> Bool -> Bool
     Union | Intersect | Diff |      -- ^ Set -> Set -> Set
     Member | Subset                 -- ^ Int/Set -> Set -> Bool
-  deriving (Show, Eq, Ord)
-
--- | Variable substitution
+  deriving (Eq, Ord)
+  
+-- | Variable substitution  
 type Substitution = Map Id Formula
 
 -- | Formulas of the refinement logic
 data Formula =
-  BoolLit Bool |                      -- ^ Boolean literal
+  BoolLit Bool |                      -- ^ Boolean literal  
   IntLit Integer |                    -- ^ Integer literal
   SetLit Sort [Formula] |             -- ^ Set literal ([1, 2, 3])
+  SetComp Formula Formula |           -- ^ Set comprehension ([x | x > 3])
   Var Sort Id |                       -- ^ Input variable (universally quantified first-order variable)
   Unknown Substitution Id |           -- ^ Predicate unknown (with a pending substitution)
-  Unary UnOp Formula |                -- ^ Unary expression
+  Unary UnOp Formula |                -- ^ Unary expression  
   Binary BinOp Formula Formula |      -- ^ Binary expression
   Ite Formula Formula Formula |       -- ^ If-then-else expression
   Pred Sort Id [Formula] |            -- ^ Logic function application
   Cons Sort Id [Formula] |            -- ^ Constructor application
   All Formula Formula                 -- ^ Universal quantification
-  deriving (Show, Eq, Ord)
-
-dontCare = "_"
+  deriving (Eq, Ord)
+  
+dontCare = "_"  
 valueVarName = "_v"
 unknownName (Unknown _ name) = name
 varName (Var _ name) = name
@@ -137,7 +138,7 @@ isVar (Var _ _) = True
 isVar _ = False
 isCons (Cons _ _ _) = True
 isCons _ = False
-
+  
 ftrue = BoolLit True
 ffalse = BoolLit False
 boolVar = Var BoolS
@@ -146,8 +147,6 @@ intVar = Var IntS
 valInt = intVar valueVarName
 vartVar n = Var (VarS n)
 valVart n = vartVar n valueVarName
-setVar s = Var (SetS (VarS s))
-valSet s = setVar s valueVarName
 fneg = Unary Neg
 fnot = Unary Not
 (|*|) = Binary Times
@@ -164,8 +163,8 @@ fnot = Unary Not
 (|=>|) = Binary Implies
 (|<=>|) = Binary Iff
 
-andClean l r = if l == ftrue then r else (if r == ftrue then l else (if l == ffalse || r == ffalse then ffalse else l |&| r))
-orClean l r = if l == ffalse then r else (if r == ffalse then l else (if l == ftrue || r == ftrue then ftrue else l ||| r))
+andClean l r = if l == ftrue then r else (if r == ftrue then l else (if l == ffalse || r == ffalse then ffalse else l |&| r))    
+orClean l r = if l == ffalse then r else (if r == ffalse then l else (if l == ftrue || r == ftrue then ftrue else l ||| r))    
 conjunction fmls = foldr andClean ftrue (Set.toList fmls)
 disjunction fmls = foldr orClean ffalse (Set.toList fmls)
 
@@ -181,10 +180,11 @@ infixl 7 |=|, |/=|, |<|, |<=|, |>|, |>=|, /<=/
 infixl 6 |&|, |||
 infixr 5 |=>|
 infix 4 |<=>|
-
+  
 -- | 'varsOf' @fml@ : set of all input variables of @fml@
 varsOf :: Formula -> Set Formula
 varsOf (SetLit _ elems) = Set.unions $ map varsOf elems
+varsOf (SetComp x e) = Set.delete x (varsOf e)
 varsOf v@(Var _ _) = Set.singleton v
 varsOf (Unary _ e) = varsOf e
 varsOf (Binary _ e1 e2) = varsOf e1 `Set.union` varsOf e2
@@ -196,6 +196,7 @@ varsOf _ = Set.empty
 
 -- | 'unknownsOf' @fml@ : set of all predicate unknowns of @fml@
 unknownsOf :: Formula -> Set Formula
+unknownsOf (SetComp _ e) = unknownsOf e
 unknownsOf u@(Unknown _ _) = Set.singleton u
 unknownsOf (Unary Not e) = unknownsOf e
 unknownsOf (Binary _ e1 e2) = unknownsOf e1 `Set.union` unknownsOf e2
@@ -233,6 +234,7 @@ negPreds = snd . posNegPreds
 predsOf :: Formula -> Set Id
 predsOf (Pred _ p es) = Set.insert p (Set.unions $ map predsOf es)
 predsOf (SetLit _ elems) = Set.unions $ map predsOf elems
+predsOf (SetComp _ e) = predsOf e
 predsOf (Unary _ e) = predsOf e
 predsOf (Binary _ e1 e2) = predsOf e1 `Set.union` predsOf e2
 predsOf (Ite e0 e1 e2) = predsOf e0 `Set.union` predsOf e1 `Set.union` predsOf e2
@@ -252,6 +254,7 @@ sortOf :: Formula -> Sort
 sortOf (BoolLit _)                               = BoolS
 sortOf (IntLit _)                                = IntS
 sortOf (SetLit s _)                              = SetS s
+sortOf (SetComp (Var s _) _)                     = SetS s
 sortOf (Var s _ )                                = s
 sortOf (Unknown _ _)                             = BoolS
 sortOf (Unary op _)
@@ -268,59 +271,64 @@ sortOf (All _ _)                                 = BoolS
 
 isExecutable :: Formula -> Bool
 isExecutable (SetLit _ _) = False
+isExecutable (SetComp _ _) = False
 isExecutable (Unary _ e) = isExecutable e
 isExecutable (Binary _ e1 e2) = isExecutable e1 && isExecutable e2
 isExecutable (Ite e0 e1 e2) = False
 isExecutable (Pred _ _ _) = False
 isExecutable (All _ _) = False
 isExecutable _ = True
-
+  
 -- | 'substitute' @subst fml@: Replace first-order variables in @fml@ according to @subst@
 substitute :: Substitution -> Formula -> Formula
 substitute subst fml = case fml of
   SetLit b elems -> SetLit b $ map (substitute subst) elems
+  SetComp v@(Var _ x) e -> if x `Map.member` subst
+                            then error $ unwords ["Scoped variable of the set comprehension clashes with substitution variable", x]
+                            else SetComp v (substitute subst e) 
   Var s name -> case Map.lookup name subst of
     Just f -> f
     Nothing -> fml
-  Unknown s name -> Unknown (s `composeSubstitutions` subst) name
+  Unknown s name -> Unknown (s `composeSubstitutions` subst) name 
   Unary op e -> Unary op (substitute subst e)
   Binary op e1 e2 -> Binary op (substitute subst e1) (substitute subst e2)
   Ite e0 e1 e2 -> Ite (substitute subst e0) (substitute subst e1) (substitute subst e2)
   Pred b name args -> Pred b name $ map (substitute subst) args
-  Cons b name args -> Cons b name $ map (substitute subst) args
+  Cons b name args -> Cons b name $ map (substitute subst) args  
   All v@(Var _ x) e -> if x `Map.member` subst
                             then error $ unwords ["Scoped variable clashes with substitution variable", x]
                             else All v (substitute subst e)
   otherwise -> fml
 
 -- | Compose substitutions
-composeSubstitutions old new =
+composeSubstitutions old new = 
   let new' = removeId new
   in Map.map (substitute new') old `Map.union` new'
   where
     -- | Remove identity substitutions
     removeId = Map.filterWithKey (\x fml -> not $ isVar fml && varName fml == x)
-
-deBrujns = map (\i -> dontCare ++ show i) [0..]
+                  
+deBrujns = map (\i -> dontCare ++ show i) [0..] 
 
 sortSubstituteFml :: SortSubstitution -> Formula -> Formula
-sortSubstituteFml subst fml = case fml of
+sortSubstituteFml subst fml = case fml of 
   SetLit el es -> SetLit (sortSubstitute subst el) (map (sortSubstituteFml subst) es)
+  SetComp x e -> SetComp (sortSubstituteFml subst x) (sortSubstituteFml subst e)
   Var s name -> Var (sortSubstitute subst s) name
   Unknown s name -> Unknown (Map.map (sortSubstituteFml subst) s) name
   Unary op e -> Unary op (sortSubstituteFml subst e)
   Binary op l r -> Binary op (sortSubstituteFml subst l) (sortSubstituteFml subst r)
   Ite c l r -> Ite (sortSubstituteFml subst c) (sortSubstituteFml subst l) (sortSubstituteFml subst r)
   Pred s name es -> Pred (sortSubstitute subst s) name (map (sortSubstituteFml subst) es)
-  Cons s name es -> Cons (sortSubstitute subst s) name (map (sortSubstituteFml subst) es)
+  Cons s name es -> Cons (sortSubstitute subst s) name (map (sortSubstituteFml subst) es)  
   All x e -> All (sortSubstituteFml subst x) (sortSubstituteFml subst e)
   _ -> fml
-
-noncaptureSortSubstFml :: [Id] -> [Sort] -> Formula -> Formula
-noncaptureSortSubstFml sVars sArgs fml =
+  
+noncaptureSortSubstFml :: [Id] -> [Sort] -> Formula -> Formula  
+noncaptureSortSubstFml sVars sArgs fml = 
   let fmlFresh = sortSubstituteFml (Map.fromList $ zip sVars (map VarS distinctTypeVars)) fml
-  in sortSubstituteFml (Map.fromList $ zip distinctTypeVars sArgs) fmlFresh
-
+  in sortSubstituteFml (Map.fromList $ zip distinctTypeVars sArgs) fmlFresh  
+                  
 substitutePredicate :: Substitution -> Formula -> Formula
 substitutePredicate pSubst fml = case fml of
   Pred b name args -> case Map.lookup name pSubst of
@@ -330,8 +338,9 @@ substitutePredicate pSubst fml = case fml of
   Binary op e1 e2 -> Binary op (substitutePredicate pSubst e1) (substitutePredicate pSubst e2)
   Ite e0 e1 e2 -> Ite (substitutePredicate pSubst e0) (substitutePredicate pSubst e1) (substitutePredicate pSubst e2)
   All v e -> All v (substitutePredicate pSubst e)
+  SetComp x e -> SetComp x (substitutePredicate pSubst e)
   _ -> fml
-
+  
 -- | Negation normal form of a formula:
 -- no negation above boolean connectives, no boolean connectives except @&&@ and @||@
 negationNF :: Formula -> Formula
@@ -345,7 +354,7 @@ negationNF fml = case fml of
     _ -> fml
   Binary Implies e1 e2 -> negationNF (fnot e1) ||| negationNF e2
   Binary Iff e1 e2 -> (negationNF e1 |&| negationNF e2) ||| (negationNF (fnot e1) |&| negationNF (fnot e2))
-  Binary op e1 e2
+  Binary op e1 e2 
     | op == And || op == Or -> Binary op (negationNF e1) (negationNF e2)
     | otherwise -> fml
   Ite cond e1 e2 -> (negationNF cond |&| negationNF e1) ||| (negationNF (fnot cond) |&| negationNF e2)
@@ -355,64 +364,90 @@ negationNF fml = case fml of
 uDNF :: Formula -> [Formula]
 uDNF = dnf' . negationNF
   where
-    dnf' e@(Binary Or e1 e2) = if (Set.null $ unknownsOf e1) && (Set.null $ unknownsOf e2)
+    dnf' e@(Binary Or e1 e2) = if (Set.null $ unknownsOf e1) && (Set.null $ unknownsOf e2) 
                                 then return e
                                 else dnf' e1 ++ dnf' e2
     dnf' (Binary And e1 e2) = do
                                 lClause <- dnf' e1
                                 rClause <- dnf' e2
                                 return $ lClause |&| rClause
-    dnf' fml = [fml]
-
+    dnf' fml 
+      | hasComp fml && not (Set.null $ unknownsOf fml) =
+          error "Encountered second-order unknown in set comprehension"
+      | otherwise = [fml]
+    
 atomsOf fml = atomsOf' (negationNF fml)
   where
     atomsOf' (Binary And l r) = atomsOf' l `Set.union` atomsOf' r
     -- atomsOf' fml@(Binary Or l r) = Set.insert fml (atomsOf' l `Set.union` atomsOf' r)
     atomsOf' (Binary Or l r) = atomsOf' l `Set.union` atomsOf' r
     atomsOf' fml = Set.singleton fml
-
+    
 splitByPredicate :: Set Id -> Formula -> [Formula] -> Maybe (Map Id (Set Formula))
 splitByPredicate preds arg fmls = foldM (\m fml -> checkFml fml m fml) Map.empty fmls
   where
     checkFml _ _ fml | fml == arg   = Nothing
     checkFml whole m fml = case fml of
-      Pred _ name args ->
-        if name `Set.member` preds && length args == 1 && head args == arg
+      Pred _ name args -> 
+        if name `Set.member` preds && length args == 1 && head args == arg 
           then return $ Map.insertWith Set.union name (Set.singleton whole) m
           else foldM (checkFml whole) m args
       SetLit _ args -> foldM (checkFml whole) m args
+      SetComp _ f -> checkFml whole m f
       Unary _ f -> checkFml whole m f
       Binary _ l r -> foldM (checkFml whole) m [l, r]
       Ite c t e -> foldM (checkFml whole) m [c, t, e]
       Cons _ _ args -> foldM (checkFml whole) m args
       _ -> return m
+      
+-- | Eliminate set comprehensions from a Boolean formula      
+eliminateComp :: Formula -> Formula
+eliminateComp (Binary Member x s) = setToPredicate x s
+eliminateComp (Binary Subset l r)
+  | hasComp l || hasComp r        = let scopedVar = Var (elemSort $ sortOf l) "_comp" in
+                                    All scopedVar (Binary Implies (setToPredicate scopedVar l) (setToPredicate scopedVar r))
+eliminateComp (Binary Eq l r) | 
+  isSetS (sortOf l) && (hasComp l || hasComp r) = let scopedVar = Var (elemSort $ sortOf l) "_comp" in
+                                                  All scopedVar (Binary Iff (setToPredicate scopedVar l) (setToPredicate scopedVar r))
+eliminateComp (Binary Neq l r) | 
+  isSetS (sortOf l) && (hasComp l || hasComp r) = error "Inequality on set comprehensions is not supported"
+eliminateComp (Binary op l r) |
+  op `elem` [And, Or, Implies, Iff]  = Binary op (eliminateComp l) (eliminateComp r)
+eliminateComp (Unary Not e) = Unary Not (eliminateComp e)
+eliminateComp fml = fml
 
+hasComp :: Formula -> Bool
+hasComp (SetComp _ _) = True
+hasComp (Binary op l r) = hasComp l || hasComp r
+hasComp (Ite _ l r) = hasComp l || hasComp r
+hasComp _ = False
 
 -- | 'setToPredicate' @x s@: predicate equivalent to @x in s@, which does not contain comprehensions
 setToPredicate :: Formula -> Formula -> Formula
+setToPredicate x (SetComp (Var _ y) e) = substitute (Map.singleton y x) e
 setToPredicate x (Binary Union sl sr) = Binary Or (setToPredicate x sl) (setToPredicate x sr)
 setToPredicate x (Binary Intersect sl sr) = Binary And (setToPredicate x sl) (setToPredicate x sr)
 setToPredicate x (Binary Diff sl sr) = Binary And (setToPredicate x sl) (Unary Not (setToPredicate x sr))
 setToPredicate x (Ite c t e) = Ite c (setToPredicate x t) (setToPredicate x e)
 setToPredicate x s = Binary Member x s
-
+      
 {- Qualifiers -}
 
 -- | Search space for valuations of a single unknown
 data QSpace = QSpace {
     _qualifiers :: [Formula],         -- ^ Qualifiers
     _maxCount :: Int                  -- ^ Maximum number of qualifiers in a valuation
-  } deriving (Show, Eq, Ord)
+  } deriving (Eq, Ord)
 
-makeLenses ''QSpace
+makeLenses ''QSpace  
 
 emptyQSpace = QSpace [] 0
 
-toSpace mbN quals = let quals' = nub quals in
+toSpace mbN quals = let quals' = nub quals in 
   case mbN of
     Nothing -> QSpace quals' (length quals')
     Just n -> QSpace quals' n
-
+  
 -- | Mapping from unknowns to their search spaces
 type QMap = Map Id QSpace
 
@@ -421,23 +456,23 @@ lookupQuals :: QMap -> Getter QSpace a -> Formula -> a
 lookupQuals qmap g (Unknown _ u) = case Map.lookup u qmap of
   Just qs -> view g qs
   Nothing -> error $ unwords ["lookupQuals: missing qualifiers for unknown", u]
-
+  
 lookupQualsSubst :: QMap -> Formula -> [Formula]
 lookupQualsSubst qmap u@(Unknown s _) = concatMap go $ map (substitute s) (lookupQuals qmap qualifiers u)
   where
     go u@(Unknown _ _) = lookupQualsSubst qmap u
     go fml = [fml]
-
+    
 type ExtractAssumptions = Formula -> Set Formula
-
-{- Solutions -}
+  
+{- Solutions -}  
 
 -- | Valuation of a predicate unknown as a set of qualifiers
 type Valuation = Set Formula
 
 -- | Mapping from predicate unknowns to their valuations
 type Solution = Map Id Valuation
-
+  
 -- | 'topSolution' @qmap@ : top of the solution lattice (maps every unknown in the domain of @qmap@ to the empty set of qualifiers)
 topSolution :: QMap -> Solution
 topSolution qmap = constMap (Map.keysSet qmap) Set.empty
@@ -453,7 +488,7 @@ valuation sol (Unknown s u) = case Map.lookup u sol of
   Nothing -> error $ unwords ["valuation: no value for unknown", u]
 
 -- | 'applySolution' @sol fml@ : Substitute solutions from sol for all predicate variables in fml
-applySolution :: Solution -> Formula -> Formula
+applySolution :: Solution -> Formula -> Formula   
 applySolution sol fml = case fml of
   Unknown s ident -> case Map.lookup ident sol of
     Just quals -> substitute s $ conjunction quals
@@ -462,10 +497,11 @@ applySolution sol fml = case fml of
   Binary op e1 e2 -> Binary op (applySolution sol e1) (applySolution sol e2)
   Ite e0 e1 e2 -> Ite (applySolution sol e0) (applySolution sol e1) (applySolution sol e2)
   All x e -> All x (applySolution sol e)
+  SetComp x e -> SetComp x (applySolution sol e)
   otherwise -> fml
-
+      
 -- | 'merge' @sol sol'@ : element-wise conjunction of @sol@ and @sol'@
-merge :: Solution -> Solution -> Solution
+merge :: Solution -> Solution -> Solution      
 merge sol sol' = Map.unionWith Set.union sol sol'
 
 {- Solution Candidates -}
@@ -476,16 +512,17 @@ data Candidate = Candidate {
     validConstraints :: Set Formula,
     invalidConstraints :: Set Formula,
     label :: String
-  } deriving (Show)
-
-initialCandidate = Candidate Map.empty Set.empty Set.empty "0"
-
+  }
+  
+initialCandidate = Candidate Map.empty Set.empty Set.empty "0"  
+  
 instance Eq Candidate where
   (==) c1 c2 = Map.filter (not . Set.null) (solution c1) == Map.filter (not . Set.null) (solution c2) &&
                validConstraints c1 == validConstraints c2 &&
-               invalidConstraints c1 == invalidConstraints c2
+               invalidConstraints c1 == invalidConstraints c2 
 
 instance Ord Candidate where
   (<=) c1 c2 = Map.filter (not . Set.null) (solution c1) <= Map.filter (not . Set.null) (solution c2) &&
                validConstraints c1 <= validConstraints c2 &&
-               invalidConstraints c1 <= invalidConstraints c2
+               invalidConstraints c1 <= invalidConstraints c2 
+               

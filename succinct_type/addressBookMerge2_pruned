@@ -1,0 +1,36 @@
+digraph name{
+layout=dot;
+splines=true;
+margin="0.5,0.5";
+fontsize=16;
+dpi=250;
+concentrate=True;
+rankdir=BT;
+ratio=fill;
+size="8.5,11!";
+node  [style="rounded,filled,bold", shape=box, width=2, fontsize=24];
+edge [fontsize=24]
+"{AddressBook, | }" [label = "{AddressBook, | }",fillcolor="#ffffff", style=filled, fontname="Segeo UI",fontsize=20;];
+"{List*,Address, | }" [label = "{List*,Address, | }",fillcolor="#b2df8a", style=filled, fontname="Segeo UI",fontsize=20;];
+done2[shape=circle,width=0.25,fillcolor="#33a02c", style=filled, label = "",fontname="Segeo UI",fontsize=20;];
+done3[shape=circle,width=0.25,fillcolor="#33a02c", style=filled, label = "",fontname="Segeo UI",fontsize=20;];
+"{List_nil*,Address, | }" [label = "{List_nil*,Address, | }",fillcolor="#b2df8a", style=filled, fontname="Segeo UI",fontsize=20;];
+"{List_cons*,List*,Address, | }" [label = "{List_cons*,List*,Address, | }",fillcolor="#b2df8a", style=filled, fontname="Segeo UI",fontsize=20;];
+done6[shape=circle,width=0.25,fillcolor="#33a02c", style=filled, label = "",fontname="Segeo UI",fontsize=20;];
+"{List_cons*,List_nil*,Address, | }" [label = "{List_cons*,List_nil*,Address, | }",fillcolor="#b2df8a", style=filled, fontname="Segeo UI",fontsize=20;];
+"{AddressBook, | }" -> "{AddressBook, | }" [label = "mergeAddressBooks", fontname="Segeo UI",fontsize=20;];
+"{AddressBook, | }" -> done3 [label = "b", fontname="Segeo UI",fontsize=20;];
+"{AddressBook, | }" -> done2 [label = "a", fontname="Segeo UI",fontsize=20;];
+"{AddressBook, | }" -> "{List*,Address, | }" [label = "AddressBook", fontname="Segeo UI",fontsize=20;];
+"{List*,Address, | }" -> "{AddressBook, | }" [label = "AddressBook_match", fontname="Segeo UI",fontsize=20;];
+"{List*,Address, | }" -> "{List*,Address, | }" [label = "append", fontname="Segeo UI",fontsize=20;];
+"{List*,Address, | }" -> "{List_cons*,List*,Address, | }" [label = "Cons_head", fontname="Segeo UI",fontsize=20;];
+"{List*,Address, | }" -> "{List_nil*,Address, | }" [label = "ListNil", fontname="Segeo UI",fontsize=20;];
+"{List_nil*,Address, | }" -> "{List_cons*,List_nil*,Address, | }" [label = "Cons_head", fontname="Segeo UI",fontsize=20;];
+"{List_nil*,Address, | }" -> done6 [label = "Nil", fontname="Segeo UI",fontsize=20;];
+"{List_cons*,List*,Address, | }" -> "{List_cons*,List*,Address, | }" [label = "append", fontname="Segeo UI",fontsize=20;];
+"{List_cons*,List*,Address, | }" -> "{List_cons*,List*,Address, | }" [label = "Cons_head", fontname="Segeo UI",fontsize=20;];
+"{List_cons*,List*,Address, | }" -> "{List_cons*,List_nil*,Address, | }" [label = "ListNil", fontname="Segeo UI",fontsize=20;];
+"{List_cons*,List_nil*,Address, | }" -> "{List_cons*,List_nil*,Address, | }" [label = "Cons_head", fontname="Segeo UI",fontsize=20;];
+"{List_cons*,List_nil*,Address, | }" -> done6 [label = "Nil", fontname="Segeo UI",fontsize=20;];
+}

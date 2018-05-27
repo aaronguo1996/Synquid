@@ -14,26 +14,7 @@ termination measure len :: List a -> {Int | _v >= 0} where
 measure elems :: List a -> Set a where
   Nil -> []
   Cons x xs -> [x] + elems xs
-
-data Info where
-  Info :: streetAddr: Int -> zipcode: Int -> local: Bool -> Info
-    
-data Address where
-  Address :: info: Info -> priv: Bool -> Address
-  
-measure isPriv :: Address -> Bool where
-  Address info priv -> priv  
-  
-getPriv :: a:Address -> {Bool | _v == isPriv a}
-
-data AddressBook where
-  AddressBook :: business: List {Address | !(isPriv _v)} -> personal: List {Address | isPriv _v} -> AddressBook  
-  
-measure size :: AddressBook -> {Int | _v >= 0} where
-  AddressBook bs ps -> len bs + len ps
-  
-mkAddressBook :: adds: List Address -> {AddressBook | size _v == len adds}
-
+	
 elem :: x: a -> xs: List a -> {Bool | _v == (x in elems xs)}
 elem = ??
 

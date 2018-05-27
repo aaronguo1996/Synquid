@@ -1,0 +1,32 @@
+digraph name{
+layout=dot;
+splines=true;
+margin="0.5,0.5";
+fontsize=16;
+dpi=250;
+rankdir=BT;
+ratio=fill;
+size="8.5,11!";
+node  [style="rounded,filled,bold", shape=box, width=2, fontsize=24];
+edge [fontsize=24]
+"{BitVec, | }" [label = "{BitVec, | }",fillcolor="#ffffff", style=filled, fontname="Segeo UI",fontsize=20;];
+"Bool" [label = "Bool",fillcolor="#a6cee3", style=filled, fontname="Segeo UI",fontsize=20;];
+"{Bool,{BitVec, | },}" [label = "{Bool,{BitVec, | },}",fillcolor="#1f78b4", fontcolor="#ffffff",style=filled, fontname="Segeo UI",fontsize=20;];
+done3[shape=circle,width=0.25,fillcolor="#33a02c", style=filled, label = "",fontname="Segeo UI",fontsize=20;];
+done4[shape=circle,width=0.25,fillcolor="#33a02c", style=filled, label = "",fontname="Segeo UI",fontsize=20;];
+done5[shape=circle,width=0.25,fillcolor="#33a02c", style=filled, label = "",fontname="Segeo UI",fontsize=20;];
+done6[shape=circle,width=0.25,fillcolor="#33a02c", style=filled, label = "",fontname="Segeo UI",fontsize=20;];
+"{BitVec, | }" -> done4 [label = "y", fontname="Segeo UI",fontsize=20;];
+"{BitVec, | }" -> done3 [label = "x", fontname="Segeo UI",fontsize=20;];
+"{BitVec, | }" -> "{BitVec, | }" [label = "plus", fontname="Segeo UI",fontsize=20;];
+"{BitVec, | }" -> "{Bool,{BitVec, | },}" [label = "plus1", fontname="Segeo UI",fontsize=20;];
+"{BitVec, | }" -> "{BitVec, | }" [label = "Cons_tail", fontname="Segeo UI",fontsize=20;];
+"{BitVec, | }" -> "{Bool,{BitVec, | },}" [label = "Cons", fontname="Segeo UI",fontsize=20;];
+"{BitVec, | }" -> "Bool" [label = "Bit", fontname="Segeo UI",fontsize=20;];
+"Bool" -> done6 [label = "false", fontname="Segeo UI",fontsize=20;];
+"Bool" -> done5 [label = "true", fontname="Segeo UI",fontsize=20;];
+"Bool" -> "{BitVec, | }" [label = "Cons_head", fontname="Segeo UI",fontsize=20;];
+"Bool" -> "{BitVec, | }" [label = "Bit_v", fontname="Segeo UI",fontsize=20;];
+"{Bool,{BitVec, | },}" -> "{BitVec, | }" [label = "", fontname="Segeo UI",fontsize=20;];
+"{Bool,{BitVec, | },}" -> "Bool" [label = "", fontname="Segeo UI",fontsize=20;];
+}

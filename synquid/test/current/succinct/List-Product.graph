@@ -1,0 +1,539 @@
+digraph name{
+layout=dot;
+splines=true;
+margin="0.5,0.5";
+fontsize=16;
+dpi=250;
+concentrate=True;
+rankdir=BT;
+ratio=fill;
+size="25,25";
+node  [style="rounded,filled,bold", shape=box, width=2, fontsize=20];
+edge [fontsize=20]
+"a"
+"b"
+"{any,}->a"
+"{any,}->b"
+"{any,}->{List*, | a, | }"
+"{any,}->{List*, | a, | ,Cons}"
+"{any,}->{List*, | b, | }"
+"{any,}->{List*, | b, | ,Cons}"
+"{any,}->{List*,Pair**, | a, | }"
+"{any,}->{List*,Pair**, | a, | ,Cons}"
+"{any,}->{List*,Pair**, | a,b, | }"
+"{any,}->{List*,Pair**, | a,b, | ,Cons}"
+"{any,}->{List*,Pair**, | b, | }"
+"{any,}->{List*,Pair**, | b, | ,Cons}"
+"{any,}->{Pair**, | a, | }"
+"{any,}->{Pair**, | a,b, | }"
+"{any,}->{Pair**, | b, | }"
+"{List*, | a, | }"
+"{List*, | a, | ,Cons}"
+"{List*, | b, | }"
+"{List*, | b, | ,Cons}"
+"{List*, | any, | }"
+"{List*, | any, | ,Cons}"
+"{List*,Pair**, | a, | }"
+"{List*,Pair**, | a, | ,Cons}"
+"{List*,Pair**, | a,b, | }"
+"{List*,Pair**, | a,b, | ,Cons}"
+"{List*,Pair**, | b, | }"
+"{List*,Pair**, | b, | ,Cons}"
+"{Pair**, | a, | }"
+"{Pair**, | a,b, | }"
+"{Pair**, | b, | }"
+"{a,b,}"
+"{a,{List*, | a, | },}"
+"{a,{List*, | b, | },}"
+"{a,{List*, | b, | ,Cons},}"
+"{a,{List*,Pair**, | a,b, | },}"
+"{a,{List*,Pair**, | a,b, | ,Cons},}"
+"{a,{List*,Pair**, | b, | },}"
+"{a,{List*,Pair**, | b, | ,Cons},}"
+"{a,{Pair**, | a,b, | },}"
+"{a,{Pair**, | b, | },}"
+"{b,{List*, | a, | },}"
+"{b,{List*, | a, | ,Cons},}"
+"{b,{List*, | b, | },}"
+"{b,{List*,Pair**, | a, | },}"
+"{b,{List*,Pair**, | a, | ,Cons},}"
+"{b,{List*,Pair**, | a,b, | },}"
+"{b,{List*,Pair**, | a,b, | ,Cons},}"
+"{b,{Pair**, | a, | },}"
+"{b,{Pair**, | a,b, | },}"
+"{{any,}->a,{List*, | any, | },}"
+"{{any,}->b,{List*, | any, | },}"
+"{{any,}->{List*, | a, | },{List*, | any, | },}"
+"{{any,}->{List*, | a, | ,Cons},{List*, | any, | },}"
+"{{any,}->{List*, | b, | },{List*, | any, | },}"
+"{{any,}->{List*, | b, | ,Cons},{List*, | any, | },}"
+"{{any,}->{List*,Pair**, | a, | },{List*, | any, | },}"
+"{{any,}->{List*,Pair**, | a, | ,Cons},{List*, | any, | },}"
+"{{any,}->{List*,Pair**, | a,b, | },{List*, | any, | },}"
+"{{any,}->{List*,Pair**, | a,b, | ,Cons},{List*, | any, | },}"
+"{{any,}->{List*,Pair**, | b, | },{List*, | any, | },}"
+"{{any,}->{List*,Pair**, | b, | ,Cons},{List*, | any, | },}"
+"{{any,}->{Pair**, | a, | },{List*, | any, | },}"
+"{{any,}->{Pair**, | a,b, | },{List*, | any, | },}"
+"{{any,}->{Pair**, | b, | },{List*, | any, | },}"
+"{{List*, | a, | },{List*, | a, | ,Cons},}"
+"{{List*, | a, | },{List*, | b, | },}"
+"{{List*, | a, | },{List*, | b, | ,Cons},}"
+"{{List*, | a, | },{List*,Pair**, | a, | },}"
+"{{List*, | a, | },{List*,Pair**, | a, | ,Cons},}"
+"{{List*, | a, | },{List*,Pair**, | a,b, | },}"
+"{{List*, | a, | },{List*,Pair**, | a,b, | ,Cons},}"
+"{{List*, | a, | },{List*,Pair**, | b, | },}"
+"{{List*, | a, | },{List*,Pair**, | b, | ,Cons},}"
+"{{List*, | a, | },{Pair**, | a,b, | },}"
+"{{List*, | a, | },{Pair**, | b, | },}"
+"{{List*, | a, | ,Cons},{List*, | b, | },}"
+"{{List*, | a, | ,Cons},{List*, | b, | ,Cons},}"
+"{{List*, | a, | ,Cons},{List*,Pair**, | a, | },}"
+"{{List*, | a, | ,Cons},{List*,Pair**, | a, | ,Cons},}"
+"{{List*, | a, | ,Cons},{List*,Pair**, | a,b, | },}"
+"{{List*, | a, | ,Cons},{List*,Pair**, | a,b, | ,Cons},}"
+"{{List*, | a, | ,Cons},{List*,Pair**, | b, | },}"
+"{{List*, | a, | ,Cons},{List*,Pair**, | b, | ,Cons},}"
+"{{List*, | a, | ,Cons},{Pair**, | a,b, | },}"
+"{{List*, | a, | ,Cons},{Pair**, | b, | },}"
+"{{List*, | b, | },{List*, | b, | ,Cons},}"
+"{{List*, | b, | },{List*,Pair**, | a, | },}"
+"{{List*, | b, | },{List*,Pair**, | a, | ,Cons},}"
+"{{List*, | b, | },{List*,Pair**, | a,b, | },}"
+"{{List*, | b, | },{List*,Pair**, | a,b, | ,Cons},}"
+"{{List*, | b, | },{List*,Pair**, | b, | },}"
+"{{List*, | b, | },{List*,Pair**, | b, | ,Cons},}"
+"{{List*, | b, | },{Pair**, | a, | },}"
+"{{List*, | b, | },{Pair**, | a,b, | },}"
+"{{List*, | b, | ,Cons},{List*,Pair**, | a, | },}"
+"{{List*, | b, | ,Cons},{List*,Pair**, | a, | ,Cons},}"
+"{{List*, | b, | ,Cons},{List*,Pair**, | a,b, | },}"
+"{{List*, | b, | ,Cons},{List*,Pair**, | a,b, | ,Cons},}"
+"{{List*, | b, | ,Cons},{List*,Pair**, | b, | },}"
+"{{List*, | b, | ,Cons},{List*,Pair**, | b, | ,Cons},}"
+"{{List*, | b, | ,Cons},{Pair**, | a, | },}"
+"{{List*, | b, | ,Cons},{Pair**, | a,b, | },}"
+"{{List*, | any, | },any,}"
+"{{List*,Pair**, | a, | },{List*,Pair**, | a, | ,Cons},}"
+"{{List*,Pair**, | a, | },{List*,Pair**, | a,b, | },}"
+"{{List*,Pair**, | a, | },{List*,Pair**, | a,b, | ,Cons},}"
+"{{List*,Pair**, | a, | },{List*,Pair**, | b, | },}"
+"{{List*,Pair**, | a, | },{List*,Pair**, | b, | ,Cons},}"
+"{{List*,Pair**, | a, | },{Pair**, | a, | },}"
+"{{List*,Pair**, | a, | },{Pair**, | a,b, | },}"
+"{{List*,Pair**, | a, | },{Pair**, | b, | },}"
+"{{List*,Pair**, | a, | ,Cons},{List*,Pair**, | a,b, | },}"
+"{{List*,Pair**, | a, | ,Cons},{List*,Pair**, | a,b, | ,Cons},}"
+"{{List*,Pair**, | a, | ,Cons},{List*,Pair**, | b, | },}"
+"{{List*,Pair**, | a, | ,Cons},{List*,Pair**, | b, | ,Cons},}"
+"{{List*,Pair**, | a, | ,Cons},{Pair**, | a,b, | },}"
+"{{List*,Pair**, | a, | ,Cons},{Pair**, | b, | },}"
+"{{List*,Pair**, | a,b, | },{List*,Pair**, | a,b, | ,Cons},}"
+"{{List*,Pair**, | a,b, | },{List*,Pair**, | b, | },}"
+"{{List*,Pair**, | a,b, | },{List*,Pair**, | b, | ,Cons},}"
+"{{List*,Pair**, | a,b, | },{Pair**, | a, | },}"
+"{{List*,Pair**, | a,b, | },{Pair**, | a,b, | },}"
+"{{List*,Pair**, | a,b, | },{Pair**, | b, | },}"
+"{{List*,Pair**, | a,b, | ,Cons},{List*,Pair**, | b, | },}"
+"{{List*,Pair**, | a,b, | ,Cons},{List*,Pair**, | b, | ,Cons},}"
+"{{List*,Pair**, | a,b, | ,Cons},{Pair**, | a, | },}"
+"{{List*,Pair**, | a,b, | ,Cons},{Pair**, | a,b, | },}"
+"{{List*,Pair**, | a,b, | ,Cons},{Pair**, | b, | },}"
+"{{List*,Pair**, | b, | },{List*,Pair**, | b, | ,Cons},}"
+"{{List*,Pair**, | b, | },{Pair**, | a, | },}"
+"{{List*,Pair**, | b, | },{Pair**, | a,b, | },}"
+"{{List*,Pair**, | b, | },{Pair**, | b, | },}"
+"{{List*,Pair**, | b, | ,Cons},{Pair**, | a, | },}"
+"{{List*,Pair**, | b, | ,Cons},{Pair**, | a,b, | },}"
+"{{Pair**, | a, | },{Pair**, | a,b, | },}"
+"{{Pair**, | a, | },{Pair**, | b, | },}"
+"{{Pair**, | a,b, | },{Pair**, | b, | },}"
+"any"
+""
+""
+""
+""
+""
+""
+""
+""
+"{{any,}->{List*,Pair**, | b, | ,Cons},{List*, | any, | },}" -> "{any,}->{List*,Pair**, | b, | ,Cons}" [label = ","];
+"{{any,}->{List*,Pair**, | b, | ,Cons},{List*, | any, | },}" -> "{List*, | any, | }" [label = ","];
+"{{List*, | a, | },{List*, | a, | ,Cons},}" -> "{List*, | a, | }" [label = ","];
+"{{List*, | a, | },{List*, | a, | ,Cons},}" -> "{List*, | a, | ,Cons}" [label = ","];
+"{{any,}->{Pair**, | b, | },{List*, | any, | },}" -> "{List*, | any, | }" [label = ","];
+"{{any,}->{Pair**, | b, | },{List*, | any, | },}" -> "{any,}->{Pair**, | b, | }" [label = ","];
+"{{any,}->{List*, | a, | },{List*, | any, | },}" -> "{any,}->{List*, | a, | }" [label = ","];
+"{{any,}->{List*, | a, | },{List*, | any, | },}" -> "{List*, | any, | }" [label = ","];
+"{List*, | b, | ,Cons}" -> "{List*, | b, | ,Cons}" [label = ",append"];
+"{List*, | b, | ,Cons}" -> "{{any,}->{List*, | b, | ,Cons},{List*, | any, | },}" [label = ",map"];
+"{List*, | b, | ,Cons}" -> "{List*, | b, | }" [label = ",append"];
+"{List*, | b, | ,Cons}" -> "{{any,}->b,{List*, | any, | },}" [label = ",map"];
+"{a,{List*,Pair**, | a,b, | ,Cons},}" -> "a" [label = ","];
+"{a,{List*,Pair**, | a,b, | ,Cons},}" -> "{List*,Pair**, | a,b, | ,Cons}" [label = ","];
+"{{List*, | a, | },{List*,Pair**, | b, | },}" -> "{List*,Pair**, | b, | }" [label = ","];
+"{{List*, | a, | },{List*,Pair**, | b, | },}" -> "{List*, | a, | }" [label = ","];
+"{{List*, | b, | },{Pair**, | a, | },}" -> "{Pair**, | a, | }" [label = ","];
+"{{List*, | b, | },{Pair**, | a, | },}" -> "{List*, | b, | }" [label = ","];
+"{{any,}->{Pair**, | a,b, | },{List*, | any, | },}" -> "{any,}->{Pair**, | a,b, | }" [label = ","];
+"{{any,}->{Pair**, | a,b, | },{List*, | any, | },}" -> "{List*, | any, | }" [label = ","];
+"{{List*,Pair**, | a, | },{Pair**, | b, | },}" -> "{List*,Pair**, | a, | }" [label = ","];
+"{{List*,Pair**, | a, | },{Pair**, | b, | },}" -> "{Pair**, | b, | }" [label = ","];
+"{{List*, | a, | ,Cons},{List*,Pair**, | a,b, | ,Cons},}" -> "{List*, | a, | ,Cons}" [label = ","];
+"{{List*, | a, | ,Cons},{List*,Pair**, | a,b, | ,Cons},}" -> "{List*,Pair**, | a,b, | ,Cons}" [label = ","];
+"{{List*,Pair**, | a,b, | ,Cons},{List*,Pair**, | b, | },}" -> "{List*,Pair**, | b, | }" [label = ","];
+"{{List*,Pair**, | a,b, | ,Cons},{List*,Pair**, | b, | },}" -> "{List*,Pair**, | a,b, | ,Cons}" [label = ","];
+"{{any,}->a,{List*, | any, | },}" -> "{any,}->a" [label = ","];
+"{{any,}->a,{List*, | any, | },}" -> "{List*, | any, | }" [label = ","];
+"{List*,Pair**, | b, | }" -> "{{any,}->{Pair**, | b, | },{List*, | any, | },}" [label = ",map"];
+"{List*,Pair**, | b, | }" -> "{List*,Pair**, | b, | }" [label = ",product,append"];
+"{List*,Pair**, | b, | }" -> "{{List*, | b, | },{List*,Pair**, | b, | },}" [label = ",product"];
+"{List*,Pair**, | b, | }" -> "{{any,}->{List*,Pair**, | b, | },{List*, | any, | },}" [label = ",map"];
+"{List*,Pair**, | b, | }" -> "" [label = ",Nil"];
+"{List*,Pair**, | b, | }" -> "{List*, | b, | }" [label = ",product"];
+"{List*,Pair**, | b, | }" -> "{{List*,Pair**, | b, | },{Pair**, | b, | },}" [label = ",Cons"];
+"{List*,Pair**, | b, | }" -> "{List*,Pair**, | b, | ,Cons}" [label = ",Cons"];
+"{{List*, | a, | ,Cons},{List*,Pair**, | a, | ,Cons},}" -> "{List*, | a, | ,Cons}" [label = ","];
+"{{List*, | a, | ,Cons},{List*,Pair**, | a, | ,Cons},}" -> "{List*,Pair**, | a, | ,Cons}" [label = ","];
+"{{List*, | b, | ,Cons},{List*,Pair**, | a,b, | ,Cons},}" -> "{List*, | b, | ,Cons}" [label = ","];
+"{{List*, | b, | ,Cons},{List*,Pair**, | a,b, | ,Cons},}" -> "{List*,Pair**, | a,b, | ,Cons}" [label = ","];
+"{{List*, | b, | },{List*,Pair**, | a,b, | ,Cons},}" -> "{List*,Pair**, | a,b, | ,Cons}" [label = ","];
+"{{List*, | b, | },{List*,Pair**, | a,b, | ,Cons},}" -> "{List*, | b, | }" [label = ","];
+"{List*, | any, | ,Cons}" -> "{List*, | any, | ,Cons}" [label = ",append,Cons"];
+"{List*, | any, | ,Cons}" -> "{{List*, | any, | },any,}" [label = ",Cons"];
+"{List*, | any, | ,Cons}" -> "{List*, | any, | }" [label = ",append"];
+"{{List*,Pair**, | a, | },{Pair**, | a, | },}" -> "{Pair**, | a, | }" [label = ","];
+"{{List*,Pair**, | a, | },{Pair**, | a, | },}" -> "{List*,Pair**, | a, | }" [label = ","];
+"{{List*, | b, | },{List*, | b, | ,Cons},}" -> "{List*, | b, | ,Cons}" [label = ","];
+"{{List*, | b, | },{List*, | b, | ,Cons},}" -> "{List*, | b, | }" [label = ","];
+"{{List*, | b, | ,Cons},{List*,Pair**, | b, | ,Cons},}" -> "{List*, | b, | ,Cons}" [label = ","];
+"{{List*, | b, | ,Cons},{List*,Pair**, | b, | ,Cons},}" -> "{List*,Pair**, | b, | ,Cons}" [label = ","];
+"{b,{Pair**, | a,b, | },}" -> "b" [label = ","];
+"{b,{Pair**, | a,b, | },}" -> "{Pair**, | a,b, | }" [label = ","];
+"{{List*, | a, | },{Pair**, | a,b, | },}" -> "{List*, | a, | }" [label = ","];
+"{{List*, | a, | },{Pair**, | a,b, | },}" -> "{Pair**, | a,b, | }" [label = ","];
+"{{List*, | a, | },{List*,Pair**, | a, | },}" -> "{List*, | a, | }" [label = ","];
+"{{List*, | a, | },{List*,Pair**, | a, | },}" -> "{List*,Pair**, | a, | }" [label = ","];
+"{b,{List*,Pair**, | a, | ,Cons},}" -> "{List*,Pair**, | a, | ,Cons}" [label = ","];
+"{b,{List*,Pair**, | a, | ,Cons},}" -> "b" [label = ","];
+"{{List*,Pair**, | a,b, | },{List*,Pair**, | a,b, | ,Cons},}" -> "{List*,Pair**, | a,b, | }" [label = ","];
+"{{List*,Pair**, | a,b, | },{List*,Pair**, | a,b, | ,Cons},}" -> "{List*,Pair**, | a,b, | ,Cons}" [label = ","];
+"{{List*, | a, | },{Pair**, | b, | },}" -> "{List*, | a, | }" [label = ","];
+"{{List*, | a, | },{Pair**, | b, | },}" -> "{Pair**, | b, | }" [label = ","];
+"{{List*, | b, | ,Cons},{List*,Pair**, | a,b, | },}" -> "{List*, | b, | ,Cons}" [label = ","];
+"{{List*, | b, | ,Cons},{List*,Pair**, | a,b, | },}" -> "{List*,Pair**, | a,b, | }" [label = ","];
+"{{List*, | b, | },{List*,Pair**, | a, | },}" -> "{List*,Pair**, | a, | }" [label = ","];
+"{{List*, | b, | },{List*,Pair**, | a, | },}" -> "{List*, | b, | }" [label = ","];
+"{{any,}->{List*, | a, | ,Cons},{List*, | any, | },}" -> "{any,}->{List*, | a, | ,Cons}" [label = ","];
+"{{any,}->{List*, | a, | ,Cons},{List*, | any, | },}" -> "{List*, | any, | }" [label = ","];
+"{{List*, | b, | },{List*,Pair**, | a,b, | },}" -> "{List*,Pair**, | a,b, | }" [label = ","];
+"{{List*, | b, | },{List*,Pair**, | a,b, | },}" -> "{List*, | b, | }" [label = ","];
+"{a,{List*, | b, | ,Cons},}" -> "{List*, | b, | ,Cons}" [label = ","];
+"{a,{List*, | b, | ,Cons},}" -> "a" [label = ","];
+"{{List*, | b, | },{Pair**, | a,b, | },}" -> "{List*, | b, | }" [label = ","];
+"{{List*, | b, | },{Pair**, | a,b, | },}" -> "{Pair**, | a,b, | }" [label = ","];
+"{b,{List*, | a, | ,Cons},}" -> "{List*, | a, | ,Cons}" [label = ","];
+"{b,{List*, | a, | ,Cons},}" -> "b" [label = ","];
+"{{List*,Pair**, | b, | },{List*,Pair**, | b, | ,Cons},}" -> "{List*,Pair**, | b, | }" [label = ","];
+"{{List*,Pair**, | b, | },{List*,Pair**, | b, | ,Cons},}" -> "{List*,Pair**, | b, | ,Cons}" [label = ","];
+"{{List*,Pair**, | a, | ,Cons},{List*,Pair**, | b, | },}" -> "{List*,Pair**, | b, | }" [label = ","];
+"{{List*,Pair**, | a, | ,Cons},{List*,Pair**, | b, | },}" -> "{List*,Pair**, | a, | ,Cons}" [label = ","];
+"{b,{List*, | b, | },}" -> "b" [label = ","];
+"{b,{List*, | b, | },}" -> "{List*, | b, | }" [label = ","];
+"{{any,}->{List*,Pair**, | a, | },{List*, | any, | },}" -> "{any,}->{List*,Pair**, | a, | }" [label = ","];
+"{{any,}->{List*,Pair**, | a, | },{List*, | any, | },}" -> "{List*, | any, | }" [label = ","];
+"{{List*,Pair**, | a,b, | ,Cons},{List*,Pair**, | b, | ,Cons},}" -> "{List*,Pair**, | a,b, | ,Cons}" [label = ","];
+"{{List*,Pair**, | a,b, | ,Cons},{List*,Pair**, | b, | ,Cons},}" -> "{List*,Pair**, | b, | ,Cons}" [label = ","];
+"{{List*, | any, | },any,}" -> "any" [label = ","];
+"{{List*, | any, | },any,}" -> "{List*, | any, | }" [label = ","];
+"{a,{List*, | a, | },}" -> "a" [label = ","];
+"{a,{List*, | a, | },}" -> "{List*, | a, | }" [label = ","];
+"{{List*,Pair**, | a, | },{Pair**, | a,b, | },}" -> "{List*,Pair**, | a, | }" [label = ","];
+"{{List*,Pair**, | a, | },{Pair**, | a,b, | },}" -> "{Pair**, | a,b, | }" [label = ","];
+"{{List*,Pair**, | a, | },{List*,Pair**, | a,b, | },}" -> "{List*,Pair**, | a,b, | }" [label = ","];
+"{{List*,Pair**, | a, | },{List*,Pair**, | a,b, | },}" -> "{List*,Pair**, | a, | }" [label = ","];
+"{List*,Pair**, | a,b, | }" -> "{{List*, | a, | },{List*,Pair**, | b, | },}" [label = ",product,Pair"];
+"{List*,Pair**, | a,b, | }" -> "{{List*, | b, | },{Pair**, | a, | },}" [label = ",Pair"];
+"{List*,Pair**, | a,b, | }" -> "{{any,}->{Pair**, | a,b, | },{List*, | any, | },}" [label = ",map"];
+"{List*,Pair**, | a,b, | }" -> "{{List*,Pair**, | a, | },{Pair**, | b, | },}" [label = ",Pair"];
+"{List*,Pair**, | a,b, | }" -> "{{List*, | a, | },{Pair**, | a,b, | },}" [label = ",Pair"];
+"{List*,Pair**, | a,b, | }" -> "{{List*, | a, | },{Pair**, | b, | },}" [label = ",Pair"];
+"{List*,Pair**, | a,b, | }" -> "{{List*, | b, | },{List*,Pair**, | a, | },}" [label = ",product,Pair"];
+"{List*,Pair**, | a,b, | }" -> "{{List*, | b, | },{List*,Pair**, | a,b, | },}" [label = ",product,Pair"];
+"{List*,Pair**, | a,b, | }" -> "{{List*, | b, | },{Pair**, | a,b, | },}" [label = ",Pair"];
+"{List*,Pair**, | a,b, | }" -> "{{List*,Pair**, | a, | },{Pair**, | a,b, | },}" [label = ",Pair"];
+"{List*,Pair**, | a,b, | }" -> "{{List*,Pair**, | a, | },{List*,Pair**, | a,b, | },}" [label = ",product,Pair"];
+"{List*,Pair**, | a,b, | }" -> "{List*,Pair**, | a,b, | }" [label = ",product,append,Pair"];
+"{List*,Pair**, | a,b, | }" -> "{a,{List*, | b, | },}" [label = ",Pair"];
+"{List*,Pair**, | a,b, | }" -> "{b,{List*, | a, | },}" [label = ",Pair"];
+"{List*,Pair**, | a,b, | }" -> "{a,{List*,Pair**, | b, | },}" [label = ",Pair"];
+"{List*,Pair**, | a,b, | }" -> "{{any,}->{List*,Pair**, | a,b, | },{List*, | any, | },}" [label = ",map"];
+"{List*,Pair**, | a,b, | }" -> "{{List*,Pair**, | a,b, | },{Pair**, | b, | },}" [label = ",Pair"];
+"{List*,Pair**, | a,b, | }" -> "{{List*,Pair**, | b, | },{Pair**, | a,b, | },}" [label = ",Pair"];
+"{List*,Pair**, | a,b, | }" -> "{{List*,Pair**, | a,b, | },{Pair**, | a, | },}" [label = ",Pair"];
+"{List*,Pair**, | a,b, | }" -> "{List*,Pair**, | a,b, | ,Cons}" [label = ",Cons"];
+"{List*,Pair**, | a,b, | }" -> "{{List*,Pair**, | a,b, | },{Pair**, | a,b, | },}" [label = ",Pair,Cons"];
+"{List*,Pair**, | a,b, | }" -> "{{List*, | a, | },{List*,Pair**, | a,b, | },}" [label = ",product,Pair"];
+"{List*,Pair**, | a,b, | }" -> "{b,{List*,Pair**, | a, | },}" [label = ",Pair"];
+"{List*,Pair**, | a,b, | }" -> "" [label = ",Nil"];
+"{List*,Pair**, | a,b, | }" -> "{{List*,Pair**, | a,b, | },{List*,Pair**, | b, | },}" [label = ",product,Pair"];
+"{List*,Pair**, | a,b, | }" -> "{{List*,Pair**, | b, | },{Pair**, | a, | },}" [label = ",Pair"];
+"{List*,Pair**, | a,b, | }" -> "{{List*,Pair**, | a, | },{List*,Pair**, | b, | },}" [label = ",product,Pair"];
+"{List*,Pair**, | a,b, | }" -> "{{List*, | a, | },{List*, | b, | },}" [label = ",product,__goal__,Pair"];
+"{List*,Pair**, | a,b, | }" -> "{a,{List*,Pair**, | a,b, | },}" [label = ",Pair"];
+"{List*,Pair**, | a,b, | }" -> "{b,{List*,Pair**, | a,b, | },}" [label = ",Pair"];
+"{a,{List*, | b, | },}" -> "a" [label = ","];
+"{a,{List*, | b, | },}" -> "{List*, | b, | }" [label = ","];
+"{{List*, | a, | },{List*,Pair**, | b, | ,Cons},}" -> "{List*, | a, | }" [label = ","];
+"{{List*, | a, | },{List*,Pair**, | b, | ,Cons},}" -> "{List*,Pair**, | b, | ,Cons}" [label = ","];
+"{b,{List*, | a, | },}" -> "{List*, | a, | }" [label = ","];
+"{b,{List*, | a, | },}" -> "b" [label = ","];
+"{{any,}->{List*,Pair**, | a, | ,Cons},{List*, | any, | },}" -> "{any,}->{List*,Pair**, | a, | ,Cons}" [label = ","];
+"{{any,}->{List*,Pair**, | a, | ,Cons},{List*, | any, | },}" -> "{List*, | any, | }" [label = ","];
+"{{List*, | b, | },{List*,Pair**, | b, | },}" -> "{List*,Pair**, | b, | }" [label = ","];
+"{{List*, | b, | },{List*,Pair**, | b, | },}" -> "{List*, | b, | }" [label = ","];
+"{{List*, | a, | },{List*,Pair**, | a,b, | ,Cons},}" -> "{List*, | a, | }" [label = ","];
+"{{List*, | a, | },{List*,Pair**, | a,b, | ,Cons},}" -> "{List*,Pair**, | a,b, | ,Cons}" [label = ","];
+"{List*, | a, | }" -> "{{any,}->{List*, | a, | },{List*, | any, | },}" [label = ",map"];
+"{List*, | a, | }" -> "{{any,}->a,{List*, | any, | },}" [label = ",map"];
+"{List*, | a, | }" -> "{a,{List*, | a, | },}" [label = ",Cons"];
+"{List*, | a, | }" -> "{List*, | a, | }" [label = ",append"];
+"{List*, | a, | }" -> "{List*, | a, | ,Cons}" [label = ",Cons"];
+"{List*, | a, | }" -> "" [label = ",Nil"];
+"{List*, | a, | }" -> "" [label = ",xs"];
+"{{List*,Pair**, | a, | },{List*,Pair**, | a,b, | ,Cons},}" -> "{List*,Pair**, | a,b, | ,Cons}" [label = ","];
+"{{List*,Pair**, | a, | },{List*,Pair**, | a,b, | ,Cons},}" -> "{List*,Pair**, | a, | }" [label = ","];
+"{{List*, | a, | ,Cons},{List*,Pair**, | b, | ,Cons},}" -> "{List*, | a, | ,Cons}" [label = ","];
+"{{List*, | a, | ,Cons},{List*,Pair**, | b, | ,Cons},}" -> "{List*,Pair**, | b, | ,Cons}" [label = ","];
+"{{List*, | b, | ,Cons},{Pair**, | a, | },}" -> "{List*, | b, | ,Cons}" [label = ","];
+"{{List*, | b, | ,Cons},{Pair**, | a, | },}" -> "{Pair**, | a, | }" [label = ","];
+"{{List*, | b, | ,Cons},{List*,Pair**, | a, | },}" -> "{List*, | b, | ,Cons}" [label = ","];
+"{{List*, | b, | ,Cons},{List*,Pair**, | a, | },}" -> "{List*,Pair**, | a, | }" [label = ","];
+"{{List*,Pair**, | a, | },{List*,Pair**, | a, | ,Cons},}" -> "{List*,Pair**, | a, | ,Cons}" [label = ","];
+"{{List*,Pair**, | a, | },{List*,Pair**, | a, | ,Cons},}" -> "{List*,Pair**, | a, | }" [label = ","];
+"{{any,}->{List*,Pair**, | b, | },{List*, | any, | },}" -> "{any,}->{List*,Pair**, | b, | }" [label = ","];
+"{{any,}->{List*,Pair**, | b, | },{List*, | any, | },}" -> "{List*, | any, | }" [label = ","];
+"{{List*, | b, | ,Cons},{Pair**, | a,b, | },}" -> "{List*, | b, | ,Cons}" [label = ","];
+"{{List*, | b, | ,Cons},{Pair**, | a,b, | },}" -> "{Pair**, | a,b, | }" [label = ","];
+"{{List*, | a, | ,Cons},{List*,Pair**, | a,b, | },}" -> "{List*,Pair**, | a,b, | }" [label = ","];
+"{{List*, | a, | ,Cons},{List*,Pair**, | a,b, | },}" -> "{List*, | a, | ,Cons}" [label = ","];
+"{{List*,Pair**, | a,b, | },{List*,Pair**, | b, | ,Cons},}" -> "{List*,Pair**, | a,b, | }" [label = ","];
+"{{List*,Pair**, | a,b, | },{List*,Pair**, | b, | ,Cons},}" -> "{List*,Pair**, | b, | ,Cons}" [label = ","];
+"{a,{List*,Pair**, | b, | },}" -> "{List*,Pair**, | b, | }" [label = ","];
+"{a,{List*,Pair**, | b, | },}" -> "a" [label = ","];
+"{{List*, | a, | ,Cons},{Pair**, | a,b, | },}" -> "{List*, | a, | ,Cons}" [label = ","];
+"{{List*, | a, | ,Cons},{Pair**, | a,b, | },}" -> "{Pair**, | a,b, | }" [label = ","];
+"{{any,}->{List*,Pair**, | a,b, | },{List*, | any, | },}" -> "{any,}->{List*,Pair**, | a,b, | }" [label = ","];
+"{{any,}->{List*,Pair**, | a,b, | },{List*, | any, | },}" -> "{List*, | any, | }" [label = ","];
+"{{List*,Pair**, | a,b, | },{Pair**, | b, | },}" -> "{List*,Pair**, | a,b, | }" [label = ","];
+"{{List*,Pair**, | a,b, | },{Pair**, | b, | },}" -> "{Pair**, | b, | }" [label = ","];
+"{{List*,Pair**, | b, | },{Pair**, | a,b, | },}" -> "{List*,Pair**, | b, | }" [label = ","];
+"{{List*,Pair**, | b, | },{Pair**, | a,b, | },}" -> "{Pair**, | a,b, | }" [label = ","];
+"{List*, | a, | ,Cons}" -> "{{any,}->a,{List*, | any, | },}" [label = ",map"];
+"{List*, | a, | ,Cons}" -> "{{any,}->{List*, | a, | ,Cons},{List*, | any, | },}" [label = ",map"];
+"{List*, | a, | ,Cons}" -> "{List*, | a, | }" [label = ",append"];
+"{List*, | a, | ,Cons}" -> "{List*, | a, | ,Cons}" [label = ",append"];
+"{{List*,Pair**, | a,b, | ,Cons},{Pair**, | b, | },}" -> "{List*,Pair**, | a,b, | ,Cons}" [label = ","];
+"{{List*,Pair**, | a,b, | ,Cons},{Pair**, | b, | },}" -> "{Pair**, | b, | }" [label = ","];
+"{{any,}->{List*, | b, | },{List*, | any, | },}" -> "{any,}->{List*, | b, | }" [label = ","];
+"{{any,}->{List*, | b, | },{List*, | any, | },}" -> "{List*, | any, | }" [label = ","];
+"{{Pair**, | a, | },{Pair**, | b, | },}" -> "{Pair**, | a, | }" [label = ","];
+"{{Pair**, | a, | },{Pair**, | b, | },}" -> "{Pair**, | b, | }" [label = ","];
+"{{any,}->{Pair**, | a, | },{List*, | any, | },}" -> "{any,}->{Pair**, | a, | }" [label = ","];
+"{{any,}->{Pair**, | a, | },{List*, | any, | },}" -> "{List*, | any, | }" [label = ","];
+"{{List*, | a, | },{List*, | b, | ,Cons},}" -> "{List*, | b, | ,Cons}" [label = ","];
+"{{List*, | a, | },{List*, | b, | ,Cons},}" -> "{List*, | a, | }" [label = ","];
+"{{List*,Pair**, | a,b, | ,Cons},{Pair**, | a,b, | },}" -> "{List*,Pair**, | a,b, | ,Cons}" [label = ","];
+"{{List*,Pair**, | a,b, | ,Cons},{Pair**, | a,b, | },}" -> "{Pair**, | a,b, | }" [label = ","];
+"{{List*, | b, | },{List*,Pair**, | a, | ,Cons},}" -> "{List*,Pair**, | a, | ,Cons}" [label = ","];
+"{{List*, | b, | },{List*,Pair**, | a, | ,Cons},}" -> "{List*, | b, | }" [label = ","];
+"{{List*,Pair**, | a,b, | ,Cons},{Pair**, | a, | },}" -> "{Pair**, | a, | }" [label = ","];
+"{{List*,Pair**, | a,b, | ,Cons},{Pair**, | a, | },}" -> "{List*,Pair**, | a,b, | ,Cons}" [label = ","];
+"{{List*,Pair**, | a, | ,Cons},{Pair**, | a,b, | },}" -> "{List*,Pair**, | a, | ,Cons}" [label = ","];
+"{{List*,Pair**, | a, | ,Cons},{Pair**, | a,b, | },}" -> "{Pair**, | a,b, | }" [label = ","];
+"{{List*,Pair**, | a,b, | },{Pair**, | a, | },}" -> "{List*,Pair**, | a,b, | }" [label = ","];
+"{{List*,Pair**, | a,b, | },{Pair**, | a, | },}" -> "{Pair**, | a, | }" [label = ","];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{a,{List*,Pair**, | a,b, | ,Cons},}" [label = ",Pair"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*, | a, | },{List*,Pair**, | b, | },}" [label = ",product"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{any,}->{Pair**, | a,b, | },{List*, | any, | },}" [label = ",map"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*, | a, | ,Cons},{List*,Pair**, | a,b, | ,Cons},}" [label = ",product,Pair"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*,Pair**, | a,b, | ,Cons},{List*,Pair**, | b, | },}" [label = ",product"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*, | b, | ,Cons},{List*,Pair**, | a,b, | ,Cons},}" [label = ",product,Pair"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*, | b, | },{List*,Pair**, | a,b, | ,Cons},}" [label = ",product"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{b,{List*,Pair**, | a, | ,Cons},}" [label = ",Pair"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*,Pair**, | a,b, | },{List*,Pair**, | a,b, | ,Cons},}" [label = ",product"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*, | b, | ,Cons},{List*,Pair**, | a,b, | },}" [label = ",product"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*, | b, | },{List*,Pair**, | a, | },}" [label = ",product"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*, | b, | },{List*,Pair**, | a,b, | },}" [label = ",product"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{a,{List*, | b, | ,Cons},}" [label = ",Pair"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{b,{List*, | a, | ,Cons},}" [label = ",Pair"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*,Pair**, | a, | ,Cons},{List*,Pair**, | b, | },}" [label = ",product"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*,Pair**, | a,b, | ,Cons},{List*,Pair**, | b, | ,Cons},}" [label = ",product,Pair"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*,Pair**, | a, | },{List*,Pair**, | a,b, | },}" [label = ",product"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{List*,Pair**, | a,b, | }" [label = ",product,append"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*, | a, | },{List*,Pair**, | b, | ,Cons},}" [label = ",product"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*, | a, | },{List*,Pair**, | a,b, | ,Cons},}" [label = ",product"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*,Pair**, | a, | },{List*,Pair**, | a,b, | ,Cons},}" [label = ",product"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*, | a, | ,Cons},{List*,Pair**, | b, | ,Cons},}" [label = ",product,Pair"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*, | b, | ,Cons},{Pair**, | a, | },}" [label = ",Pair"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*, | b, | ,Cons},{List*,Pair**, | a, | },}" [label = ",product"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*, | b, | ,Cons},{Pair**, | a,b, | },}" [label = ",Pair"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*, | a, | ,Cons},{List*,Pair**, | a,b, | },}" [label = ",product"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*,Pair**, | a,b, | },{List*,Pair**, | b, | ,Cons},}" [label = ",product"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*, | a, | ,Cons},{Pair**, | a,b, | },}" [label = ",Pair"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*,Pair**, | a,b, | ,Cons},{Pair**, | b, | },}" [label = ",Pair"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*, | a, | },{List*, | b, | ,Cons},}" [label = ",product"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*,Pair**, | a,b, | ,Cons},{Pair**, | a,b, | },}" [label = ",Pair"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*, | b, | },{List*,Pair**, | a, | ,Cons},}" [label = ",product"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*,Pair**, | a,b, | ,Cons},{Pair**, | a, | },}" [label = ",Pair"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*,Pair**, | a, | ,Cons},{Pair**, | a,b, | },}" [label = ",Pair"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{List*,Pair**, | a,b, | ,Cons}" [label = ",product,append,Pair"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*, | a, | ,Cons},{Pair**, | b, | },}" [label = ",Pair"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{any,}->{List*,Pair**, | a,b, | ,Cons},{List*, | any, | },}" [label = ",map"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*,Pair**, | b, | ,Cons},{Pair**, | a,b, | },}" [label = ",Pair"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*, | a, | ,Cons},{List*, | b, | },}" [label = ",product"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*, | a, | },{List*,Pair**, | a,b, | },}" [label = ",product"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{b,{List*,Pair**, | a,b, | ,Cons},}" [label = ",Pair"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*,Pair**, | a, | ,Cons},{List*,Pair**, | a,b, | ,Cons},}" [label = ",product,Pair"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*,Pair**, | a, | ,Cons},{List*,Pair**, | b, | ,Cons},}" [label = ",product,Pair"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{a,{List*,Pair**, | b, | ,Cons},}" [label = ",Pair"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*,Pair**, | a, | ,Cons},{Pair**, | b, | },}" [label = ",Pair"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*,Pair**, | a,b, | },{List*,Pair**, | b, | },}" [label = ",product"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*,Pair**, | a, | },{List*,Pair**, | b, | ,Cons},}" [label = ",product"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*,Pair**, | a, | },{List*,Pair**, | b, | },}" [label = ",product"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*, | a, | },{List*, | b, | },}" [label = ",product"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*, | a, | ,Cons},{List*,Pair**, | b, | },}" [label = ",product"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*,Pair**, | a, | ,Cons},{List*,Pair**, | a,b, | },}" [label = ",product"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*, | b, | ,Cons},{List*,Pair**, | a, | ,Cons},}" [label = ",product,Pair"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*, | a, | ,Cons},{List*, | b, | ,Cons},}" [label = ",product,Pair"];
+"{List*,Pair**, | a,b, | ,Cons}" -> "{{List*,Pair**, | b, | ,Cons},{Pair**, | a, | },}" [label = ",Pair"];
+"{{Pair**, | a, | },{Pair**, | a,b, | },}" -> "{Pair**, | a, | }" [label = ","];
+"{{Pair**, | a, | },{Pair**, | a,b, | },}" -> "{Pair**, | a,b, | }" [label = ","];
+"{{List*, | a, | ,Cons},{Pair**, | b, | },}" -> "{List*, | a, | ,Cons}" [label = ","];
+"{{List*, | a, | ,Cons},{Pair**, | b, | },}" -> "{Pair**, | b, | }" [label = ","];
+"{{List*,Pair**, | a,b, | },{Pair**, | a,b, | },}" -> "{List*,Pair**, | a,b, | }" [label = ","];
+"{{List*,Pair**, | a,b, | },{Pair**, | a,b, | },}" -> "{Pair**, | a,b, | }" [label = ","];
+"{List*,Pair**, | a, | ,Cons}" -> "{{List*, | a, | },{List*, | a, | ,Cons},}" [label = ",product"];
+"{List*,Pair**, | a, | ,Cons}" -> "{{List*, | a, | ,Cons},{List*,Pair**, | a, | ,Cons},}" [label = ",product"];
+"{List*,Pair**, | a, | ,Cons}" -> "{{List*,Pair**, | a, | },{Pair**, | a, | },}" [label = ",Cons"];
+"{List*,Pair**, | a, | ,Cons}" -> "{{List*, | a, | },{List*,Pair**, | a, | },}" [label = ",product"];
+"{List*,Pair**, | a, | ,Cons}" -> "{{any,}->{List*,Pair**, | a, | ,Cons},{List*, | any, | },}" [label = ",map"];
+"{List*,Pair**, | a, | ,Cons}" -> "{List*, | a, | }" [label = ",product"];
+"{List*,Pair**, | a, | ,Cons}" -> "{{List*,Pair**, | a, | },{List*,Pair**, | a, | ,Cons},}" [label = ",product"];
+"{List*,Pair**, | a, | ,Cons}" -> "{List*, | a, | ,Cons}" [label = ",product"];
+"{List*,Pair**, | a, | ,Cons}" -> "{{any,}->{Pair**, | a, | },{List*, | any, | },}" [label = ",map"];
+"{List*,Pair**, | a, | ,Cons}" -> "{List*,Pair**, | a, | ,Cons}" [label = ",product,append,Cons"];
+"{List*,Pair**, | a, | ,Cons}" -> "{List*,Pair**, | a, | }" [label = ",product,append"];
+"{List*,Pair**, | a, | ,Cons}" -> "{{List*, | a, | },{List*,Pair**, | a, | ,Cons},}" [label = ",product"];
+"{List*,Pair**, | a, | ,Cons}" -> "{{List*, | a, | ,Cons},{List*,Pair**, | a, | },}" [label = ",product"];
+"{List*,Pair**, | a, | }" -> "{{List*,Pair**, | a, | },{Pair**, | a, | },}" [label = ",Cons"];
+"{List*,Pair**, | a, | }" -> "{{List*, | a, | },{List*,Pair**, | a, | },}" [label = ",product"];
+"{List*,Pair**, | a, | }" -> "{{any,}->{List*,Pair**, | a, | },{List*, | any, | },}" [label = ",map"];
+"{List*,Pair**, | a, | }" -> "{List*, | a, | }" [label = ",product"];
+"{List*,Pair**, | a, | }" -> "{{any,}->{Pair**, | a, | },{List*, | any, | },}" [label = ",map"];
+"{List*,Pair**, | a, | }" -> "{List*,Pair**, | a, | ,Cons}" [label = ",Cons"];
+"{List*,Pair**, | a, | }" -> "{List*,Pair**, | a, | }" [label = ",product,append"];
+"{List*,Pair**, | a, | }" -> "" [label = ",Nil"];
+"{{List*, | b, | ,Cons},{List*,Pair**, | b, | },}" -> "{List*, | b, | ,Cons}" [label = ","];
+"{{List*, | b, | ,Cons},{List*,Pair**, | b, | },}" -> "{List*,Pair**, | b, | }" [label = ","];
+"{{any,}->{List*, | b, | ,Cons},{List*, | any, | },}" -> "{any,}->{List*, | b, | ,Cons}" [label = ","];
+"{{any,}->{List*, | b, | ,Cons},{List*, | any, | },}" -> "{List*, | any, | }" [label = ","];
+"{{any,}->{List*,Pair**, | a,b, | ,Cons},{List*, | any, | },}" -> "{any,}->{List*,Pair**, | a,b, | ,Cons}" [label = ","];
+"{{any,}->{List*,Pair**, | a,b, | ,Cons},{List*, | any, | },}" -> "{List*, | any, | }" [label = ","];
+"{{List*,Pair**, | b, | ,Cons},{Pair**, | a,b, | },}" -> "{Pair**, | a,b, | }" [label = ","];
+"{{List*,Pair**, | b, | ,Cons},{Pair**, | a,b, | },}" -> "{List*,Pair**, | b, | ,Cons}" [label = ","];
+"{{List*, | a, | ,Cons},{List*, | b, | },}" -> "{List*, | a, | ,Cons}" [label = ","];
+"{{List*, | a, | ,Cons},{List*, | b, | },}" -> "{List*, | b, | }" [label = ","];
+"{{List*, | a, | },{List*,Pair**, | a,b, | },}" -> "{List*,Pair**, | a,b, | }" [label = ","];
+"{{List*, | a, | },{List*,Pair**, | a,b, | },}" -> "{List*, | a, | }" [label = ","];
+"{b,{List*,Pair**, | a, | },}" -> "{List*,Pair**, | a, | }" [label = ","];
+"{b,{List*,Pair**, | a, | },}" -> "b" [label = ","];
+"{{List*, | a, | },{List*,Pair**, | a, | ,Cons},}" -> "{List*, | a, | }" [label = ","];
+"{{List*, | a, | },{List*,Pair**, | a, | ,Cons},}" -> "{List*,Pair**, | a, | ,Cons}" [label = ","];
+"{b,{List*,Pair**, | a,b, | ,Cons},}" -> "{List*,Pair**, | a,b, | ,Cons}" [label = ","];
+"{b,{List*,Pair**, | a,b, | ,Cons},}" -> "b" [label = ","];
+"{b,{Pair**, | a, | },}" -> "{Pair**, | a, | }" [label = ","];
+"{b,{Pair**, | a, | },}" -> "b" [label = ","];
+"{List*, | b, | }" -> "{List*, | b, | ,Cons}" [label = ",Cons"];
+"{List*, | b, | }" -> "{b,{List*, | b, | },}" [label = ",Cons"];
+"{List*, | b, | }" -> "{{any,}->{List*, | b, | },{List*, | any, | },}" [label = ",map"];
+"{List*, | b, | }" -> "" [label = ",Nil"];
+"{List*, | b, | }" -> "" [label = ",ys"];
+"{List*, | b, | }" -> "{List*, | b, | }" [label = ",append"];
+"{List*, | b, | }" -> "{{any,}->b,{List*, | any, | },}" [label = ",map"];
+"{{List*,Pair**, | a, | ,Cons},{List*,Pair**, | a,b, | ,Cons},}" -> "{List*,Pair**, | a,b, | ,Cons}" [label = ","];
+"{{List*,Pair**, | a, | ,Cons},{List*,Pair**, | a,b, | ,Cons},}" -> "{List*,Pair**, | a, | ,Cons}" [label = ","];
+"{{List*,Pair**, | a, | ,Cons},{List*,Pair**, | b, | ,Cons},}" -> "{List*,Pair**, | a, | ,Cons}" [label = ","];
+"{{List*,Pair**, | a, | ,Cons},{List*,Pair**, | b, | ,Cons},}" -> "{List*,Pair**, | b, | ,Cons}" [label = ","];
+"{a,{List*,Pair**, | b, | ,Cons},}" -> "a" [label = ","];
+"{a,{List*,Pair**, | b, | ,Cons},}" -> "{List*,Pair**, | b, | ,Cons}" [label = ","];
+"{{Pair**, | a,b, | },{Pair**, | b, | },}" -> "{Pair**, | b, | }" [label = ","];
+"{{Pair**, | a,b, | },{Pair**, | b, | },}" -> "{Pair**, | a,b, | }" [label = ","];
+"{{List*,Pair**, | a, | ,Cons},{Pair**, | b, | },}" -> "{List*,Pair**, | a, | ,Cons}" [label = ","];
+"{{List*,Pair**, | a, | ,Cons},{Pair**, | b, | },}" -> "{Pair**, | b, | }" [label = ","];
+"{{List*,Pair**, | a,b, | },{List*,Pair**, | b, | },}" -> "{List*,Pair**, | b, | }" [label = ","];
+"{{List*,Pair**, | a,b, | },{List*,Pair**, | b, | },}" -> "{List*,Pair**, | a,b, | }" [label = ","];
+"{{List*,Pair**, | b, | },{Pair**, | a, | },}" -> "{List*,Pair**, | b, | }" [label = ","];
+"{{List*,Pair**, | b, | },{Pair**, | a, | },}" -> "{Pair**, | a, | }" [label = ","];
+"{a,{Pair**, | b, | },}" -> "a" [label = ","];
+"{a,{Pair**, | b, | },}" -> "{Pair**, | b, | }" [label = ","];
+"{{List*, | a, | ,Cons},{List*,Pair**, | a, | },}" -> "{List*, | a, | ,Cons}" [label = ","];
+"{{List*, | a, | ,Cons},{List*,Pair**, | a, | },}" -> "{List*,Pair**, | a, | }" [label = ","];
+"{{List*,Pair**, | a, | },{List*,Pair**, | b, | ,Cons},}" -> "{List*,Pair**, | a, | }" [label = ","];
+"{{List*,Pair**, | a, | },{List*,Pair**, | b, | ,Cons},}" -> "{List*,Pair**, | b, | ,Cons}" [label = ","];
+"{{List*,Pair**, | a, | },{List*,Pair**, | b, | },}" -> "{List*,Pair**, | b, | }" [label = ","];
+"{{List*,Pair**, | a, | },{List*,Pair**, | b, | },}" -> "{List*,Pair**, | a, | }" [label = ","];
+"{{List*, | a, | },{List*, | b, | },}" -> "{List*, | a, | }" [label = ","];
+"{{List*, | a, | },{List*, | b, | },}" -> "{List*, | b, | }" [label = ","];
+"{Pair**, | a,b, | }" -> "{b,{Pair**, | a,b, | },}" [label = ",Pair"];
+"{Pair**, | a,b, | }" -> "{{Pair**, | a, | },{Pair**, | b, | },}" [label = ",Pair"];
+"{Pair**, | a,b, | }" -> "{{Pair**, | a, | },{Pair**, | a,b, | },}" [label = ",Pair"];
+"{Pair**, | a,b, | }" -> "{b,{Pair**, | a, | },}" [label = ",Pair"];
+"{Pair**, | a,b, | }" -> "{{Pair**, | a,b, | },{Pair**, | b, | },}" [label = ",Pair"];
+"{Pair**, | a,b, | }" -> "{a,{Pair**, | b, | },}" [label = ",Pair"];
+"{Pair**, | a,b, | }" -> "{Pair**, | a,b, | }" [label = ",Pair"];
+"{Pair**, | a,b, | }" -> "{a,{Pair**, | a,b, | },}" [label = ",Pair"];
+"{Pair**, | a,b, | }" -> "{a,b,}" [label = ",Pair"];
+"{{List*,Pair**, | b, | },{Pair**, | b, | },}" -> "{List*,Pair**, | b, | }" [label = ","];
+"{{List*,Pair**, | b, | },{Pair**, | b, | },}" -> "{Pair**, | b, | }" [label = ","];
+"{{List*, | a, | ,Cons},{List*,Pair**, | b, | },}" -> "{List*,Pair**, | b, | }" [label = ","];
+"{{List*, | a, | ,Cons},{List*,Pair**, | b, | },}" -> "{List*, | a, | ,Cons}" [label = ","];
+"{List*, | any, | }" -> "{List*, | any, | ,Cons}" [label = ",Cons"];
+"{List*, | any, | }" -> "{{List*, | any, | },any,}" [label = ",Cons"];
+"{List*, | any, | }" -> "" [label = ",Nil"];
+"{List*, | any, | }" -> "{List*, | any, | }" [label = ",append"];
+"{{List*,Pair**, | a, | ,Cons},{List*,Pair**, | a,b, | },}" -> "{List*,Pair**, | a,b, | }" [label = ","];
+"{{List*,Pair**, | a, | ,Cons},{List*,Pair**, | a,b, | },}" -> "{List*,Pair**, | a, | ,Cons}" [label = ","];
+"{{any,}->b,{List*, | any, | },}" -> "{any,}->b" [label = ","];
+"{{any,}->b,{List*, | any, | },}" -> "{List*, | any, | }" [label = ","];
+"{{List*, | b, | ,Cons},{List*,Pair**, | a, | ,Cons},}" -> "{List*, | b, | ,Cons}" [label = ","];
+"{{List*, | b, | ,Cons},{List*,Pair**, | a, | ,Cons},}" -> "{List*,Pair**, | a, | ,Cons}" [label = ","];
+"{a,{Pair**, | a,b, | },}" -> "a" [label = ","];
+"{a,{Pair**, | a,b, | },}" -> "{Pair**, | a,b, | }" [label = ","];
+"{a,{List*,Pair**, | a,b, | },}" -> "a" [label = ","];
+"{a,{List*,Pair**, | a,b, | },}" -> "{List*,Pair**, | a,b, | }" [label = ","];
+"{a,b,}" -> "a" [label = ","];
+"{a,b,}" -> "b" [label = ","];
+"{{List*, | b, | },{List*,Pair**, | b, | ,Cons},}" -> "{List*, | b, | }" [label = ","];
+"{{List*, | b, | },{List*,Pair**, | b, | ,Cons},}" -> "{List*,Pair**, | b, | ,Cons}" [label = ","];
+"{List*,Pair**, | b, | ,Cons}" -> "{{any,}->{List*,Pair**, | b, | ,Cons},{List*, | any, | },}" [label = ",map"];
+"{List*,Pair**, | b, | ,Cons}" -> "{{any,}->{Pair**, | b, | },{List*, | any, | },}" [label = ",map"];
+"{List*,Pair**, | b, | ,Cons}" -> "{List*, | b, | ,Cons}" [label = ",product"];
+"{List*,Pair**, | b, | ,Cons}" -> "{List*,Pair**, | b, | }" [label = ",product,append"];
+"{List*,Pair**, | b, | ,Cons}" -> "{{List*, | b, | },{List*, | b, | ,Cons},}" [label = ",product"];
+"{List*,Pair**, | b, | ,Cons}" -> "{{List*, | b, | ,Cons},{List*,Pair**, | b, | ,Cons},}" [label = ",product"];
+"{List*,Pair**, | b, | ,Cons}" -> "{{List*,Pair**, | b, | },{List*,Pair**, | b, | ,Cons},}" [label = ",product"];
+"{List*,Pair**, | b, | ,Cons}" -> "{{List*, | b, | },{List*,Pair**, | b, | },}" [label = ",product"];
+"{List*,Pair**, | b, | ,Cons}" -> "{{List*, | b, | ,Cons},{List*,Pair**, | b, | },}" [label = ",product"];
+"{List*,Pair**, | b, | ,Cons}" -> "{List*, | b, | }" [label = ",product"];
+"{List*,Pair**, | b, | ,Cons}" -> "{{List*,Pair**, | b, | },{Pair**, | b, | },}" [label = ",Cons"];
+"{List*,Pair**, | b, | ,Cons}" -> "{{List*, | b, | },{List*,Pair**, | b, | ,Cons},}" [label = ",product"];
+"{List*,Pair**, | b, | ,Cons}" -> "{List*,Pair**, | b, | ,Cons}" [label = ",product,append,Cons"];
+"{{List*, | a, | ,Cons},{List*, | b, | ,Cons},}" -> "{List*, | b, | ,Cons}" [label = ","];
+"{{List*, | a, | ,Cons},{List*, | b, | ,Cons},}" -> "{List*, | a, | ,Cons}" [label = ","];
+"{b,{List*,Pair**, | a,b, | },}" -> "{List*,Pair**, | a,b, | }" [label = ","];
+"{b,{List*,Pair**, | a,b, | },}" -> "b" [label = ","];
+"{{List*,Pair**, | b, | ,Cons},{Pair**, | a, | },}" -> "{Pair**, | a, | }" [label = ","];
+"{{List*,Pair**, | b, | ,Cons},{Pair**, | a, | },}" -> "{List*,Pair**, | b, | ,Cons}" [label = ","];
+}

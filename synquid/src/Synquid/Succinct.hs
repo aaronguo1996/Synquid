@@ -8,7 +8,10 @@ import qualified Data.Set as Set
 import Data.Set (Set)
 import qualified Data.Map as Map
 import Data.Map (Map)
-import Data.List as List
+import qualified Data.HashMap.Strict as HashMap
+import Data.HashMap.Strict (HashMap)
+import Data.Hashable
+import Data.List
 import Data.Maybe
 import Control.Lens as Lens
 
@@ -21,15 +24,12 @@ data SuccinctType =
   SuccinctLet Id SuccinctType SuccinctType |
   SuccinctAny |
   SuccinctInhabited SuccinctType
-  deriving (Show, Eq, Ord)
+  deriving (Eq, Ord)
 
--- instance Eq (SuccinctType r) where
---   SuccinctDatatype ids1 tys1 cons1 == SuccinctDatatype ids2 tys2 cons2 = ids1 == ids2 && tys1 == tys2 && (Map.null cons1 || Map.null cons2 || cons1 == cons2)
---   sty1 == sty2 = sty1 == sty2
+instance Hashable SuccinctType where
+  hash sty = hash (succinct2str sty)
+  hashWithSalt s sty = s + hash sty
 
--- instance Ord (SuccinctType r)  where
---   SuccinctDatatype ids1 tys1 cons1 <= SuccinctDatatype ids2 tys2 cons2 = ids1 <= ids2 && tys1 <= tys2
---   sty1 <= sty2 = sty1 <= sty2
 lastSuccinctType :: SuccinctType -> SuccinctType
 lastSuccinctType (SuccinctFunction _ retTy) = retTy
 lastSuccinctType (SuccinctLet _ _ typ) = typ
@@ -81,13 +81,6 @@ toSuccinctType t@(LetT id varty bodyty) = let
   ty = SuccinctLet id (toSuccinctType varty) (toSuccinctType bodyty)
   in if Set.size vars == 0 then ty else simplifySuccinctType $ SuccinctAll vars ty
 toSuccinctType AnyT = SuccinctAny
-
--- toSuccinctType :: RSchema -> RSuccinctType
--- toSuccinctType (Monotype t) = rtypeToSuccinctType t
--- toSuccinctType (ForallT id t) = case toSuccinctType t of
---   SuccinctAll ids ty -> SuccinctAll (Set.singleton id `Set.union` ids) ty
---   ty                 -> SuccinctAll (Set.singleton id) ty
--- toSuccinctType (ForallP _ t) = toSuccinctType t
 
 outOfSuccinctAll :: SuccinctType -> SuccinctType
 outOfSuccinctAll (SuccinctFunction paramSet ret) = SuccinctFunction (Set.map outOfSuccinctAll paramSet) (outOfSuccinctAll ret)
@@ -142,30 +135,6 @@ succinctTypeSubstitute subst (SuccinctLet id tDef tBody) = simplifySuccinctType 
     tBody' = succinctTypeSubstitute subst tBody
 succinctTypeSubstitute subst SuccinctAny = SuccinctAny
 succinctTypeSubstitute subst (SuccinctInhabited t) = simplifySuccinctType $ SuccinctInhabited (succinctTypeSubstitute subst t)
-  -- where
-  --   getFromTy (SuccinctFunction paramSet retTy) = if retTy == sty then Just (SuccinctComposite paramSet) else Nothing
-  --   getFromTy (SuccinctAll idSet ty) = case ty of
-  --     SuccinctFunction pty rty -> let (unified, substitution) = unify env rty sty
-  --                                     pty' = Set.map (succinctTypeSubstitute substitution) pty
-  --                                 in if unified then Just (SuccinctComposite pty') else Nothing
-  --     _                        -> let (unified, substitution) = unify env ty sty
-  --                                 in if unified then Just (succinctTypeSubstitute substitution ty) else Nothing
-  --   getFromTy ty = if ty == sty then Just ty else Nothing
-    -- allSatTy = Map.map fromJust $ Map.filter isJust $ Map.map getFromTy (env ^. succinctSymbols)
-
---   let env' = 
--- -- if this variable is a constructor
---     if Set.size ids == 1 
---       then case Map.lookup (Set.take 1 ids) (env ^. datatypes) of
---         Just dtDef -> if Set.member name Set.fromList (df ^. constructors)
---           then (succinctSymbols %~ Map.insert name (SuccinctDatatype ids tys (Map.singleton (Set.take 1 ids) (Set.singleton name)))) env
---           else env
--- -- if this variable has not yet been assigned with some constructor
---       else if Set.size cons == 0
---         then let consSet = Set.map (\id -> (id, Set.fromList ((fromJust (Map.lookup id (env ^. datatypes))) ^. constructors))) ids
---                  consMap = Set.foldl (\acc (id,set) -> Map.insert id set acc) Map.empty consSet
---           in (succinctSymbols %~ Map.insert name (SuccinctDatatype ids tys consMap)) env
---         else env
 
 unifySuccinct :: SuccinctType -> SuccinctType -> [Id] -> (Bool, [SuccTypeSubstitution])
 unifySuccinct comp target boundedTys = case (comp, target) of
@@ -221,7 +190,7 @@ unifySuccinct comp target boundedTys = case (comp, target) of
     distribute n elements = 
       let pset = powerset elements
           allRemain s = Set.toList $ Set.filter ((elements `Set.difference` s) `Set.isSubsetOf`) pset
-          mergeRemain s ss acc = acc ++ (List.map ((:) s) (distribute (n-1) ss))
+          mergeRemain s ss acc = acc ++ (map ((:) s) (distribute (n-1) ss))
       in Set.foldr (\s acc -> acc ++ (foldr (mergeRemain s) [] (allRemain s))) [] pset
 
     allCombos :: Set (Id,Int) -> Set SuccinctType -> Set SuccinctType -> Set (Id,Int) -> Set SuccinctType -> Map Id (Set Id) -> [SuccTypeSubstitution]
@@ -237,7 +206,7 @@ unifySuccinct comp target boundedTys = case (comp, target) of
               optCons = replicate (Set.size freeVars) $ Set.toList $ powerset tcons
               optAssign [] = [[]]
               optAssign (t:ts) = [x:y | x <- t, y <- optAssign ts]
-              combine x y = map (\(a,b) -> a `Set.union` b) (List.zip x y)
+              combine x y = map (\(a,b) -> a `Set.union` b) (zip x y)
               finalTys = [combine x y | x <- mustTys, y <- optAssign optTys]
               finalCons = [combine x y | x <- mustCons, y <- optAssign optCons]
               assign vars x y = case (vars, x, y) of
@@ -257,18 +226,18 @@ unifySuccinct comp target boundedTys = case (comp, target) of
                                                               (foldr (\(x,y) acc -> acc && (isValid x y)) True (zip c t))]
           in resultMap
 
-getDestructors :: Id -> SType -> Map Id SType
-getDestructors name ty = case ty of
-  FunctionT _ tArg tRet -> let 
-    retTy = getFunRet ty
-    resMap = getDestructors name tRet
-    in
-    Map.insert (name++"_match_"++(show (Map.size resMap))) (FunctionT "x" retTy tArg) resMap
-  _ -> Map.empty
-  where
-    getFunRet t = case t of
-      FunctionT _ _ t' -> getFunRet t'
-      _ -> t
+-- getDestructors :: Id -> SType -> Map Id SType
+-- getDestructors name ty = case ty of
+--   FunctionT _ tArg tRet -> let 
+--     retTy = getFunRet ty
+--     resMap = getDestructors name tRet
+--     in
+--     Map.insert (name++"_match_"++(show (Map.size resMap))) (FunctionT "x" retTy tArg) resMap
+--   _ -> Map.empty
+--   where
+--     getFunRet t = case t of
+--       FunctionT _ _ t' -> getFunRet t'
+--       _ -> t
 
 getSuccinctDestructors :: Id -> SuccinctType -> Set SuccinctType
 getSuccinctDestructors name sty = case sty of
@@ -281,64 +250,20 @@ getSuccinctDestructors name sty = case sty of
     _ -> Set.empty
   _ -> Set.empty
 
--- type Vertex = Int
--- type Table a = Array Vertex a
--- type Graph e = Table [(e, Vertex)]
--- type Bounds  = (Vertex, Vertex)
--- type Edge e = (Vertex, e, Vertex)
-
--- type Labeling a = Vertex -> a
--- data LabGraph n e = LabGraph (Graph e) (Labeling n)
-
--- vertices (LabGraph gr _) = indices gr
-
--- edges :: Graph e -> [Edge e]
--- edges g = [ (v, l, w) | v <- indices g, (l, w) <- g!v ]
-
--- labels (LabGraph gr l) = map l (indices gr)
-
--- -- | Build a graph from a list of edges.
--- buildG :: Bounds -> [Edge e] -> Graph e
--- buildG bounds0 edges0 = accumArray (flip (:)) [] bounds0 [(v, (l,w)) | (v,l,w) <- edges0]
- 
--- -- | The graph obtained by reversing all edges.
--- transposeG  :: Graph e -> Graph e
--- transposeG g = buildG (bounds g) (reverseE g)
- 
--- reverseE    :: Graph e -> [Edge e]
--- reverseE g   = [ (w, l, v) | (v, l, w) <- edges g ]
-
-
 -- | when the graph is too large, this step consumes too much time, try a new way to traverse the graph 
 -- reverseGraph :: (Ord a) => Map a (Map a (Set Id)) -> Map a (Map a (Set Id))
-reverseGraph graph = reverseGraphHelper Map.empty graph
-  where
-    fold_fun acc k v = Map.foldlWithKey' (\tmap k' v' -> Map.insertWith mergeMapOfSet k' v' tmap) acc (Map.map (\s -> Map.singleton k s) v)
-    reverseGraphHelper acc g = Map.foldlWithKey' fold_fun Map.empty g
+-- reverseGraph graph = reverseGraphHelper HashMap.empty graph
+--   where
+--     fold_fun acc k v = HashMap.foldlWithKey' (\tmap k' v' -> HashMap.insertWith mergeMapOfSet k' v' tmap) acc (HashMap.map (\s -> HashMap.singleton k s) v)
+--     reverseGraphHelper acc g = HashMap.foldlWithKey' fold_fun HashMap.empty g
 
 allSuccinctIndices :: Map SuccinctType Int -> Set Int
 allSuccinctIndices nodesMap = Set.fromList $ Map.elems nodesMap
 
--- allSuccinctNodes graph = let 
---   filter_fun ty = case ty of
---     SuccinctComposite _ -> False
---     SuccinctInhabited _ -> False
---     _ -> True
---   allNodes = Map.foldl' (\acc map -> (Map.keysSet map) `Set.union` acc) (Map.keysSet graph) graph
---   in Set.filter filter_fun allNodes
-
-mergeMapOfSet :: (Ord a) => Map a (Set Id) -> Map a (Set Id) -> Map a (Set Id)
-mergeMapOfSet new old = Map.foldrWithKey fold_fun old new
+mergeMapOfSet :: (Hashable a, Ord a) => HashMap a (Set Id) -> HashMap a (Set Id) -> HashMap a (Set Id)
+mergeMapOfSet new old = HashMap.foldrWithKey fold_fun old new
   where
-    fold_fun kty idSet accMap = Map.insert kty ((Map.findWithDefault Set.empty kty accMap) `Set.union` idSet) accMap
-
-getInhabitedNodes :: Map SuccinctType (Map SuccinctType (Set Id)) -> Set SuccinctType
-getInhabitedNodes graph = Set.filter filter_fun allNodes
-  where
-    allNodes = Map.foldr (\map acc -> (Map.keysSet map) `Set.union` acc) (Map.keysSet graph) graph
-    filter_fun ty = case ty of
-      SuccinctInhabited _ -> True
-      _ -> False
+    fold_fun kty idSet accMap = HashMap.insert kty ((HashMap.lookupDefault Set.empty kty accMap) `Set.union` idSet) accMap
 
 isSuccinctInhabited ty@(SuccinctInhabited _) = True
 isSuccinctInhabited ty = False
@@ -356,36 +281,15 @@ isSuccinctConcrete (SuccinctInhabited _) = False
 isSuccinctConcrete (SuccinctComposite _) = False
 isSuccinctConcrete (SuccinctFunction _ _) = False
 isSuccinctConcrete (SuccinctAny) = False
+isSuccinctConcrete (SuccinctDatatype _ tys _) = Set.foldr (\t acc -> acc && isSuccinctConcrete t) True tys
 isSuccinctConcrete _ = True
 
-  -- where
-    -- allNodes = Map.foldl' (\acc map -> (Map.keysSet map) `Set.union` acc) (Map.keysSet graph) graph
-  -- getReachableNodesHelper graph Set.empty (getInhabitedNodes graph)
-  -- where
-  --   getReachableNodesHelper g visited !toVisit = 
-  --     if Set.size toVisit == 0
-  --       then visited
-  --       else let curr = Set.findMin toVisit
-  --         in if Set.member curr visited 
-  --           then rmUnreachableComposite $ getReachableNodesHelper g visited (Set.delete curr toVisit)
-  --           else rmUnreachableComposite $ getReachableNodesHelper g (Set.insert curr visited) (Map.keysSet (findDstNodesInGraph graph curr []) `Set.union` (Set.delete curr toVisit))
-
--- rmUnreachableComposite :: Set SuccinctType -> Set SuccinctType
--- rmUnreachableComposite reachableSet = Set.foldl (\acc t -> if isCompositeReachable t then acc else Set.delete t acc) reachableSet (compositeNodes)
---   where
---     isCompositeNode ty = case ty of
---       SuccinctComposite _ -> True
---       _ -> False
---     compositeNodes = Set.filter isCompositeNode reachableSet
---     isCompositeReachable t = let SuccinctComposite tySet = t in 
---       Set.foldl (\acc b -> acc && (Set.member b reachableSet)) True tySet
-
 -- | function for debug
-printGraph :: Map SuccinctType (Map SuccinctType (Set Id)) -> String
-printGraph graph = Map.foldrWithKey printMap "" graph
+printGraph :: HashMap SuccinctType (HashMap SuccinctType (Set Id)) -> String
+printGraph graph = HashMap.foldrWithKey printMap "" graph
   where
-    printMap k v acc = Set.foldr (\x tmp -> tmp ++ (show k) ++ x) acc (Map.foldrWithKey printSet Set.empty v)
-    printSet k s acc = acc `Set.union` Set.map (\x -> "--" ++ x ++ "-->" ++ (show k) ++ "\n") s
+    printMap k v acc = Set.foldr (\x tmp -> tmp ++ (succinct2str k) ++ x) acc (HashMap.foldrWithKey printSet Set.empty v)
+    printSet k s acc = acc `Set.union` Set.map (\x -> "--" ++ x ++ "-->" ++ (succinct2str k) ++ "\n") s
 
 succinctAnyEq :: SuccinctType -> SuccinctType -> Bool
 succinctAnyEq (SuccinctScalar t1) (SuccinctScalar t2) = t1 == t2
@@ -433,5 +337,12 @@ succinct2str sty = case sty of
                         ["{"
                         ,(foldl (\acc x->acc++(succinct2str x)++",") "" tys)
                         ,"}"
+                        ]
+    SuccinctAny -> "any"
+    SuccinctLet id ty1 ty2 -> concat
+                        ["let "
+                        ,succinct2str ty1
+                        ," in "
+                        ,succinct2str ty2
                         ]
     SuccinctInhabited s          -> ""

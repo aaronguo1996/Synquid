@@ -1,0 +1,135 @@
+add :: x:Nat -> y:Nat -> {Int|_v == x + y}
+add = \x . \y . 
+    if x <= 0
+      then y
+      else add (dec x) (inc y)
+
+null :: xs:List a -> {Bool|_v == (len xs == 0)}
+null = \xs . 
+  match xs with
+    Nil -> true
+    Cons x7 x8 -> false
+
+elem :: x:a -> xs:List a -> {Bool|_v == (x in elems xs)}
+elem = \x . \xs . 
+    match xs with
+      Nil -> false
+      Cons x9 x10 -> 
+        if x9 == x
+          then true
+          else elem x x10
+
+stutter :: xs:List a -> {List a|len _v == 2 * len xs}
+stutter = \xs . 
+  match xs with
+    Nil -> xs
+    Cons x7 x8 -> Cons x7 (Cons x7
+                             (stutter x8))
+
+replicate :: n:Nat -> x:a -> {List a|len _v == n}
+replicate = \n . \x . 
+    if n <= 0
+      then Nil
+      else Cons x (replicate (dec n)
+                     x)
+
+append :: xs:List a -> ys:List a -> {List a|len _v == len xs + len ys && elems _v == elems xs + elems ys}
+append = \xs . \ys . 
+    match xs with
+      Nil -> ys
+      Cons x13 x14 -> Cons x13 (append
+                                  x14 ys)
+
+concat :: xss:ListOfLists a -> {List a|len _v == sumLen xss}
+concat = \xss . 
+  match xss with
+    Nil2 -> Nil
+    Cons2 x11 x12 -> append x11
+                       (concat x12)
+
+take :: n:Nat -> xs:{List a|len _v >= n} -> {List a|len _v == n}
+take = \n . \xs . 
+    if 0 != n
+      then 
+        match xs with
+          Nil -> error
+          Cons x11 x12 -> Cons x11 (take
+                                      (dec n) x12)
+      else Nil
+
+drop :: n:Nat -> xs:{List a|len _v >= n} -> {List a|len _v == len xs - n}
+drop = \n . \xs . 
+    if 0 != n
+      then 
+        match xs with
+          Nil -> error
+          Cons x11 x12 -> drop (dec n) x12
+      else xs
+
+delete :: x:a -> xs:List a -> {List a|elems _v == elems xs - [x]}
+delete = \x . \xs . 
+    match xs with
+      Nil -> xs
+      Cons x9 x10 -> 
+        if x9 == x
+          then delete x x10
+          else Cons x9 (delete x x10)
+
+map :: f:(arg0:a -> b) -> xs:List a -> {List b|len _v == len xs}
+map = \f . \xs . 
+    match xs with
+      Nil -> Nil
+      Cons x12 x13 -> Cons (f x12)
+                        (map f x13)
+
+zipWith :: f:(arg1:a -> arg0:b -> c) -> xs:List a -> ys:{List b|len _v == len xs} -> {List c|len _v == len xs}
+zipWith = \f . \xs . \ys . 
+      match xs with
+        Nil -> Nil
+        Cons x17 x18 -> 
+          match ys with
+            Nil -> error
+            Cons x21 x22 -> Cons (f x17 x21)
+                              (zipWith f x18 x22)
+
+zip :: xs:List a -> ys:{List b|len _v == len xs} -> {List Pair a b|len _v == len xs}
+zip = \xs . \ys . 
+    match xs with
+      Nil -> Nil
+      Cons x11 x12 -> 
+        match ys with
+          Nil -> error
+          Cons x15 x16 -> Cons (Pair x11
+                                  x15) (zip x12 x16)
+
+toNat :: xs:List Int -> {List Nat|len _v == len xs}
+toNat = \xs . 
+  let f0 = \x10 . 
+      if x10 <= 0
+        then neg x10
+        else x10 in
+  map f0 xs
+
+product :: xs:List a -> ys:List b -> {List Pair a b|len _v == len xs * len ys}
+product = \xs . \ys . 
+    match xs with
+      Nil -> Nil
+      Cons x16 x17 -> 
+        let f0 = \x25 . Pair x16 x20 in
+        append (map f0 ys) (product x17
+                              ys)
+
+extractMin :: xs:{List a|len _v > 0} -> {MinPair a|elems xs == [min _v] + elems (rest _v) && len xs == 1 + len (rest _v)}
+extractMin = \xs . 
+  match xs with
+    Nil -> error
+    Cons x9 x10 -> 
+      match x10 with
+        Nil -> MinPair x9 Nil
+        Cons x15 x16 -> 
+          match extractMin x10 with
+            MinPair x20 x21 -> 
+              if x9 <= x20
+                then MinPair x9 (Cons x20 x21)
+                else MinPair x20 (Cons x9 x21)
+

@@ -1,0 +1,14 @@
+010void nestedException(){
+    try{
+          throw logic_error("Logic error from inner block\n");
+            }catch(runtime_error err){
+                  cout << err.what();
+                    }catch(logic_error err){
+                          cout << err.what();
+                            }
+}
++2
+40
+
+
+6 36.3  2147483647  2147483647

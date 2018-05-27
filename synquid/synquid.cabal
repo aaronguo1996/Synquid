@@ -28,6 +28,8 @@ executable synquid
 
   build-depends:      base >=4.6 && <4.9
                     , containers >=0.5 && <0.6
+                    , unordered-containers >= 0.2.7.0
+                    , hashable >= 0.2.7.0
                     , mtl >=2.2 && <2.3
                     , transformers >=0.3 && <0.5
                     , transformers-compat ==0.4.*

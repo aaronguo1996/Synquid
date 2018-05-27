@@ -67,7 +67,6 @@ import Data.Set (Set)
 import qualified Data.Map as Map
 import Data.Map (Map, (!))
 import Data.List
-import Debug.Trace
 
 import Control.Lens
 
@@ -145,15 +144,23 @@ instance Pretty Sort where
   pretty (DataS name args) = text name <+> hsep (map (hlParens . pretty) args)
   pretty AnyS = operator "?"
 
-
+instance Show Sort where
+  show = show . pretty
+  
 instance Pretty PredSig where
   pretty (PredSig p argSorts resSort) = hlAngles $ text p <+> text "::" <+> hsep (map (\s -> pretty s <+> text "->") argSorts) <+> pretty resSort
 
 instance Pretty UnOp where
   pretty op = operator $ unOpTokens Map.! op
 
+instance Show UnOp where
+  show = show . pretty
+
 instance Pretty BinOp where
   pretty op = operator $ binOpTokens Map.! op
+
+instance Show BinOp where
+  show = show . pretty
 
 -- | Binding power of a formula
 power :: Formula -> Int
@@ -183,21 +190,25 @@ fmlDocAt n fml = condHlParens (n' <= n) (
   case fml of
     BoolLit b -> pretty b
     IntLit i -> intLiteral i
-    SetLit s elems -> (hlBrackets $ commaSep $ map fmlDoc elems)
-    Var s name -> if name == valueVarName then special name else text name
+    SetLit s elems -> withSort (SetS s) (hlBrackets $ commaSep $ map fmlDoc elems)
+    SetComp (Var s x) e -> withSort (SetS s) (hlBrackets $ text x <> operator "|" <> pretty e)
+    Var s name -> withSort s $ if name == valueVarName then special name else text name
     Unknown s name -> if Map.null s then text name else hMapDoc pretty pretty s <> text name
     Unary op e -> pretty op <> fmlDocAt n' e
     Binary op e1 e2 -> fmlDocAt n' e1 <+> pretty op <+> fmlDocAt n' e2
     Ite e0 e1 e2 -> keyword "if" <+> fmlDoc e0 <+> keyword "then" <+> fmlDoc e1 <+> keyword "else" <+> fmlDoc e2
-    Pred b name args -> text name <+> hsep (map (fmlDocAt n') args)
-    Cons b name args -> hlParens (text name <+> hsep (map (fmlDocAt n') args))
+    Pred b name args -> withSort b $ text name <+> hsep (map (fmlDocAt n') args)
+    Cons b name args -> withSort b $ hlParens (text name <+> hsep (map (fmlDocAt n') args))
     All x e -> keyword "forall" <+> pretty x <+> operator "." <+> fmlDoc e
   )
   where
     n' = power fml
-    withSort s doc = doc <> text ":" <> pretty s
+    withSort s doc = doc -- <> text ":" <> pretty s
 
-instance Pretty Formula where pretty = fmlDoc
+instance Pretty Formula where pretty e = fmlDoc e
+
+instance Show Formula where
+  show = show . pretty
 
 instance Pretty Valuation where
   pretty val = braces $ commaSep $ map pretty $ Set.toList val
@@ -208,14 +219,16 @@ instance Pretty Solution where
 instance Pretty QSpace where
   pretty space = braces $ commaSep $ map pretty $ view qualifiers space
 
+instance Show QSpace where
+  show = show . pretty
 
 instance Pretty QMap where
   pretty = vMapDoc text pretty
-
+  
 {- Types -}
 
 prettyBase :: Pretty r => (TypeSkeleton r -> Doc) -> BaseType r -> Doc
-prettyBase prettyType base = case base of
+prettyBase prettyType base = case base of 
   IntT -> text "Int"
   BoolT -> text "Bool"
   TypeVarT s name -> if Map.null s then text name else hMapDoc pretty pretty s <> text name
@@ -227,7 +240,9 @@ instance Pretty (BaseType ()) where
 instance Pretty (BaseType Formula) where
   pretty = prettyBase (prettyTypeAt 1)
 
-
+instance Show (BaseType Formula) where
+  show = show . pretty
+  
 prettySType :: SType -> Doc
 prettySType (ScalarT base _) = pretty base
 prettySType (FunctionT _ t1 t2) = hlParens (pretty t1 <+> operator "->" <+> pretty t2)
@@ -235,6 +250,9 @@ prettySType AnyT = text "_"
 
 instance Pretty SType where
   pretty = prettySType
+
+instance Show SType where
+ show = show . pretty
 
 -- | Pretty-printed refinement type
 prettyType :: RType -> Doc
@@ -262,7 +280,9 @@ prettyTypeAt n t = condHlParens (n' <= n) (
 instance Pretty RType where
   pretty = prettyType
 
-
+instance Show RType where
+ show = show . pretty
+ 
 prettySchema :: Pretty (TypeSkeleton r) => SchemaSkeleton r -> Doc
 prettySchema sch = case sch of
   Monotype t -> pretty t
@@ -272,19 +292,23 @@ prettySchema sch = case sch of
 instance Pretty SSchema where
   pretty = prettySchema
 
+instance Show SSchema where
+ show = show . pretty
 
 instance Pretty RSchema where
   pretty = prettySchema
 
+instance Show RSchema where
+  show = show . pretty
 
-{- Programs -}
+{- Programs -}  
 
 prettyCase :: (Pretty t) => Case t -> Doc
 prettyCase cas = hang tab $ text (constructor cas) <+> hsep (map text $ argNames cas) <+> operator "->" </> prettyProgram (expr cas)
 
 prettyProgram :: (Pretty t) => Program t -> Doc
 prettyProgram (Program p typ) = case p of
-    PSymbol s -> case asInteger s of
+    PSymbol s -> case asInteger s of 
                   Nothing -> if s == valueVarName then special s else text s
                   Just n -> intLiteral n
     PApp f x -> let
@@ -316,12 +340,15 @@ prettyProgram (Program p typ) = case p of
 instance (Pretty t) => Pretty (Program t) where
   pretty = prettyProgram
 
+instance (Pretty t) => Show (Program t) where
+  show = show . pretty
+
 instance Pretty TypeSubstitution where
   pretty = hMapDoc text pretty
-
+  
 instance Pretty MeasureCase where
   pretty (MeasureCase cons args def) = text cons <+> hsep (map text args) <+> text "->" <+> pretty def
-
+  
 instance Pretty MeasureDef where
   pretty (MeasureDef inSort outSort defs post) = nest 2 (pretty inSort <+> text "->" <+> pretty outSort <+> braces (pretty post) $+$ vsep (map pretty defs))
 
@@ -334,7 +361,7 @@ prettyBindings env = commaSep (map pretty (Map.keys $ removeDomain (env ^. const
 
 instance Pretty Environment where
   pretty env = prettyBindings env <+> prettyAssumptions env
-
+  
 prettySortConstraint :: SortConstraint -> Doc
 prettySortConstraint (SameSort sl sr) = pretty sl <+> text "=" <+> pretty sr
 prettySortConstraint (IsOrd s) = text "Ord" <+> pretty s
@@ -356,55 +383,63 @@ prettyConstraint (WellFormedPredicate _ sorts p) = operator "|-" <+> pretty p <+
 instance Pretty Constraint where
   pretty = prettyConstraint
 
+instance Show Constraint where
+  show = show . pretty
 
 instance Pretty Candidate where
   pretty (Candidate sol valids invalids label) = text label <> text ":" <+> pretty sol <+> parens (pretty (Set.size valids) <+> pretty (Set.size invalids))
 
+instance Show Candidate where
+  show = show . pretty
+  
 instance Pretty Goal where
-  pretty (Goal name env spec impl depth _ _) = pretty env <+> operator "|-" <+> text name <+> operator "::" <+> pretty spec $+$ text name <+> operator "=" <+> pretty impl $+$ parens (text "depth:" <+> pretty depth)
+  pretty (Goal name env spec impl depth _) = pretty env <+> operator "|-" <+> text name <+> operator "::" <+> pretty spec $+$ text name <+> operator "=" <+> pretty impl $+$ parens (text "depth:" <+> pretty depth)
 
-prettySpec g@(Goal name _ _ _ _ _ _) = text name <+> operator "::" <+> pretty (unresolvedSpec g)
-prettySolution (Goal name _ _ _ _ _ _) prog = text name <+> operator "=" </> pretty prog
+instance Show Goal where
+  show = show. pretty
+  
+prettySpec g@(Goal name _ _ _ _ _) = text name <+> operator "::" <+> pretty (unresolvedSpec g)
+prettySolution (Goal name _ _ _ _ _) prog = text name <+> operator "=" </> pretty prog
 
 {- Input language -}
 
 instance Pretty ConstructorSig where
   pretty (ConstructorSig name t) = text name <+> text "::" <+> pretty t
-
-prettyVarianceParam (predSig, contra) = pretty predSig <> (if contra then pretty Not else empty)
+  
+prettyVarianceParam (predSig, contra) = pretty predSig <> (if contra then pretty Not else empty)  
 
 instance Pretty BareDeclaration where
   pretty (TypeDecl name tvs t) = keyword "type" <+> text name <+> hsep (map text tvs) <+> operator "=" <+> pretty t
   pretty (QualifierDecl fmls) = keyword "qualifier" <+> hlBraces (commaSep $ map pretty fmls)
   pretty (FuncDecl name t) = text name <+> operator "::" <+> pretty t
-  pretty (DataDecl name tParams pParams ctors) = hang tab $
-    keyword "data" <+> text name <+> hsep (map text tParams) <+> hsep (map prettyVarianceParam pParams) <+> keyword "where"
+  pretty (DataDecl name tParams pParams ctors) = hang tab $ 
+    keyword "data" <+> text name <+> hsep (map text tParams) <+> hsep (map prettyVarianceParam pParams) <+> keyword "where" 
     $+$ vsep (map pretty ctors)
-  pretty (MeasureDecl name inSort outSort post cases isTermination) = hang tab $
+  pretty (MeasureDecl name inSort outSort post cases isTermination) = hang tab $ 
     if isTermination then keyword "termination" else empty
     <+> keyword "measure" <+> text name <+> operator "::" <+> pretty inSort <+> operator "->"
     <+> if post == ftrue then pretty outSort else hlBraces (pretty outSort <+> operator "|" <+> pretty post) <+> keyword "where"
-    $+$ vsep (map pretty cases)
+    $+$ vsep (map pretty cases)                                                        
   pretty (SynthesisGoal name impl) = text name <+> operator "=" <+> pretty impl
   pretty (MutualDecl names) = keyword "mutual" <+> commaSep (map text names)
   pretty (InlineDecl name args body) = keyword "inline" <+> text name <+> hsep (map text args) <+> operator "=" <+> pretty body
-
+  
 instance Pretty a => Pretty (Pos a) where
   pretty (Pos _ x) = pretty x
-
-prettyError (ErrorMessage ParseError pos descr) = align $ hang tab $
+  
+prettyError (ErrorMessage ParseError pos descr) = align $ hang tab $ 
   errorDoc (hcat $ map (<> colon) [text (sourceName pos), pretty (sourceLine pos), pretty (sourceColumn pos), text " Parse Error"]) $+$
-  pretty descr
-prettyError (ErrorMessage ResolutionError pos descr) = hang tab $
+  pretty descr    
+prettyError (ErrorMessage ResolutionError pos descr) = hang tab $ 
   errorDoc (hcat $ map (<> colon) [text (sourceName pos), pretty (sourceLine pos), text " Resolution Error"]) $+$
-  pretty descr
-prettyError (ErrorMessage TypeError pos descr) = hang tab $
+  pretty descr  
+prettyError (ErrorMessage TypeError pos descr) = hang tab $ 
   errorDoc (hcat $ map (<> colon) [text (sourceName pos), pretty (sourceLine pos), text " Error"]) $+$
   pretty descr
-
+    
 instance Pretty ErrorMessage where
   pretty = prettyError
-
+  
 instance Show ErrorMessage where
   show = show . pretty
 
@@ -413,6 +448,7 @@ instance Show ErrorMessage where
 -- | 'fmlNodeCount' @fml@ : size of @fml@ (in AST nodes)
 fmlNodeCount :: Formula -> Int
 fmlNodeCount (SetLit _ args) = 1 + sum (map fmlNodeCount args)
+fmlNodeCount (SetComp _ e) = 1 + fmlNodeCount e
 fmlNodeCount (Unary _ e) = 1 + fmlNodeCount e
 fmlNodeCount (Binary _ l r) = 1 + fmlNodeCount l + fmlNodeCount r
 fmlNodeCount (Ite c l r) = 1 + fmlNodeCount c + fmlNodeCount l + fmlNodeCount r
@@ -457,9 +493,9 @@ mkTableLaTeX :: [Int] -> [[Doc]] -> Doc
 mkTableLaTeX widths docs =
   uncurry mkTable $ insertSeps widths docs
  where
-  insertSeps widths docs = (intersperse 3 widths ++ [3],
+  insertSeps widths docs = (intersperse 3 widths ++ [3], 
     map ((++ [nl]) . intersperse tab) docs)
-  tab = text " &"
+  tab = text " &"     
   nl = text " \\\\"
 
 -- | Really? They didn't think I might want to right-align something?

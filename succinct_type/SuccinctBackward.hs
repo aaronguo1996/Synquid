@@ -206,6 +206,50 @@ isSTypeEq sty1 sty2 = case (sty1, sty2) of
     (SDone s1  , SDone s2)   -> s1==s2
     (_         , _)          -> False
 
+hasUnbound :: SuccCtx -> STy -> Bool
+hasUnbound ctx ty = case ty of
+    SRaw (TyId id) -> isNameBound ctx id
+    SRaw t         -> False
+    SArr p r       -> (foldl (\acc x -> acc || hasUnbound ctx x) False p) || (hasUnbound ctx r)
+    SAll ns t      -> hasUnbound ctx t
+    SDt ns ts      -> foldl (\acc x -> acc || hasUnbound ctx x) False ts
+    SCmp ts        -> foldl (\acc x -> acc || hasUnbound ctx x) False ts
+    SDone s        -> False
+
+removeUnbound :: SuccCtx -> [STy] -> [STy]
+removeUnbound ctx stys = filter (hasUnbound ctx) stys
+
+isSTypeEqCtx :: SuccCtx -> STy -> STy -> Bool
+isSTypeEqCtx ctx sty1 sty2 = case (sty1, sty2) of
+    (SRaw (TyId id1), SRaw (TyId id2)) -> if not(isNameBound ctx id1) && not(isNameBound ctx id2)
+                                            then True
+                                            else if (isNameBound ctx id1) && (isNameBound ctx id2)
+                                                   then id1 == id2
+                                                   else False
+    (SRaw t1   , SRaw t2)    -> isTypeEq t1 t2
+    (SArr p1 r1, SArr p2 r2) -> let f acc (x,y) = acc && (isSTypeEqCtx ctx x y)
+                                    lenCmp = (length p1)==(length p2)
+                                    sp1 = sort (removeUnbound ctx p1)
+                                    sp2 = sort (removeUnbound ctx p2)
+                                    paramCmp = if length sp1 == length sp2 
+                                                 then foldl f True (zip sp1 sp2)
+                                                 else False
+                                    retCmp = (isSTypeEqCtx ctx r1 r2)
+                                in lenCmp && paramCmp && retCmp
+    (SAll n1 t1, SAll n2 t2) -> let sn1 = sort n1
+                                    sn2 = sort n2
+                                in (sn1==sn2) && (isSTypeEq t1 t2)
+    (SDt n1 t1 , SDt n2 t2)  -> let sn1 = sort n1
+                                    sn2 = sort n2
+                                    st1 = sort (removeUnbound ctx t1)
+                                    st2 = sort (removeUnbound ctx t2)
+                                in (sn1==sn2) && (st1==st2)
+    (SCmp t1   , SCmp t2)    -> let st1 = sort (removeUnbound ctx t1)
+                                    st2 = sort (removeUnbound ctx t2)
+                                in st1==st2
+    (SDone s1  , SDone s2)   -> s1==s2
+    (_         , _)          -> False
+
 refineSuccinct :: STy -> STy
 refineSuccinct sty = case sty of
     SRaw t   -> SRaw t
@@ -327,21 +371,20 @@ rootTypeOf (x:xs) sty = let ctx = (x:xs)
   where
     res = rootTypeOf xs sty
 
-hasSeen :: [STy] -> STy -> Bool
-hasSeen tys t = case elemIndex t tys of
-    Just _  -> True
-    Nothing -> False
+hasSeen :: SuccCtx -> [STy] -> STy -> Bool
+hasSeen ctx [] t = False
+hasSeen ctx (x:xs) t = if isSTypeEqCtx ctx x t then True else hasSeen ctx xs t
 
 traversal :: SuccCtx -> [STy] -> STy -> [(STy,String,STy)]
 traversal sctx seen sty = case sty of
-    SCmp tys -> let (want, _) = foldl (\(acc,s) x->(acc++(if hasSeen s x then [] else traversal sctx (x:s) x),x:s)) (res,seen) tys 
+    SCmp tys -> let (want, _) = foldl (\(acc,s) x->(acc++(if hasSeen sctx s x then [] else traversal sctx (x:s) x),x:s)) (res,seen) tys 
                     cmpEdges = map (\t -> (sty,"",t)) tys
                 in want++cmpEdges
     SDone s  -> []
     _        -> res ++ case leaves of
                   [] -> []
                   _  -> let (want, _) = foldl (\(acc,s) (n,x)->
-                                                (acc ++ (if (hasSeen s x) || (isSTypeEq x sty) 
+                                                (acc ++ (if (hasSeen sctx s x) || (isSTypeEqCtx sctx x sty) 
                                                            then [] 
                                                            else traversal sctx (x:s) x), x:s)) ([],seen) leaves
                         in want
@@ -352,28 +395,33 @@ traversal sctx seen sty = case sty of
                _             -> rootTypeOf (sctx++(bindIfFree sctx sty)) sty
     res = map (\(n,t)->(sty,n,t)) leaves
 
-isReachable :: [(STy,String,STy)] -> [STy] -> STy -> Bool
-isReachable []    _    _  = False
-isReachable edges seen ty = case ty of
+isReachable :: SuccCtx -> [(STy,String,STy)] -> [STy] -> STy -> Bool
+isReachable _ []    _    _  = False
+isReachable ctx edges seen ty = case ty of
     SDone _  -> True
-    SCmp tys -> foldl (\acc x -> (acc && isReachable edges (x:seen) x)) True (getDsts seen ty)
-    _        -> foldl (\acc x -> (acc || isReachable edges (x:seen) x)) False (getDsts seen ty)
+    SCmp tys -> foldl (\acc x -> (acc && isReachable ctx edges (x:seen) x)) True (getDsts seen ty)
+    _        -> foldl (\acc x -> (acc || isReachable ctx edges (x:seen) x)) False (getDsts seen ty)
   where 
     getDsts seen t = let fold_fun (acc, s) (from,_,to) = 
-                             if (from == t) && (not (hasSeen s to))
+                             if (isSTypeEqCtx ctx from t) && (not (hasSeen ctx s to))
                                  then (to:acc, t:s)
                                  else (acc, s)
                          (res,_) = foldl fold_fun ([],seen) edges
                       in res
 
-prune :: [(STy, String, STy)] -> [STy] -> [(STy, String, STy)]
-prune edges unreach = let
+prune :: SuccCtx -> [(STy, String, STy)] -> [STy] -> [(STy, String, STy)]
+prune ctx edges unreach = let
     filter_fun (from,_,to) = 
-        case elemIndex from unreach of
-            Just i  -> False
-            Nothing -> case elemIndex to unreach of
-                           Just j  -> False
-                           Nothing -> True
+        if hasSeen ctx unreach from
+          then False
+          else if hasSeen ctx unreach to
+                 then False
+                 else True
+        -- case elemIndex from unreach of
+        --     Just i  -> False
+        --     Nothing -> case elemIndex to unreach of
+        --                    Just j  -> False
+        --                    Nothing -> True
     in filter filter_fun edges
 
 -- utility functions

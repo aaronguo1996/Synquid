@@ -60,6 +60,8 @@ main = do
                  ,("Cons2_tail", TyAll "a" (TyArr (TyDt "ListOfLists_cons" [TyId "a"]) (TyDt "ListOfLists" [TyId "a"])))
                  ,("append", TyAll "a" (TyArr (TyDt "List" [TyId "a"]) (TyArr (TyDt "List" [TyId "a"]) (TyDt "List" [TyId "a"]))))
                  ,("xss", TyDt "ListOfLists" [TyId "a"])
+                 ,("xss", TyDt "ListOfLists_nill" [TyId "a"])
+                 ,("xss", TyDt "ListOfLists_cons" [TyId "a"])
                  ,("concat", TyAll "a" (TyArr (TyDt "ListOfLists" [TyId "a"]) (TyDt "List" [TyId "a"])))
                  ]
     sampleTest = [("f",(TyArr (TyInt) (TyArr (TyBool) (TyArr (TyInt) (TyInt))))) -- Int -> Bool -> Int -> Int
@@ -122,13 +124,13 @@ main = do
           ,("stringToExpr", TyArr TyString (TyDt "Expr" []))
           ,("stringToNExpr", TyArr TyString (TyDt "NExpr" []))
           ]
-    target = TyDt "MinPair" [TyId "a"]--TyDt "Edge" [TyId "a"] --TyDt "NExpr" [] --TyDt "MinPair" [TyId "a"] --TyDt "List" [TyId "a"]  --TyDt "AddressBook" [] -- TyDt "BitVec" [] --TyDt "AddressBook" [] --TyDt "List" [TyId "a"] --TyAll "a" (TyDt "List" [TyId "a"]) --TyDt "AddressBook" []--TyAll "X" (TyDt "List" [TyId "X"])
-    sctx = map (\(n,t)->(n,VarBind (toSuccinctType t))) bstExtractMin
+    target = TyDt "Edge" [TyId "a"]--TyDt "Edge" [TyId "a"] --TyDt "NExpr" [] --TyDt "MinPair" [TyId "a"] --TyDt "List" [TyId "a"]  --TyDt "AddressBook" [] -- TyDt "BitVec" [] --TyDt "AddressBook" [] --TyDt "List" [TyId "a"] --TyAll "a" (TyDt "List" [TyId "a"]) --TyDt "AddressBook" []--TyAll "X" (TyDt "List" [TyId "X"])
+    sctx = map (\(n,t)->(n,VarBind (toSuccinctType t))) makeEdge
     -- tyCtx = []
     starget = toSuccinctType target
     result = removeDups (traversal sctx [] starget) []
     types = getUniqueSet result
-    prunedRes = prune result (filter (\x-> not (isReachable result [] x)) types)
+    prunedRes = prune sctx result (filter (\x-> not (isReachable sctx result [] x)) types)
     prunedTys = getUniqueSet prunedRes
     tyIndices = toTypeIndices types 
     prunedIdx = toTypeIndices prunedTys

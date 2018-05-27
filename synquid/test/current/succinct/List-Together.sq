@@ -76,7 +76,7 @@ stutter :: xs: List a -> {List a | len _v == 2 * len xs}
 take :: n: Nat -> xs: {List a | len _v >= n} -> {List a | len _v == n}
 toNat :: xs: List Int -> {List Nat | len _v == len xs}
 zipWith :: f: (a -> b -> c) -> xs: List a -> ys: {List b | len _v == len xs} -> {List c | len _v == len xs}
-selectSort :: xs: List a -> {IList a | ielems _v == elems xs}
+-- selectSort :: xs: List a -> {IList a | ielems _v == elems xs}
 extractMin :: xs: {List a | len _v > 0} -> {MinPair a | elems xs == [min _v] + elems (rest _v) && len xs == 1 + len (rest _v)}
 merge :: xs: IList a -> ys: IList a -> {IList a | ilen _v == ilen xs + ilen ys && ielems _v == ielems xs + ielems ys}
 merge = ??

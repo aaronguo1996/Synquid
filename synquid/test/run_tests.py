@@ -16,7 +16,7 @@ BENCH_PATH = '.'
 LOGFILE_NAME = 'results.log'
 ORACLE_NAME = 'oracle'
 OUTFILE_NAME = 'results.csv'
-COMMON_OPTS = ['-z']
+COMMON_OPTS = []
 TIMEOUT_COMMAND = 'timeout'
 TIMEOUT= '120'
 
@@ -114,9 +114,9 @@ BENCHMARKS = {
           ],
   'rbt' : [
     # Red-black trees
-    ('RBT-BalanceL',        ['-a 2', '-u', '-z']),
-    ('RBT-BalanceR',        ['-a 2', '-u', '-z']),
-    ('RBT-Insert',          ['-a 2', '-m 1', '-z']),
+    ('RBT-BalanceL',        ['-a 2', '-u']),
+    ('RBT-BalanceR',        ['-a 2', '-u']),
+    ('RBT-Insert',          ['-a 2', '-m 1']),
           ]
 }
 
