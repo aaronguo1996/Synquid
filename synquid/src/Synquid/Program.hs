@@ -170,10 +170,7 @@ makeLenses ''MeasureDef
 data Environment = Environment {
   -- | Variable part:
   _symbols :: Map Int (Map Id RSchema),    -- ^ Variables and constants (with their refinement types), indexed by arity
-  _succinctSymbols :: HashMap Id SuccinctType,    -- ^ Symbols with succinct types
-  _succinctGraph :: HashMap SuccinctType (HashMap SuccinctType (Set Id)), -- ^ Graph built upon succinct types
-  _graphFromGoal :: HashMap SuccinctType (HashMap SuccinctType (Set Id)),
-  _succinctGraphRev :: HashMap SuccinctType (Set SuccinctType), -- ^ Graph for reachability check
+
   -- _undecidableSymbols :: Map SuccinctType (Map SuccinctType (Set Id)), -- ^ the going to type has some variable in it to be decided until the graph is built
   -- _reachableSymbols :: Set Int, -- ^ reachable symbols in the succinct graph
   -- _succinctNodes :: Map SuccinctType Int, -- ^ All succinct nodes in succinct graph
@@ -204,13 +201,6 @@ instance Ord Environment where
 -- | Empty environment
 emptyEnv = Environment {
   _symbols = Map.empty,
-  _succinctSymbols = HashMap.empty,
-  _succinctGraph = HashMap.empty,
-  _graphFromGoal = HashMap.empty,
-  _succinctGraphRev = HashMap.empty,
-  -- _undecidableSymbols = Map.empty,
-  -- _reachableSymbols = Set.empty,
-  -- _succinctNodes = Map.empty,
   _boundTypeVars = [],
   _boundPredicates = [],
   _assumptions = Set.empty,

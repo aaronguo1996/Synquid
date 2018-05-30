@@ -26,7 +26,7 @@ import Control.Lens
 
 -- | 'reconstruct' @eParams tParams goal@ : reconstruct missing types and terms in the body of @goal@ so that it represents a valid type judgment;
 -- return a type error if that is impossible
-reconstruct :: (MonadHorn s, MonadPlus s) => ExplorerParams -> TypingParams -> Goal -> s (Either ErrorMessage RProgram)
+reconstruct :: MonadHorn s => ExplorerParams -> TypingParams -> Goal -> s (Either ErrorMessage RProgram)
 reconstruct eParams tParams goal = do
     initTS <- initTypingState $ gEnvironment goal
     runExplorer (eParams { _sourcePos = gSourcePos goal }) tParams (Reconstructor reconstructTopLevel) initTS go
@@ -36,7 +36,7 @@ reconstruct eParams tParams goal = do
       p <- flip insertAuxSolutions pMain <$> use solvedAuxGoals            -- Insert solutions for auxiliary goals stored in @solvedAuxGoals@
       runInSolver $ finalizeProgram p                                      -- Substitute all type/predicates variables and unknowns
     
-reconstructTopLevel :: (MonadHorn s, MonadPlus s) => Goal -> Explorer s RProgram
+reconstructTopLevel :: MonadHorn s => Goal -> Explorer s RProgram
 reconstructTopLevel (Goal funName env (ForallT a sch) impl depth pos) = reconstructTopLevel (Goal funName (addTypeVar a env) sch impl depth pos)
 reconstructTopLevel (Goal funName env (ForallP sig sch) impl depth pos) = reconstructTopLevel (Goal funName (addBoundPredicate sig env) sch impl depth pos)
 reconstructTopLevel (Goal funName env (Monotype typ@(FunctionT _ _ _)) impl depth _) = local (set (_1 . auxDepth) depth) $ reconstructFix
@@ -53,10 +53,10 @@ reconstructTopLevel (Goal funName env (Monotype typ@(FunctionT _ _ _)) impl dept
       
       let env' = foldr (\(f, t) -> addPolyVariable f (typeGeneralized . predGeneralized . Monotype $ t) . (shapeConstraints %~ Map.insert f (shape typ'))) env recCalls
       useSucc <- asks . view $ _1 . buildGraph
-      envGoal <- if useSucc then addSuccinctSymbol "__goal__" (Monotype (typ)) env' else return env'
-      envAll <- if useSucc then foldM (\e (f, t) -> addSuccinctSymbol f t e) envGoal (Map.toList (allSymbols envGoal)) else return envGoal
+      if useSucc then addSuccinctSymbol "__goal__" (Monotype (typ)) env' else return ()
+      if useSucc then mapM_ (\(f, t) -> addSuccinctSymbol f t env') (Map.toList (allSymbols env')) else return ()
       let ctx = \p -> if null recCalls then p else Program (PFix (map fst recCalls) p) typ'
-      p <- inContext ctx  $ reconstructI envAll typ' impl
+      p <- inContext ctx  $ reconstructI env' typ' impl
       return $ ctx p
 
     -- | 'recursiveCalls' @t@: name-type pairs for recursive calls to a function with type @t@ (0 or 1)
@@ -113,7 +113,7 @@ reconstructTopLevel (Goal _ env (Monotype t) impl depth _) = local (set (_1 . au
 
 -- | 'reconstructI' @env t impl@ :: reconstruct unknown types and terms in a judgment @env@ |- @impl@ :: @t@ where @impl@ is a (possibly) introduction term
 -- (top-down phase of bidirectional reconstruction)
-reconstructI :: (MonadHorn s, MonadPlus s) => Environment -> RType -> UProgram -> Explorer s RProgram
+reconstructI :: MonadHorn s => Environment -> RType -> UProgram -> Explorer s RProgram
 reconstructI env t (Program p AnyT) = reconstructI' env t p
 reconstructI env t (Program p t') = do
   t'' <- checkAnnotation env t t' p
@@ -131,8 +131,8 @@ reconstructI' env t@(FunctionT _ tArg tRes) impl = case impl of
     let ctx = \p -> Program (PFun y p) t
     useSucc <- asks . view $ _1 . buildGraph
     -- let useSucc = True
-    env' <- if useSucc then addSuccinctSymbol y (Monotype tArg) env else return env
-    pBody <- inContext ctx $ reconstructI (unfoldAllVariables $ addVariable y tArg $ env') tRes impl
+    if useSucc then addSuccinctSymbol y (Monotype tArg) env else return ()
+    pBody <- inContext ctx $ reconstructI (unfoldAllVariables $ addVariable y tArg $ env) tRes impl
     return $ ctx pBody
   PSymbol f -> do
     fun <- etaExpand t f
@@ -147,8 +147,8 @@ reconstructI' env t@(ScalarT _ _) impl = case impl of
     pDef <- inContext (\p -> Program (PLet x p (Program PHole t)) t) $ reconstructETopLevel env AnyT iDef
     let (env', tDef) = embedContext env (typeOf pDef)
     useSucc <- asks . view $ _1 . buildGraph
-    env'' <- if useSucc then addSuccinctSymbol x (Monotype tDef) env' else return env'
-    pBody <- inContext (\p -> Program (PLet x pDef p) t) $ reconstructI (addVariable x tDef env'') t iBody
+    if useSucc then addSuccinctSymbol x (Monotype tDef) env' else return ()
+    pBody <- inContext (\p -> Program (PLet x pDef p) t) $ reconstructI (addVariable x tDef env') t iBody
     return $ Program (PLet x pDef pBody) t
   
   PIf (Program PHole AnyT) iThen iElse -> do
@@ -207,14 +207,14 @@ reconstructI' env t@(ScalarT _ _) impl = case impl of
     checkCases _ [] = return []
   
   -- [TODO] cut here
-reconstructCase env scrVar pScrutinee t (Case consName args iBody) consT = do  
+reconstructCase env scrVar pScrutinee t (Case consName args iBody) consT = cut $ do  
   runInSolver $ matchConsType (lastType consT) (typeOf pScrutinee)
   consT' <- runInSolver $ currentAssignment consT
   (syms, ass) <- caseSymbols env scrVar args consT'
-  let env' = foldr (uncurry addVariable) (addAssumption ass env) syms
+  let caseEnv = foldr (uncurry addVariable) (addAssumption ass env) syms
   useSucc <- asks . view $ _1 . buildGraph
   -- let useSucc = True
-  caseEnv <- if useSucc then foldM (\e (name,ty)-> addSuccinctSymbol name (Monotype ty) e) env' syms else return env'
+  if useSucc then mapM_ (\(name,ty)-> addSuccinctSymbol name (Monotype ty) caseEnv) syms else return ()
   pCaseExpr <- local (over (_1 . matchDepth) (-1 +)) $
                inContext (\p -> Program (PMatch pScrutinee [Case consName args p]) t) $ 
                reconstructI caseEnv t iBody
@@ -222,14 +222,14 @@ reconstructCase env scrVar pScrutinee t (Case consName args iBody) consT = do
 
 -- | 'reconstructE' @env t impl@ :: reconstruct unknown types and terms in a judgment @env@ |- @impl@ :: @t@ where @impl@ is an elimination term
 -- (bottom-up phase of bidirectional reconstruction)    
-reconstructETopLevel :: (MonadHorn s, MonadPlus s) => Environment -> RType -> UProgram -> Explorer s RProgram
+reconstructETopLevel :: MonadHorn s => Environment -> RType -> UProgram -> Explorer s RProgram
 reconstructETopLevel env t impl = do
   (Program pTerm pTyp) <- reconstructE env t impl
   generateAuxGoals
   pTyp' <- runInSolver $ currentAssignment pTyp
   return $ Program pTerm pTyp'
 
-reconstructE :: (MonadHorn s, MonadPlus s) => Environment -> RType -> UProgram -> Explorer s RProgram
+reconstructE :: MonadHorn s => Environment -> RType -> UProgram -> Explorer s RProgram
 reconstructE env t (Program p AnyT) = reconstructE' env t p
 reconstructE env t (Program p t') = do
   t'' <- checkAnnotation env t t' p
@@ -285,7 +285,7 @@ reconstructE' env typ impl = do
     
 -- | 'checkAnnotation' @env t t' p@ : if user annotation @t'@ for program @p@ is a subtype of the goal type @t@,
 -- return resolved @t'@, otherwise fail
-checkAnnotation :: (MonadHorn s, MonadPlus s) => Environment -> RType -> RType -> BareProgram RType -> Explorer s RType  
+checkAnnotation :: MonadHorn s => Environment -> RType -> RType -> BareProgram RType -> Explorer s RType  
 checkAnnotation env t t' p = do
   tass <- use (typingState . typeAssignment)
   case resolveRefinedType (typeSubstituteEnv tass env) t' of

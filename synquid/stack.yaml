@@ -6,6 +6,7 @@ packages:
 resolver: lts-6.21
 extra-deps:
   - z3-4.1.0
+  - unordered-containers-0.2.9.0
 # extra-include-dirs:
 #  - <z3-home>/src/api
 # extra-lib-dirs:
