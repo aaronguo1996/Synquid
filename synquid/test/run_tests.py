@@ -20,7 +20,7 @@ COMMON_OPTS = []
 TIMEOUT_COMMAND = 'timeout'
 TIMEOUT= '120'
 
-SECTIONS = ['.', 'sygus', 'rbt', 'AVL']
+SECTIONS = ['.', 'sygus', 'rbt', 'AVL','succinct']
 
 BENCHMARKS = {
   '.' : [
@@ -117,7 +117,10 @@ BENCHMARKS = {
     ('RBT-BalanceL',        ['-a 2', '-u']),
     ('RBT-BalanceR',        ['-a 2', '-u']),
     ('RBT-Insert',          ['-a 2', '-m 1']),
-          ]
+          ],
+  'succinct' : [
+    ('List-Together',       ['-f=AllArguments'])
+  ]
 }
 
 # RBT_BENCHMARKS = [

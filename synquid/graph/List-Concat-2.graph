@@ -1,0 +1,54 @@
+digraph name{
+layout=dot;
+splines=true;
+margin="0.5,0.5";
+fontsize=16;
+dpi=250;
+concentrate=True;
+rankdir=BT;
+ratio=fill;
+size="25,25";
+node  [style="rounded,filled,bold", shape=box, width=2, fontsize=20];
+edge [fontsize=20]
+"a"
+"{List*, | a, | }"
+"{List*,ListOfLists*, | a, | }"
+"{List*,ListOfLists*, | a, | ,Cons2}"
+"{ListOfLists*, | a, | }"
+"{ListOfLists*, | a, | ,Cons2}"
+"{a,{List*, | a, | },}"
+"{{List*, | a, | },}"
+"{{List*, | a, | },{List*,ListOfLists*, | a, | },}"
+"{{List*, | a, | },{ListOfLists*, | a, | },}"
+"{{List*, | a, | ,Cons},}"
+"{{List*,ListOfLists*, | a, | },}"
+"{{List*,ListOfLists*, | a, | },{ListOfLists*, | a, | },}"
+"{{List*,ListOfLists*, | a, | ,Cons},}"
+"{{List*,ListOfLists*, | a, | ,Cons,Cons2},}"
+"{{List*,ListOfLists*, | a, | ,Cons2},}"
+"{{List*,ListOfLists*, | a, | ,Cons2},{ListOfLists*, | a, | ,Cons2},}"
+""
+""
+""
+""
+""
+""
+"{List*,ListOfLists*, | a, | }" -> "{{List*, | a, | },{List*,ListOfLists*, | a, | },}" [label = ",Cons2"];
+"{List*,ListOfLists*, | a, | }" -> "" [label = ",Nil2"];
+"{List*,ListOfLists*, | a, | }" -> "" [label = ",Nil"];
+"{List*,ListOfLists*, | a, | }" -> "{{List*,ListOfLists*, | a, | },{ListOfLists*, | a, | },}" [label = ",Cons"];
+"{ListOfLists*, | a, | }" -> "{{List*, | a, | },{ListOfLists*, | a, | },}" [label = ",Cons2"];
+"{ListOfLists*, | a, | }" -> "" [label = ",Nil2"];
+"{ListOfLists*, | a, | }" -> "" [label = ",xss"];
+"{{List*, | a, | },{List*,ListOfLists*, | a, | },}" -> "{List*,ListOfLists*, | a, | }" [label = ","];
+"{{List*, | a, | },{List*,ListOfLists*, | a, | },}" -> "{List*, | a, | }" [label = ","];
+"{List*, | a, | }" -> "{List*,ListOfLists*, | a, | }" [label = ",concat"];
+"{List*, | a, | }" -> "{ListOfLists*, | a, | }" [label = ",concat,__goal__"];
+"{List*, | a, | }" -> "" [label = ",Nil"];
+"{{List*, | a, | },{ListOfLists*, | a, | },}" -> "{ListOfLists*, | a, | }" [label = ","];
+"{{List*, | a, | },{ListOfLists*, | a, | },}" -> "{List*, | a, | }" [label = ","];
+"{List*,ListOfLists*, | a, | ,Cons2}" -> "" [label = ",Nil"];
+"{List*,ListOfLists*, | a, | ,Cons2}" -> "{List*,ListOfLists*, | a, | ,Cons2}" [label = ",concat"];
+"{{List*,ListOfLists*, | a, | },{ListOfLists*, | a, | },}" -> "{List*,ListOfLists*, | a, | }" [label = ","];
+"{{List*,ListOfLists*, | a, | },{ListOfLists*, | a, | },}" -> "{ListOfLists*, | a, | }" [label = ","];
+}

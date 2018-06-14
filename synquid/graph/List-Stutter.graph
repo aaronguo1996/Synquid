@@ -1,0 +1,25 @@
+digraph name{
+layout=dot;
+splines=true;
+margin="0.5,0.5";
+fontsize=16;
+dpi=250;
+concentrate=True;
+rankdir=BT;
+ratio=fill;
+size="25,25";
+node  [style="rounded,filled,bold", shape=box, width=2, fontsize=20];
+edge [fontsize=20]
+"a"
+"{List*, | a, | }"
+"{List*, | a, | ,Cons}"
+"{a,{List*, | a, | },}"
+""
+""
+"{List*, | a, | }" -> "{List*, | a, | }" [label = ",stutter[{List*, | a, | },],__goal__[{List*, | a, | },]"];
+"{List*, | a, | }" -> "{List*, | a, | ,Cons}" [label = ",Cons[{List*, | a, | ,Cons},{List*, | a, | ,Cons},]"];
+"{List*, | a, | }" -> "" [label = ",Nil[]"];
+"{List*, | a, | }" -> "" [label = ",xs[]"];
+"{List*, | a, | ,Cons}" -> "{List*, | a, | }" [label = ",stutter[{List*, | a, | },]"];
+"{List*, | a, | ,Cons}" -> "{List*, | a, | ,Cons}" [label = ",stutter[{List*, | a, | ,Cons},]"];
+}

@@ -1,0 +1,6 @@
+minus :: x:Int -> y:Int -> {Int | _v == x - y}
+add :: x:Int -> y:Int -> {Int | _v == x + y}
+magicx1 :: {Int | _v == 5000}
+magicx2 :: {Int | _v == 1}
+checkNum :: {Int | _v == 10001}
+checkNum = ??

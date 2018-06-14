@@ -1,0 +1,2857 @@
+ADD __goal__ : All {a,}. {a,{List |  | a, |  | },}->{List |  | a, |  | }
+ADD Cons : All {A0,}. {A0,{List |  | A0, |  | },}->{List |  | A0, |  | }
+ADD Nil : All {A1,}. {List |  | A1, |  | }
+ADD snoc : All {A2,}. {A2,{List |  | A2, |  | },}->{List |  | A2, |  | }
+Checking error in
+error
+Typing Constraints
+snoc |- Int <: {Int|False} ()
+Type assignment
+Simple Constraints
+snoc |- Int <: {Int|False} ()
+Pred assignment
+Constraints
+  True ==> False
+QMap
+Candidates (1)
+  0: [] (0 1)
+Chosen candidate: 0: [] (0 1)
+Invalid Constraint: True ==> False
+Strengthening: True ==> False
+Instantiated axioms:
+Optimal valuations:
+Pruned valuations:
+Diffs: (0)
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking error in
+error
+ADD x : All {a,}. a
+ADD xs : All {a,}. {List |  | a, |  | }
+Checking error in
+\x . \xs . error
+Typing Constraints
+snoc, x, xs C0, M0 |- {Int|x == x && xs == xs} <: {Int|False} ()
+snoc, x, xs |- C0
+snoc, x, xs |- (match) M0
+Type assignment
+Simple Constraints
+snoc, x, xs |- (match) M0
+snoc, x, xs |- C0
+snoc, x, xs C0, M0 |- {Int|x == x && xs == xs} <: {Int|False} ()
+Pred assignment
+Constraints
+  C0 && (M0 && (len xs >= 0 && ((x == x && xs == xs) && (forall _x . _x in elems xs ==> p _x x)))) ==> False
+QMap
+  C0 -> {}
+  M0 -> {xs == (Nil)}
+Candidates (1)
+  0: [C0 -> {}, M0 -> {}] (0 1)
+Chosen candidate: 0: [C0 -> {}, M0 -> {}] (0 1)
+Invalid Constraint: C0 && (M0 && (len xs >= 0 && ((x == x && xs == xs) && (forall _x . _x in elems xs ==> p _x x)))) ==> False
+Strengthening: C0 && (M0 && (len xs >= 0 && ((x == x && xs == xs) && (forall _x . _x in elems xs ==> p _x x)))) ==> False
+Instantiated axioms:
+len (Nil) == 0, elems (Nil) == []
+Optimal valuations:
+Pruned valuations:
+Diffs: (0)
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking error in
+\x . \xs . error
+Looking for type {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]}
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> xs:List {a|p x _v} <p _0 _1> -> {List a <p _0 _1>|_v == (Cons x xs)}
+INTO x7:A3 -> x8:List {A3|P3 x7 _v} <P3 _0 _1> -> {List A3 <P3 _0 _1>|_v == (Cons x7 x8)}
+Checking Cons ??
+           ?? :: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} in
+\x . \xs . ??
+Typing Constraints
+snoc, x, xs C0, M0 |- LET x8:(_) IN LET x7:(_) IN {List A3 <P3 _0 _1>|_v == (Cons x7 x8)} <: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, xs C0, M0 |- x7:A3 -> x8:List {A3|P3 x7 _v} <P3 _0 _1> -> {List A3 <P3 _0 _1>|_v == (Cons x7 x8)} /\ X1:_ -> X0:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, xs C0, M0 |- x7:A3 -> x8:List {A3|P3 x7 _v} <P3 _0 _1> -> {List A3 <P3 _0 _1>|_v == (Cons x7 x8)} <: X1:_ -> X0:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+|- P3 :: A3 -> A3 -> Bool
+snoc, x, xs |- A3
+snoc, x, xs |- C0
+snoc, x, xs |- (match) M0
+UNIFY A3 WITH a PRODUCING {a|U0}
+Type assignment
+A3 -> {a|U0}
+Typing Constraints
+|- P3 :: A3 -> A3 -> Bool
+Type assignment
+A3 -> {a|U0}
+Simple Constraints
+snoc, x, xs |- (match) M0
+snoc, x, xs |- C0
+snoc, x, xs |- {a|U0}
+X0, X1, snoc, x, xs C0, M0 |- {List|_v == (Cons X1 X0)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+X0, X1, snoc, x, xs C0, M0 |- {Int|P3 _0 _1} <: {Int|p _0 _1} ()
+X0, X1, snoc, x, xs C0, M0 |- {a|U0} <: a ()
+snoc, x, x7, x8, xs C0, M0 |- {List|_v == (Cons x7 x8)} /\ {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x7, x8, xs C0, M0 |- {Int|P3 _0 _1} /\ {Int|p _0 _1} ()
+snoc, x, x7, x8, xs C0, M0 |- {a|U0} /\ a ()
+snoc, x, x7, x8, xs C0, M0 |- {List|_v == (Cons x7 x8)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x7, x8, xs C0, M0 |- {Int|P3 _0 _1} <: {Int|p _0 _1} ()
+snoc, x, x7, x8, xs C0, M0 |- {a|U0} <: a ()
+Pred assignment
+P3 -> P3
+addSplitConstraint X0, X1, snoc, x, xs C0, M0 |- {List|len _v == 1 + len X0} <: {List|len _v == len xs + 1} ()
+addSplitConstraint X0, X1, snoc, x, xs C0, M0 |- {List|elems _v == [X1] + elems X0} <: {List|elems _v == elems xs + [x]} ()
+addSplitConstraint snoc, x, x7, x8, xs C0, M0 |- {List|len _v == 1 + len x8} <: {List|len _v == len xs + 1} ()
+addSplitConstraint snoc, x, x7, x8, xs C0, M0 |- {List|elems _v == [x7] + elems x8} <: {List|elems _v == elems xs + [x]} ()
+Constraints
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+QMap
+  C0 -> {}
+  M0 -> {xs == (Nil)}
+  P3 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+Candidates (1)
+  0: [C0 -> {}, M0 -> {}, P3 -> {}, U0 -> {}] (2 1)
+Chosen candidate: 0: [C0 -> {}, M0 -> {}, P3 -> {}, U0 -> {}] (2 1)
+Invalid Constraint: C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+Strengthening: C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+Instantiated axioms:
+len (Nil) == 0, elems (Nil) == []
+Optimal valuations:
+{p _0 _1}
+Pruned valuations:
+{p _0 _1}
+Diffs: (1)
+[C0 -> {}, M0 -> {}, P3 -> {p _0 _1}]
+Checking consistency
+  C0 && (M0 && ([_v -> x7]U0 && (_v == (Cons x7 x8) && (len x8 >= 0 && (len xs >= 0 && (len _v == len xs + 1 && elems _v == elems xs + [x]))))))
+  C0 && (M0 && (P3 && (len xs >= 0 && p _0 _1)))
+Candidates (1)
+  0: [C0 -> {}, M0 -> {}, P3 -> {p _0 _1}, U0 -> {}] (3 0)
+Remaining Candidates (1)
+  0: [C0 -> {}, M0 -> {}, P3 -> {p _0 _1}, U0 -> {}] (3 0)
+INSTANTIATE <a> . <p :: a -> a -> Bool> . {List a <p _0 _1>|_v == (Nil)}
+INTO {List {A3|False} <False>|_v == (Nil)}
+Checking Nil :: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} in
+\x . \xs . ??
+Typing Constraints
+snoc, x, xs C0, M0 |- {List {A3|False} <False>|_v == (Nil)} <: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, xs |- A3
+snoc, x, xs |- C0
+snoc, x, xs |- (match) M0
+UNIFY A3 WITH a PRODUCING {a|U0}
+Type assignment
+A3 -> {a|U0}
+Typing Constraints
+Type assignment
+A3 -> {a|U0}
+Simple Constraints
+snoc, x, xs |- (match) M0
+snoc, x, xs |- C0
+snoc, x, xs |- {a|U0}
+snoc, x, xs C0, M0 |- {List|_v == (Nil)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, xs C0, M0 |- {Int|False} <: {Int|p _0 _1} ()
+snoc, x, xs C0, M0 |- {a|False} <: a ()
+Pred assignment
+addSplitConstraint snoc, x, xs C0, M0 |- {List|len _v == 0} <: {List|len _v == len xs + 1} ()
+addSplitConstraint snoc, x, xs C0, M0 |- {List|elems _v == []} <: {List|elems _v == elems xs + [x]} ()
+Constraints
+  C0 && (M0 && (len _v == 0 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> len _v == len xs + 1
+  C0 && (M0 && (elems _v == [] && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> elems _v == elems xs + [x]
+QMap
+  C0 -> {}
+  M0 -> {xs == (Nil)}
+  U0 -> {p x _v, p _v x}
+Candidates (1)
+  0: [C0 -> {}, M0 -> {}, U0 -> {}] (0 2)
+Chosen candidate: 0: [C0 -> {}, M0 -> {}, U0 -> {}] (0 2)
+Invalid Constraint: C0 && (M0 && (len _v == 0 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> len _v == len xs + 1
+Strengthening: C0 && (M0 && (len _v == 0 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> len _v == len xs + 1
+Instantiated axioms:
+len (Nil) == 0, elems (Nil) == []
+Optimal valuations:
+Pruned valuations:
+Diffs: (0)
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking Nil ::
+{List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]}
+in
+\x . \xs . Nil
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> x0:{List {a|p _v x} <p _0 _1>|len _v >= 0 && len _v < len xs} -> {List a <p _0 _1>|len _v == len x0 + 1 && elems _v == elems x0 + [x]}
+INTO x7:A3 -> x8:{List {A3|P3 _v x7} <P3 _0 _1>|len _v >= 0 && len _v < len xs} -> {List A3 <P3 _0 _1>|len _v == len x8 + 1 && elems _v == elems x8 + [x7]}
+Checking snoc ??
+           ?? :: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} in
+\x . \xs . ??
+Typing Constraints
+snoc, x, xs C0, M0 |- LET x8:(_) IN LET x7:(_) IN {List A3 <P3 _0 _1>|len _v == len x8 + 1 && elems _v == elems x8 + [x7]} <: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, xs C0, M0 |- x7:A3 -> x8:{List {A3|P3 _v x7} <P3 _0 _1>|len _v >= 0 && len _v < len xs} -> {List A3 <P3 _0 _1>|len _v == len x8 + 1 && elems _v == elems x8 + [x7]} /\ X3:_ -> X2:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, xs C0, M0 |- x7:A3 -> x8:{List {A3|P3 _v x7} <P3 _0 _1>|len _v >= 0 && len _v < len xs} -> {List A3 <P3 _0 _1>|len _v == len x8 + 1 && elems _v == elems x8 + [x7]} <: X3:_ -> X2:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+|- P3 :: A3 -> A3 -> Bool
+snoc, x, xs |- A3
+snoc, x, xs |- C0
+snoc, x, xs |- (match) M0
+UNIFY A3 WITH a PRODUCING {a|U0}
+Type assignment
+A3 -> {a|U0}
+Typing Constraints
+|- P3 :: A3 -> A3 -> Bool
+Type assignment
+A3 -> {a|U0}
+Simple Constraints
+snoc, x, xs |- (match) M0
+snoc, x, xs |- C0
+snoc, x, xs |- {a|U0}
+X2, X3, snoc, x, xs C0, M0 |- {List|len _v == len X2 + 1 && elems _v == elems X2 + [X3]} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+X2, X3, snoc, x, xs C0, M0 |- {Int|P3 _0 _1} <: {Int|p _0 _1} ()
+X2, X3, snoc, x, xs C0, M0 |- {a|U0} <: a ()
+snoc, x, x7, x8, xs C0, M0 |- {List|len _v == len x8 + 1 && elems _v == elems x8 + [x7]} /\ {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x7, x8, xs C0, M0 |- {Int|P3 _0 _1} /\ {Int|p _0 _1} ()
+snoc, x, x7, x8, xs C0, M0 |- {a|U0} /\ a ()
+snoc, x, x7, x8, xs C0, M0 |- {List|len _v == len x8 + 1 && elems _v == elems x8 + [x7]} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x7, x8, xs C0, M0 |- {Int|P3 _0 _1} <: {Int|p _0 _1} ()
+snoc, x, x7, x8, xs C0, M0 |- {a|U0} <: a ()
+Pred assignment
+P3 -> P3
+addSplitConstraint X2, X3, snoc, x, xs C0, M0 |- {List|len _v == len X2 + 1} <: {List|len _v == len xs + 1} ()
+addSplitConstraint X2, X3, snoc, x, xs C0, M0 |- {List|elems _v == elems X2 + [X3]} <: {List|elems _v == elems xs + [x]} ()
+addSplitConstraint snoc, x, x7, x8, xs C0, M0 |- {List|len _v == len x8 + 1} <: {List|len _v == len xs + 1} ()
+addSplitConstraint snoc, x, x7, x8, xs C0, M0 |- {List|elems _v == elems x8 + [x7]} <: {List|elems _v == elems xs + [x]} ()
+Constraints
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+QMap
+  C0 -> {}
+  M0 -> {xs == (Nil)}
+  P3 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+Candidates (1)
+  0: [C0 -> {}, M0 -> {}, P3 -> {}, U0 -> {}] (2 1)
+Chosen candidate: 0: [C0 -> {}, M0 -> {}, P3 -> {}, U0 -> {}] (2 1)
+Invalid Constraint: C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+Strengthening: C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+Instantiated axioms:
+len (Nil) == 0, elems (Nil) == []
+Optimal valuations:
+{p _0 _1}
+Pruned valuations:
+{p _0 _1}
+Diffs: (1)
+[C0 -> {}, M0 -> {}, P3 -> {p _0 _1}]
+Checking consistency
+  C0 && (M0 && ([_v -> x7]U0 && (len x8 >= 0 && (len xs >= 0 && ((len _v == len x8 + 1 && elems _v == elems x8 + [x7]) && ((len _v == len xs + 1 && elems _v == elems xs + [x]) && (len x8 >= 0 && len x8 < len xs)))))))
+  C0 && (M0 && (P3 && (len xs >= 0 && p _0 _1)))
+Candidates (1)
+  0: [C0 -> {}, M0 -> {}, P3 -> {p _0 _1}, U0 -> {}] (3 0)
+Remaining Candidates (0)
+TYPE ERROR: Found inconsistent refinements
+when checking snoc ?? ?? ::
+{List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]}
+in
+\x . \xs . snoc ?? ??
+Checking xs :: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} in
+\x . \xs . ??
+Typing Constraints
+snoc, x, xs C0, M0 |- {List {a|p _v x} <p _0 _1>|_v == xs} <: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, xs |- C0
+snoc, x, xs |- (match) M0
+Type assignment
+Simple Constraints
+snoc, x, xs |- (match) M0
+snoc, x, xs |- C0
+snoc, x, xs C0, M0 |- {List|_v == xs} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, xs C0, M0 |- {Int|p _0 _1} <: {Int|p _0 _1} ()
+snoc, x, xs C0, M0 |- {a|p _v x} <: a ()
+Pred assignment
+Constraints
+  C0 && (M0 && (_v == xs && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> len _v == len xs + 1 && elems _v == elems xs + [x]
+  C0 && (M0 && (len xs >= 0 && (p _0 _1 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+QMap
+  C0 -> {}
+  M0 -> {xs == (Nil)}
+Candidates (1)
+  0: [C0 -> {}, M0 -> {}] (1 1)
+Chosen candidate: 0: [C0 -> {}, M0 -> {}] (1 1)
+Invalid Constraint: C0 && (M0 && (_v == xs && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> len _v == len xs + 1 && elems _v == elems xs + [x]
+Strengthening: C0 && (M0 && (_v == xs && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> len _v == len xs + 1 && elems _v == elems xs + [x]
+Instantiated axioms:
+len (Nil) == 0, elems (Nil) == []
+Optimal valuations:
+Pruned valuations:
+Diffs: (0)
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking xs ::
+{List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]}
+in
+\x . \xs . xs
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> xs:List {a|p x _v} <p _0 _1> -> {List a <p _0 _1>|_v == (Cons x xs)}
+INTO x7:A3 -> x8:List {A3|P3 x7 _v} <P3 _0 _1> -> {List A3 <P3 _0 _1>|_v == (Cons x7 x8)}
+Checking Cons x
+           ?? :: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} in
+\x . \xs . ??
+Typing Constraints
+snoc, x, xs C0, M0 |- LET x8:(_) IN {List A3 <P3 _0 _1>|_v == (Cons x x8)} <: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, xs C0, M0 |- {a|_v == x} <: _ ()
+snoc, x, xs C0, M0 |- x7:A3 -> x8:List {A3|P3 x7 _v} <P3 _0 _1> -> {List A3 <P3 _0 _1>|_v == (Cons x7 x8)} /\ X1:_ -> X0:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, xs C0, M0 |- x7:A3 -> x8:List {A3|P3 x7 _v} <P3 _0 _1> -> {List A3 <P3 _0 _1>|_v == (Cons x7 x8)} <: X1:_ -> X0:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+|- P3 :: A3 -> A3 -> Bool
+snoc, x, xs |- A3
+snoc, x, xs |- C0
+snoc, x, xs |- (match) M0
+UNIFY A3 WITH a PRODUCING {a|U0}
+Type assignment
+A3 -> {a|U0}
+Typing Constraints
+|- P3 :: A3 -> A3 -> Bool
+Type assignment
+A3 -> {a|U0}
+Simple Constraints
+snoc, x, xs |- (match) M0
+snoc, x, xs |- C0
+snoc, x, xs |- {a|U0}
+X0, X1, snoc, x, xs C0, M0 |- {List|_v == (Cons X1 X0)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+X0, X1, snoc, x, xs C0, M0 |- {Int|P3 _0 _1} <: {Int|p _0 _1} ()
+X0, X1, snoc, x, xs C0, M0 |- {a|U0} <: a ()
+snoc, x, x7, x8, xs C0, M0 |- {List|_v == (Cons x7 x8)} /\ {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x7, x8, xs C0, M0 |- {Int|P3 _0 _1} /\ {Int|p _0 _1} ()
+snoc, x, x7, x8, xs C0, M0 |- {a|U0} /\ a ()
+snoc, x, x8, xs C0, M0 |- {List|_v == (Cons x x8)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x8, xs C0, M0 |- {Int|P3 _0 _1} <: {Int|p _0 _1} ()
+snoc, x, x8, xs C0, M0 |- {a|U0} <: a ()
+Pred assignment
+P3 -> P3
+addSplitConstraint X0, X1, snoc, x, xs C0, M0 |- {List|len _v == 1 + len X0} <: {List|len _v == len xs + 1} ()
+addSplitConstraint X0, X1, snoc, x, xs C0, M0 |- {List|elems _v == [X1] + elems X0} <: {List|elems _v == elems xs + [x]} ()
+addSplitConstraint snoc, x, x8, xs C0, M0 |- {List|len _v == 1 + len x8} <: {List|len _v == len xs + 1} ()
+addSplitConstraint snoc, x, x8, xs C0, M0 |- {List|elems _v == [x] + elems x8} <: {List|elems _v == elems xs + [x]} ()
+Constraints
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+QMap
+  C0 -> {}
+  M0 -> {xs == (Nil)}
+  P3 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+Candidates (1)
+  0: [C0 -> {}, M0 -> {}, P3 -> {}, U0 -> {}] (2 1)
+Chosen candidate: 0: [C0 -> {}, M0 -> {}, P3 -> {}, U0 -> {}] (2 1)
+Invalid Constraint: C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+Strengthening: C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+Instantiated axioms:
+len (Nil) == 0, elems (Nil) == []
+Optimal valuations:
+{p _0 _1}
+Pruned valuations:
+{p _0 _1}
+Diffs: (1)
+[C0 -> {}, M0 -> {}, P3 -> {p _0 _1}]
+Checking consistency
+  C0 && (M0 && ([_v -> x7]U0 && (_v == (Cons x7 x8) && (len x8 >= 0 && (len xs >= 0 && (len _v == len xs + 1 && elems _v == elems xs + [x]))))))
+  C0 && (M0 && (P3 && (len xs >= 0 && p _0 _1)))
+Candidates (1)
+  0: [C0 -> {}, M0 -> {}, P3 -> {p _0 _1}, U0 -> {}] (3 0)
+Remaining Candidates (1)
+  0: [C0 -> {}, M0 -> {}, P3 -> {p _0 _1}, U0 -> {}] (3 0)
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> xs:List {a|p x _v} <p _0 _1> -> {List a <p _0 _1>|_v == (Cons x xs)}
+INTO x7:A3 -> x8:List {A3|P3 x7 _v} <P3 _0 _1> -> {List A3 <P3 _0 _1>|_v == (Cons x7 x8)}
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> xs:List {a|p x _v} <p _0 _1> -> {List a <p _0 _1>|_v == (Cons x xs)}
+INTO x9:A4 -> x10:List {A4|P4 x9 _v} <P4 _0 _1> -> {List A4 <P4 _0 _1>|_v == (Cons x9 x10)}
+Checking Cons x (Cons ??
+                   ??) :: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} in
+\x . \xs . ??
+Typing Constraints
+snoc, x, xs C0, M0 |- LET x8:(LET x10:(_) IN LET x9:(_) IN {List A4 <P4 _0 _1>|_v == (Cons x9 x10)}) IN {List A3 <P3 _0 _1>|_v == (Cons x x8)} <: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, xs C0, M0 |- x9:A4 -> x10:List {A4|P4 x9 _v} <P4 _0 _1> -> {List A4 <P4 _0 _1>|_v == (Cons x9 x10)} /\ X5:_ -> X4:_ -> _ ()
+snoc, x, xs C0, M0 |- x9:A4 -> x10:List {A4|P4 x9 _v} <P4 _0 _1> -> {List A4 <P4 _0 _1>|_v == (Cons x9 x10)} <: X5:_ -> X4:_ -> _ ()
+|- P4 :: A4 -> A4 -> Bool
+snoc, x, xs |- A4
+snoc, x, xs C0, M0 |- {a|_v == x} <: _ ()
+snoc, x, xs C0, M0 |- x7:A3 -> x8:List {A3|P3 x7 _v} <P3 _0 _1> -> {List A3 <P3 _0 _1>|_v == (Cons x7 x8)} /\ X1:_ -> X0:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, xs C0, M0 |- x7:A3 -> x8:List {A3|P3 x7 _v} <P3 _0 _1> -> {List A3 <P3 _0 _1>|_v == (Cons x7 x8)} <: X1:_ -> X0:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+|- P3 :: A3 -> A3 -> Bool
+snoc, x, xs |- A3
+snoc, x, xs |- C0
+snoc, x, xs |- (match) M0
+UNIFY A3 WITH a PRODUCING {a|U0}
+Type assignment
+A3 -> {a|U0}
+Typing Constraints
+|- P3 :: A3 -> A3 -> Bool
+snoc, x, xs |- A4
+|- P4 :: A4 -> A4 -> Bool
+Type assignment
+A3 -> {a|U0}
+Simple Constraints
+snoc, x, xs |- (match) M0
+snoc, x, xs |- C0
+snoc, x, xs |- {a|U0}
+X0, X1, snoc, x, xs C0, M0 |- {List|_v == (Cons X1 X0)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+X0, X1, snoc, x, xs C0, M0 |- {Int|P3 _0 _1} <: {Int|p _0 _1} ()
+X0, X1, snoc, x, xs C0, M0 |- {a|U0} <: a ()
+snoc, x, x7, x8, xs C0, M0 |- {List|_v == (Cons x7 x8)} /\ {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x7, x8, xs C0, M0 |- {Int|P3 _0 _1} /\ {Int|p _0 _1} ()
+snoc, x, x7, x8, xs C0, M0 |- {a|U0} /\ a ()
+snoc, x, x8, xs C0, M0 |- {List|_v == (Cons x x8)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x8, xs C0, M0 |- {Int|P3 _0 _1} <: {Int|p _0 _1} ()
+snoc, x, x8, xs C0, M0 |- {a|U0} <: a ()
+WARNING: free vars in predicate |- P4 :: A4 -> A4 -> Bool
+Pred assignment
+P3 -> P3
+addSplitConstraint X0, X1, snoc, x, xs C0, M0 |- {List|len _v == 1 + len X0} <: {List|len _v == len xs + 1} ()
+addSplitConstraint X0, X1, snoc, x, xs C0, M0 |- {List|elems _v == [X1] + elems X0} <: {List|elems _v == elems xs + [x]} ()
+addSplitConstraint snoc, x, x8, xs C0, M0 |- {List|len _v == 1 + len x8} <: {List|len _v == len xs + 1} ()
+addSplitConstraint snoc, x, x8, xs C0, M0 |- {List|elems _v == [x] + elems x8} <: {List|elems _v == elems xs + [x]} ()
+Constraints
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+QMap
+  C0 -> {}
+  M0 -> {xs == (Nil)}
+  P3 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+Candidates (1)
+  0: [C0 -> {}, M0 -> {}, P3 -> {}, U0 -> {}] (2 1)
+Chosen candidate: 0: [C0 -> {}, M0 -> {}, P3 -> {}, U0 -> {}] (2 1)
+Invalid Constraint: C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+Strengthening: C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+Instantiated axioms:
+len (Nil) == 0, elems (Nil) == []
+Optimal valuations:
+{p _0 _1}
+Pruned valuations:
+{p _0 _1}
+Diffs: (1)
+[C0 -> {}, M0 -> {}, P3 -> {p _0 _1}]
+Checking consistency
+  C0 && (M0 && ([_v -> x7]U0 && (_v == (Cons x7 x8) && (len x8 >= 0 && (len xs >= 0 && (len _v == len xs + 1 && elems _v == elems xs + [x]))))))
+  C0 && (M0 && (P3 && (len xs >= 0 && p _0 _1)))
+Candidates (1)
+  0: [C0 -> {}, M0 -> {}, P3 -> {p _0 _1}, U0 -> {}] (3 0)
+Remaining Candidates (1)
+  0: [C0 -> {}, M0 -> {}, P3 -> {p _0 _1}, U0 -> {}] (3 0)
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> xs:List {a|p x _v} <p _0 _1> -> {List a <p _0 _1>|_v == (Cons x xs)}
+INTO x7:A3 -> x8:List {A3|P3 x7 _v} <P3 _0 _1> -> {List A3 <P3 _0 _1>|_v == (Cons x7 x8)}
+INSTANTIATE <a> . <p :: a -> a -> Bool> . {List a <p _0 _1>|_v == (Nil)}
+INTO {List {A4|False} <False>|_v == (Nil)}
+Checking Cons x
+           Nil :: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} in
+\x . \xs . ??
+Typing Constraints
+snoc, x, xs C0, M0 |- {List A3 <P3 _0 _1>|_v == (Cons x (Nil))} <: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, xs C0, M0 |- {List {A4|False} <False>|_v == (Nil)} <: _ ()
+snoc, x, xs |- A4
+snoc, x, xs C0, M0 |- {a|_v == x} <: _ ()
+snoc, x, xs C0, M0 |- x7:A3 -> x8:List {A3|P3 x7 _v} <P3 _0 _1> -> {List A3 <P3 _0 _1>|_v == (Cons x7 x8)} /\ X1:_ -> X0:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, xs C0, M0 |- x7:A3 -> x8:List {A3|P3 x7 _v} <P3 _0 _1> -> {List A3 <P3 _0 _1>|_v == (Cons x7 x8)} <: X1:_ -> X0:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+|- P3 :: A3 -> A3 -> Bool
+snoc, x, xs |- A3
+snoc, x, xs |- C0
+snoc, x, xs |- (match) M0
+UNIFY A3 WITH a PRODUCING {a|U0}
+Type assignment
+A3 -> {a|U0}
+Typing Constraints
+|- P3 :: A3 -> A3 -> Bool
+snoc, x, xs |- A4
+Type assignment
+A3 -> {a|U0}
+Simple Constraints
+snoc, x, xs |- (match) M0
+snoc, x, xs |- C0
+snoc, x, xs |- {a|U0}
+X0, X1, snoc, x, xs C0, M0 |- {List|_v == (Cons X1 X0)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+X0, X1, snoc, x, xs C0, M0 |- {Int|P3 _0 _1} <: {Int|p _0 _1} ()
+X0, X1, snoc, x, xs C0, M0 |- {a|U0} <: a ()
+snoc, x, x7, x8, xs C0, M0 |- {List|_v == (Cons x7 x8)} /\ {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x7, x8, xs C0, M0 |- {Int|P3 _0 _1} /\ {Int|p _0 _1} ()
+snoc, x, x7, x8, xs C0, M0 |- {a|U0} /\ a ()
+snoc, x, xs C0, M0 |- {List|_v == (Cons x (Nil))} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, xs C0, M0 |- {Int|P3 _0 _1} <: {Int|p _0 _1} ()
+snoc, x, xs C0, M0 |- {a|U0} <: a ()
+Pred assignment
+P3 -> P3
+addSplitConstraint X0, X1, snoc, x, xs C0, M0 |- {List|len _v == 1 + len X0} <: {List|len _v == len xs + 1} ()
+addSplitConstraint X0, X1, snoc, x, xs C0, M0 |- {List|elems _v == [X1] + elems X0} <: {List|elems _v == elems xs + [x]} ()
+addSplitConstraint snoc, x, xs C0, M0 |- {List|len _v == 1 + len (Nil)} <: {List|len _v == len xs + 1} ()
+addSplitConstraint snoc, x, xs C0, M0 |- {List|elems _v == [x] + elems (Nil)} <: {List|elems _v == elems xs + [x]} ()
+Constraints
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+  C0 && (M0 && (len _v == 1 + len (Nil) && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> len _v == len xs + 1
+  C0 && (M0 && (elems _v == [x] + elems (Nil) && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> elems _v == elems xs + [x]
+  C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+QMap
+  C0 -> {}
+  M0 -> {xs == (Nil)}
+  P3 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+Candidates (1)
+  0: [C0 -> {}, M0 -> {}, P3 -> {}, U0 -> {}] (2 3)
+Chosen candidate: 0: [C0 -> {}, M0 -> {}, P3 -> {}, U0 -> {}] (2 3)
+Invalid Constraint: C0 && (M0 && (len _v == 1 + len (Nil) && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> len _v == len xs + 1
+Strengthening: C0 && (M0 && (len _v == 1 + len (Nil) && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> len _v == len xs + 1
+Instantiated axioms:
+len (Nil) == 0, len (Nil) == 0, elems (Nil) == [], elems (Nil) == []
+Optimal valuations:
+{xs == (Nil)}
+Pruned valuations:
+{xs == (Nil)}
+Diffs: (1)
+[C0 -> {}, M0 -> {xs == (Nil)}]
+Candidates (1)
+  0: [C0 -> {}, M0 -> {xs == (Nil)}, P3 -> {}, U0 -> {}] (4 1)
+Chosen candidate: 0: [C0 -> {}, M0 -> {xs == (Nil)}, P3 -> {}, U0 -> {}] (4 1)
+Invalid Constraint: C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+Strengthening: C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+Instantiated axioms:
+len (Nil) == 0, elems (Nil) == []
+Optimal valuations:
+{p _0 _1}
+Pruned valuations:
+{p _0 _1}
+Diffs: (1)
+[C0 -> {}, M0 -> {}, P3 -> {p _0 _1}]
+Checking consistency
+  C0 && (M0 && ([_v -> x7]U0 && (_v == (Cons x7 x8) && (len x8 >= 0 && (len xs >= 0 && (len _v == len xs + 1 && elems _v == elems xs + [x]))))))
+  C0 && (M0 && (P3 && (len xs >= 0 && p _0 _1)))
+Candidates (1)
+  0: [C0 -> {}, M0 -> {xs == (Nil)}, P3 -> {p _0 _1}, U0 -> {}] (5 0)
+Remaining Candidates (1)
+  0: [C0 -> {}, M0 -> {xs == (Nil)}, P3 -> {p _0 _1}, U0 -> {}] (5 0)
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> xs:List {a|p x _v} <p _0 _1> -> {List a <p _0 _1>|_v == (Cons x xs)}
+INTO x7:A3 -> x8:List {A3|P3 x7 _v} <P3 _0 _1> -> {List A3 <P3 _0 _1>|_v == (Cons x7 x8)}
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> x0:{List {a|p _v x} <p _0 _1>|len _v >= 0 && len _v < len xs} -> {List a <p _0 _1>|len _v == len x0 + 1 && elems _v == elems x0 + [x]}
+INTO x9:A4 -> x10:{List {A4|P4 _v x9} <P4 _0 _1>|len _v >= 0 && len _v < len xs} -> {List A4 <P4 _0 _1>|len _v == len x10 + 1 && elems _v == elems x10 + [x9]}
+Checking Cons x (snoc ??
+                   ??) :: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} in
+\x . \xs . ??
+Typing Constraints
+snoc, x, xs C0, M0 |- LET x8:(LET x10:(_) IN LET x9:(_) IN {List A4 <P4 _0 _1>|len _v == len x10 + 1 && elems _v == elems x10 + [x9]}) IN {List A3 <P3 _0 _1>|_v == (Cons x x8)} <: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, xs C0, M0 |- x9:A4 -> x10:{List {A4|P4 _v x9} <P4 _0 _1>|len _v >= 0 && len _v < len xs} -> {List A4 <P4 _0 _1>|len _v == len x10 + 1 && elems _v == elems x10 + [x9]} /\ X7:_ -> X6:_ -> _ ()
+snoc, x, xs C0, M0 |- x9:A4 -> x10:{List {A4|P4 _v x9} <P4 _0 _1>|len _v >= 0 && len _v < len xs} -> {List A4 <P4 _0 _1>|len _v == len x10 + 1 && elems _v == elems x10 + [x9]} <: X7:_ -> X6:_ -> _ ()
+|- P4 :: A4 -> A4 -> Bool
+snoc, x, xs |- A4
+snoc, x, xs C0, M0 |- {a|_v == x} <: _ ()
+snoc, x, xs C0, M0 |- x7:A3 -> x8:List {A3|P3 x7 _v} <P3 _0 _1> -> {List A3 <P3 _0 _1>|_v == (Cons x7 x8)} /\ X1:_ -> X0:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, xs C0, M0 |- x7:A3 -> x8:List {A3|P3 x7 _v} <P3 _0 _1> -> {List A3 <P3 _0 _1>|_v == (Cons x7 x8)} <: X1:_ -> X0:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+|- P3 :: A3 -> A3 -> Bool
+snoc, x, xs |- A3
+snoc, x, xs |- C0
+snoc, x, xs |- (match) M0
+UNIFY A3 WITH a PRODUCING {a|U0}
+Type assignment
+A3 -> {a|U0}
+Typing Constraints
+|- P3 :: A3 -> A3 -> Bool
+snoc, x, xs |- A4
+|- P4 :: A4 -> A4 -> Bool
+Type assignment
+A3 -> {a|U0}
+Simple Constraints
+snoc, x, xs |- (match) M0
+snoc, x, xs |- C0
+snoc, x, xs |- {a|U0}
+X0, X1, snoc, x, xs C0, M0 |- {List|_v == (Cons X1 X0)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+X0, X1, snoc, x, xs C0, M0 |- {Int|P3 _0 _1} <: {Int|p _0 _1} ()
+X0, X1, snoc, x, xs C0, M0 |- {a|U0} <: a ()
+snoc, x, x7, x8, xs C0, M0 |- {List|_v == (Cons x7 x8)} /\ {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x7, x8, xs C0, M0 |- {Int|P3 _0 _1} /\ {Int|p _0 _1} ()
+snoc, x, x7, x8, xs C0, M0 |- {a|U0} /\ a ()
+snoc, x, x8, xs C0, M0 |- {List|_v == (Cons x x8)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x8, xs C0, M0 |- {Int|P3 _0 _1} <: {Int|p _0 _1} ()
+snoc, x, x8, xs C0, M0 |- {a|U0} <: a ()
+WARNING: free vars in predicate |- P4 :: A4 -> A4 -> Bool
+Pred assignment
+P3 -> P3
+addSplitConstraint X0, X1, snoc, x, xs C0, M0 |- {List|len _v == 1 + len X0} <: {List|len _v == len xs + 1} ()
+addSplitConstraint X0, X1, snoc, x, xs C0, M0 |- {List|elems _v == [X1] + elems X0} <: {List|elems _v == elems xs + [x]} ()
+addSplitConstraint snoc, x, x8, xs C0, M0 |- {List|len _v == 1 + len x8} <: {List|len _v == len xs + 1} ()
+addSplitConstraint snoc, x, x8, xs C0, M0 |- {List|elems _v == [x] + elems x8} <: {List|elems _v == elems xs + [x]} ()
+Constraints
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+QMap
+  C0 -> {}
+  M0 -> {xs == (Nil)}
+  P3 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+Candidates (1)
+  0: [C0 -> {}, M0 -> {}, P3 -> {}, U0 -> {}] (2 1)
+Chosen candidate: 0: [C0 -> {}, M0 -> {}, P3 -> {}, U0 -> {}] (2 1)
+Invalid Constraint: C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+Strengthening: C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+Instantiated axioms:
+len (Nil) == 0, elems (Nil) == []
+Optimal valuations:
+{p _0 _1}
+Pruned valuations:
+{p _0 _1}
+Diffs: (1)
+[C0 -> {}, M0 -> {}, P3 -> {p _0 _1}]
+Checking consistency
+  C0 && (M0 && ([_v -> x7]U0 && (_v == (Cons x7 x8) && (len x8 >= 0 && (len xs >= 0 && (len _v == len xs + 1 && elems _v == elems xs + [x]))))))
+  C0 && (M0 && (P3 && (len xs >= 0 && p _0 _1)))
+Candidates (1)
+  0: [C0 -> {}, M0 -> {}, P3 -> {p _0 _1}, U0 -> {}] (3 0)
+Remaining Candidates (1)
+  0: [C0 -> {}, M0 -> {}, P3 -> {p _0 _1}, U0 -> {}] (3 0)
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> xs:List {a|p x _v} <p _0 _1> -> {List a <p _0 _1>|_v == (Cons x xs)}
+INTO x7:A3 -> x8:List {A3|P3 x7 _v} <P3 _0 _1> -> {List A3 <P3 _0 _1>|_v == (Cons x7 x8)}
+Checking Cons x
+           xs :: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} in
+\x . \xs . ??
+Typing Constraints
+snoc, x, xs C0, M0 |- {List A3 <P3 _0 _1>|_v == (Cons x xs)} <: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, xs C0, M0 |- {List {a|p _v x} <p _0 _1>|_v == xs} <: _ ()
+snoc, x, xs C0, M0 |- {a|_v == x} <: _ ()
+snoc, x, xs C0, M0 |- x7:A3 -> x8:List {A3|P3 x7 _v} <P3 _0 _1> -> {List A3 <P3 _0 _1>|_v == (Cons x7 x8)} /\ X1:_ -> X0:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, xs C0, M0 |- x7:A3 -> x8:List {A3|P3 x7 _v} <P3 _0 _1> -> {List A3 <P3 _0 _1>|_v == (Cons x7 x8)} <: X1:_ -> X0:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+|- P3 :: A3 -> A3 -> Bool
+snoc, x, xs |- A3
+snoc, x, xs |- C0
+snoc, x, xs |- (match) M0
+UNIFY A3 WITH a PRODUCING {a|U0}
+Type assignment
+A3 -> {a|U0}
+Typing Constraints
+|- P3 :: A3 -> A3 -> Bool
+Type assignment
+A3 -> {a|U0}
+Simple Constraints
+snoc, x, xs |- (match) M0
+snoc, x, xs |- C0
+snoc, x, xs |- {a|U0}
+X0, X1, snoc, x, xs C0, M0 |- {List|_v == (Cons X1 X0)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+X0, X1, snoc, x, xs C0, M0 |- {Int|P3 _0 _1} <: {Int|p _0 _1} ()
+X0, X1, snoc, x, xs C0, M0 |- {a|U0} <: a ()
+snoc, x, x7, x8, xs C0, M0 |- {List|_v == (Cons x7 x8)} /\ {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x7, x8, xs C0, M0 |- {Int|P3 _0 _1} /\ {Int|p _0 _1} ()
+snoc, x, x7, x8, xs C0, M0 |- {a|U0} /\ a ()
+snoc, x, xs C0, M0 |- {List|_v == (Cons x xs)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, xs C0, M0 |- {Int|P3 _0 _1} <: {Int|p _0 _1} ()
+snoc, x, xs C0, M0 |- {a|U0} <: a ()
+Pred assignment
+P3 -> P3
+addSplitConstraint X0, X1, snoc, x, xs C0, M0 |- {List|len _v == 1 + len X0} <: {List|len _v == len xs + 1} ()
+addSplitConstraint X0, X1, snoc, x, xs C0, M0 |- {List|elems _v == [X1] + elems X0} <: {List|elems _v == elems xs + [x]} ()
+addSplitConstraint snoc, x, xs C0, M0 |- {List|len _v == 1 + len xs} <: {List|len _v == len xs + 1} ()
+addSplitConstraint snoc, x, xs C0, M0 |- {List|elems _v == [x] + elems xs} <: {List|elems _v == elems xs + [x]} ()
+Constraints
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+  C0 && (M0 && (len _v == 1 + len xs && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> len _v == len xs + 1
+  C0 && (M0 && (elems _v == [x] + elems xs && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> elems _v == elems xs + [x]
+  C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+QMap
+  C0 -> {}
+  M0 -> {xs == (Nil)}
+  P3 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+Candidates (1)
+  0: [C0 -> {}, M0 -> {}, P3 -> {}, U0 -> {}] (4 1)
+Chosen candidate: 0: [C0 -> {}, M0 -> {}, P3 -> {}, U0 -> {}] (4 1)
+Invalid Constraint: C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+Strengthening: C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+Instantiated axioms:
+len (Nil) == 0, elems (Nil) == []
+Optimal valuations:
+{p _0 _1}
+Pruned valuations:
+{p _0 _1}
+Diffs: (1)
+[C0 -> {}, M0 -> {}, P3 -> {p _0 _1}]
+Checking consistency
+  C0 && (M0 && ([_v -> x7]U0 && (_v == (Cons x7 x8) && (len x8 >= 0 && (len xs >= 0 && (len _v == len xs + 1 && elems _v == elems xs + [x]))))))
+  C0 && (M0 && (P3 && (len xs >= 0 && p _0 _1)))
+Candidates (1)
+  0: [C0 -> {}, M0 -> {}, P3 -> {p _0 _1}, U0 -> {}] (5 0)
+Remaining Candidates (1)
+  0: [C0 -> {}, M0 -> {}, P3 -> {p _0 _1}, U0 -> {}] (5 0)
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> xs:List {a|p x _v} <p _0 _1> -> {List a <p _0 _1>|_v == (Cons x xs)}
+INTO x7:A3 -> x8:List {A3|P3 x7 _v} <P3 _0 _1> -> {List A3 <P3 _0 _1>|_v == (Cons x7 x8)}
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> xs:List {a|p x _v} <p _0 _1> -> {List a <p _0 _1>|_v == (Cons x xs)}
+INTO x9:A4 -> x10:List {A4|P4 x9 _v} <P4 _0 _1> -> {List A4 <P4 _0 _1>|_v == (Cons x9 x10)}
+Checking Cons x (Cons x
+                   ??) :: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} in
+\x . \xs . ??
+Typing Constraints
+snoc, x, xs C0, M0 |- LET x8:(LET x10:(_) IN {List A4 <P4 _0 _1>|_v == (Cons x x10)}) IN {List A3 <P3 _0 _1>|_v == (Cons x x8)} <: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, xs C0, M0 |- {a|_v == x} <: _ ()
+snoc, x, xs C0, M0 |- x9:A4 -> x10:List {A4|P4 x9 _v} <P4 _0 _1> -> {List A4 <P4 _0 _1>|_v == (Cons x9 x10)} /\ X5:_ -> X4:_ -> _ ()
+snoc, x, xs C0, M0 |- x9:A4 -> x10:List {A4|P4 x9 _v} <P4 _0 _1> -> {List A4 <P4 _0 _1>|_v == (Cons x9 x10)} <: X5:_ -> X4:_ -> _ ()
+|- P4 :: A4 -> A4 -> Bool
+snoc, x, xs |- A4
+snoc, x, xs C0, M0 |- x7:A3 -> x8:List {A3|P3 x7 _v} <P3 _0 _1> -> {List A3 <P3 _0 _1>|_v == (Cons x7 x8)} /\ X1:_ -> X0:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, xs C0, M0 |- x7:A3 -> x8:List {A3|P3 x7 _v} <P3 _0 _1> -> {List A3 <P3 _0 _1>|_v == (Cons x7 x8)} <: X1:_ -> X0:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+|- P3 :: A3 -> A3 -> Bool
+snoc, x, xs |- A3
+snoc, x, xs |- C0
+snoc, x, xs |- (match) M0
+UNIFY A3 WITH a PRODUCING {a|U0}
+Type assignment
+A3 -> {a|U0}
+Typing Constraints
+|- P3 :: A3 -> A3 -> Bool
+snoc, x, xs |- A4
+|- P4 :: A4 -> A4 -> Bool
+Type assignment
+A3 -> {a|U0}
+Simple Constraints
+snoc, x, xs |- (match) M0
+snoc, x, xs |- C0
+snoc, x, xs |- {a|U0}
+X0, X1, snoc, x, xs C0, M0 |- {List|_v == (Cons X1 X0)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+X0, X1, snoc, x, xs C0, M0 |- {Int|P3 _0 _1} <: {Int|p _0 _1} ()
+X0, X1, snoc, x, xs C0, M0 |- {a|U0} <: a ()
+snoc, x, x7, x8, xs C0, M0 |- {List|_v == (Cons x7 x8)} /\ {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x7, x8, xs C0, M0 |- {Int|P3 _0 _1} /\ {Int|p _0 _1} ()
+snoc, x, x7, x8, xs C0, M0 |- {a|U0} /\ a ()
+snoc, x, x8, xs C0, M0 |- {List|_v == (Cons x x8)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x8, xs C0, M0 |- {Int|P3 _0 _1} <: {Int|p _0 _1} ()
+snoc, x, x8, xs C0, M0 |- {a|U0} <: a ()
+WARNING: free vars in predicate |- P4 :: A4 -> A4 -> Bool
+Pred assignment
+P3 -> P3
+addSplitConstraint X0, X1, snoc, x, xs C0, M0 |- {List|len _v == 1 + len X0} <: {List|len _v == len xs + 1} ()
+addSplitConstraint X0, X1, snoc, x, xs C0, M0 |- {List|elems _v == [X1] + elems X0} <: {List|elems _v == elems xs + [x]} ()
+addSplitConstraint snoc, x, x8, xs C0, M0 |- {List|len _v == 1 + len x8} <: {List|len _v == len xs + 1} ()
+addSplitConstraint snoc, x, x8, xs C0, M0 |- {List|elems _v == [x] + elems x8} <: {List|elems _v == elems xs + [x]} ()
+Constraints
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+QMap
+  C0 -> {}
+  M0 -> {xs == (Nil)}
+  P3 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+Candidates (1)
+  0: [C0 -> {}, M0 -> {}, P3 -> {}, U0 -> {}] (2 1)
+Chosen candidate: 0: [C0 -> {}, M0 -> {}, P3 -> {}, U0 -> {}] (2 1)
+Invalid Constraint: C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+Strengthening: C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+Instantiated axioms:
+len (Nil) == 0, elems (Nil) == []
+Optimal valuations:
+{p _0 _1}
+Pruned valuations:
+{p _0 _1}
+Diffs: (1)
+[C0 -> {}, M0 -> {}, P3 -> {p _0 _1}]
+Checking consistency
+  C0 && (M0 && ([_v -> x7]U0 && (_v == (Cons x7 x8) && (len x8 >= 0 && (len xs >= 0 && (len _v == len xs + 1 && elems _v == elems xs + [x]))))))
+  C0 && (M0 && (P3 && (len xs >= 0 && p _0 _1)))
+Candidates (1)
+  0: [C0 -> {}, M0 -> {}, P3 -> {p _0 _1}, U0 -> {}] (3 0)
+Remaining Candidates (1)
+  0: [C0 -> {}, M0 -> {}, P3 -> {p _0 _1}, U0 -> {}] (3 0)
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> xs:List {a|p x _v} <p _0 _1> -> {List a <p _0 _1>|_v == (Cons x xs)}
+INTO x7:A3 -> x8:List {A3|P3 x7 _v} <P3 _0 _1> -> {List A3 <P3 _0 _1>|_v == (Cons x7 x8)}
+INSTANTIATE <a> . <p :: a -> a -> Bool> . {List a <p _0 _1>|_v == (Nil)}
+INTO {List {A4|False} <False>|_v == (Nil)}
+Checking program Cons x Nil
+Checking Cons x
+           Nil :: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} in
+\x . \xs . ??
+Typing Constraints
+snoc, x, xs C0, M0 |- {List A3 <P3 _0 _1>|_v == (Cons x (Nil))} <: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, xs C0, M0 |- {List {A4|False} <False>|_v == (Nil)} <: _ ()
+snoc, x, xs |- A4
+snoc, x, xs C0, M0 |- {a|_v == x} <: _ ()
+snoc, x, xs C0, M0 |- x7:A3 -> x8:List {A3|P3 x7 _v} <P3 _0 _1> -> {List A3 <P3 _0 _1>|_v == (Cons x7 x8)} /\ X1:_ -> X0:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, xs C0, M0 |- x7:A3 -> x8:List {A3|P3 x7 _v} <P3 _0 _1> -> {List A3 <P3 _0 _1>|_v == (Cons x7 x8)} <: X1:_ -> X0:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+|- P3 :: A3 -> A3 -> Bool
+snoc, x, xs |- A3
+snoc, x, xs |- C0
+snoc, x, xs |- (match) M0
+UNIFY A3 WITH a PRODUCING {a|U0}
+Type assignment
+A3 -> {a|U0}
+Typing Constraints
+|- P3 :: A3 -> A3 -> Bool
+snoc, x, xs |- A4
+Type assignment
+A3 -> {a|U0}
+Simple Constraints
+snoc, x, xs |- (match) M0
+snoc, x, xs |- C0
+snoc, x, xs |- {a|U0}
+X0, X1, snoc, x, xs C0, M0 |- {List|_v == (Cons X1 X0)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+X0, X1, snoc, x, xs C0, M0 |- {Int|P3 _0 _1} <: {Int|p _0 _1} ()
+X0, X1, snoc, x, xs C0, M0 |- {a|U0} <: a ()
+snoc, x, x7, x8, xs C0, M0 |- {List|_v == (Cons x7 x8)} /\ {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x7, x8, xs C0, M0 |- {Int|P3 _0 _1} /\ {Int|p _0 _1} ()
+snoc, x, x7, x8, xs C0, M0 |- {a|U0} /\ a ()
+snoc, x, xs C0, M0 |- {List|_v == (Cons x (Nil))} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, xs C0, M0 |- {Int|P3 _0 _1} <: {Int|p _0 _1} ()
+snoc, x, xs C0, M0 |- {a|U0} <: a ()
+Pred assignment
+P3 -> P3
+addSplitConstraint X0, X1, snoc, x, xs C0, M0 |- {List|len _v == 1 + len X0} <: {List|len _v == len xs + 1} ()
+addSplitConstraint X0, X1, snoc, x, xs C0, M0 |- {List|elems _v == [X1] + elems X0} <: {List|elems _v == elems xs + [x]} ()
+addSplitConstraint snoc, x, xs C0, M0 |- {List|len _v == 1 + len (Nil)} <: {List|len _v == len xs + 1} ()
+addSplitConstraint snoc, x, xs C0, M0 |- {List|elems _v == [x] + elems (Nil)} <: {List|elems _v == elems xs + [x]} ()
+Constraints
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+  C0 && (M0 && (len _v == 1 + len (Nil) && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> len _v == len xs + 1
+  C0 && (M0 && (elems _v == [x] + elems (Nil) && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> elems _v == elems xs + [x]
+  C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+QMap
+  C0 -> {}
+  M0 -> {xs == (Nil)}
+  P3 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+Candidates (1)
+  0: [C0 -> {}, M0 -> {}, P3 -> {}, U0 -> {}] (2 3)
+Chosen candidate: 0: [C0 -> {}, M0 -> {}, P3 -> {}, U0 -> {}] (2 3)
+Invalid Constraint: C0 && (M0 && (len _v == 1 + len (Nil) && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> len _v == len xs + 1
+Strengthening: C0 && (M0 && (len _v == 1 + len (Nil) && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> len _v == len xs + 1
+Instantiated axioms:
+len (Nil) == 0, len (Nil) == 0, elems (Nil) == [], elems (Nil) == []
+Optimal valuations:
+{xs == (Nil)}
+Pruned valuations:
+{xs == (Nil)}
+Diffs: (1)
+[C0 -> {}, M0 -> {xs == (Nil)}]
+Candidates (1)
+  0: [C0 -> {}, M0 -> {xs == (Nil)}, P3 -> {}, U0 -> {}] (4 1)
+Chosen candidate: 0: [C0 -> {}, M0 -> {xs == (Nil)}, P3 -> {}, U0 -> {}] (4 1)
+Invalid Constraint: C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+Strengthening: C0 && (M0 && (P3 && (len xs >= 0 && (forall _x . _x in elems xs ==> p _x x)))) ==> p _0 _1
+Instantiated axioms:
+len (Nil) == 0, elems (Nil) == []
+Optimal valuations:
+{p _0 _1}
+Pruned valuations:
+{p _0 _1}
+Diffs: (1)
+[C0 -> {}, M0 -> {}, P3 -> {p _0 _1}]
+Checking consistency
+  C0 && (M0 && ([_v -> x7]U0 && (_v == (Cons x7 x8) && (len x8 >= 0 && (len xs >= 0 && (len _v == len xs + 1 && elems _v == elems xs + [x]))))))
+  C0 && (M0 && (P3 && (len xs >= 0 && p _0 _1)))
+Candidates (1)
+  0: [C0 -> {}, M0 -> {xs == (Nil)}, P3 -> {p _0 _1}, U0 -> {}] (5 0)
+Remaining Candidates (1)
+  0: [C0 -> {}, M0 -> {xs == (Nil)}, P3 -> {p _0 _1}, U0 -> {}] (5 0)
+Typing Constraints
+snoc, x, xs |- A4
+Type assignment
+A3 -> {a|U0}
+Simple Constraints
+Pred assignment
+P3 -> P3
+Constraints
+QMap
+  C0 -> {}
+  M0 -> {xs == (Nil)}
+  P3 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+Checking consistency
+Candidates (1)
+  0: [C0 -> {}, M0 -> {xs == (Nil)}, P3 -> {p _0 _1}, U0 -> {}] (5 0)
+Remaining Candidates (1)
+  0: [C0 -> {}, M0 -> {xs == (Nil)}, P3 -> {p _0 _1}, U0 -> {}] (5 0)
+Auxiliary goals are:
+Match valuation [xs == (Nil)]
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> xs:List {a|p x _v} <p _0 _1> -> {List a <p _0 _1>|_v == (Cons x xs)}
+INTO x9:A5 -> x10:List {A5|P4 x9 _v} <P4 _0 _1> -> {List A5 <P4 _0 _1>|_v == (Cons x9 x10)}
+Matching constructor type
+{List A5 <P4 _0 _1>|_v == (Cons x9 x10)}
+with scrutinee
+List {a|p _v x} <p _0 _1>
+ADD x11 : All {a,}. a
+ADD x12 : All {a,}. {List |  | a, |  | }
+Checking error in
+\x . \xs . 
+    match xs with
+      Cons x11 x12 -> error
+Typing Constraints
+snoc, x, x11, x12, xs True, M1 |- {Int|x == x && (x11 == x11 && (x12 == x12 && xs == xs))} <: {Int|False} ()
+|- P4 :: A5 -> A5 -> Bool
+snoc, x, xs |- A5
+snoc, x, xs |- A4
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+Simple Constraints
+snoc, x, xs |- {a|p _v x}
+snoc, x, x11, x12, xs True, M1 |- {Int|x == x && (x11 == x11 && (x12 == x12 && xs == xs))} <: {Int|False} ()
+Pred assignment
+P3 -> P3
+P4 -> p _0 _1
+Constraints
+  M1 && (len x12 >= 0 && (len xs >= 0 && ((x == x && (x11 == x11 && (x12 == x12 && xs == xs))) && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x)))))) ==> False
+QMap
+  C0 -> {}
+  M0 -> {xs == (Nil)}
+  M1 -> {xs == (Cons x11 x12)}
+  P3 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+Candidates (1)
+  0: [C0 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, U0 -> {}] (5 1)
+Chosen candidate: 0: [C0 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, U0 -> {}] (5 1)
+Invalid Constraint: M1 && (len x12 >= 0 && (len xs >= 0 && ((x == x && (x11 == x11 && (x12 == x12 && xs == xs))) && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x)))))) ==> False
+Strengthening: M1 && (len x12 >= 0 && (len xs >= 0 && ((x == x && (x11 == x11 && (x12 == x12 && xs == xs))) && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x)))))) ==> False
+Instantiated axioms:
+len ((Cons x11 x12)) == 1 + len x12, elems ((Cons x11 x12)) == [x11] + elems x12
+Optimal valuations:
+Pruned valuations:
+Diffs: (0)
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking error in
+\x . \xs . 
+    match xs with
+      Cons x11 x12 -> error
+Looking for type {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]}
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> xs:List {a|p x _v} <p _0 _1> -> {List a <p _0 _1>|_v == (Cons x xs)}
+INTO x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)}
+Checking Cons ??
+           ?? :: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} in
+\x . \xs . 
+    match xs with
+      Cons x11 x12 -> ??
+Typing Constraints
+snoc, x, x11, x12, xs True, C1, M1 |- LET x14:(_) IN LET x13:(_) IN {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} <: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} /\ X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} <: X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+|- P5 :: A6 -> A6 -> Bool
+snoc, x, x11, x12, xs |- A6
+snoc, x, x11, x12, xs |- C1
+|- P4 :: A5 -> A5 -> Bool
+snoc, x, xs |- A5
+snoc, x, xs |- A4
+UNIFY A6 WITH a PRODUCING {a|U1}
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Typing Constraints
+snoc, x, xs |- A4
+|- P5 :: A6 -> A6 -> Bool
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Simple Constraints
+snoc, x, xs |- {a|p _v x}
+snoc, x, x11, x12, xs |- C1
+snoc, x, x11, x12, xs |- {a|U1}
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|_v == (Cons X9 X8)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {a|U1} <: a ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {List|_v == (Cons x13 x14)} /\ {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {Int|P5 _0 _1} /\ {Int|p _0 _1} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {a|U1} /\ a ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {List|_v == (Cons x13 x14)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {a|U1} <: a ()
+Pred assignment
+P3 -> P3
+P4 -> p _0 _1
+P5 -> P5
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|len _v == 1 + len X8} <: {List|len _v == len xs + 1} ()
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|elems _v == [X9] + elems X8} <: {List|elems _v == elems xs + [x]} ()
+addSplitConstraint snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {List|len _v == 1 + len x14} <: {List|len _v == len xs + 1} ()
+addSplitConstraint snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {List|elems _v == [x13] + elems x14} <: {List|elems _v == elems xs + [x]} ()
+Constraints
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+QMap
+  C0 -> {}
+  C1 -> {}
+  M0 -> {xs == (Nil)}
+  M1 -> {xs == (Cons x11 x12)}
+  P3 -> {p _1 _0, p _0 _1}
+  P5 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+  U1 -> {p x11 _v, p _v x, p _v x11, p x _v}
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (5 1)
+Chosen candidate: 0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (5 1)
+Invalid Constraint: C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+Strengthening: C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+Instantiated axioms:
+len ((Cons x11 x12)) == 1 + len x12, elems ((Cons x11 x12)) == [x11] + elems x12
+Optimal valuations:
+{p _0 _1}
+Pruned valuations:
+{p _0 _1}
+Diffs: (1)
+[C1 -> {}, M1 -> {}, P5 -> {p _0 _1}]
+Checking consistency
+  C1 && (M1 && ([_v -> x13]U1 && (_v == (Cons x13 x14) && (len x12 >= 0 && (len x14 >= 0 && (len xs >= 0 && ((len _v == len xs + 1 && elems _v == elems xs + [x]) && p x11 x)))))))
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p _0 _1 && p x11 x)))))
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {p _0 _1}, U0 -> {}, U1 -> {}] (6 0)
+Remaining Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {p _0 _1}, U0 -> {}, U1 -> {}] (6 0)
+INSTANTIATE <a> . <p :: a -> a -> Bool> . {List a <p _0 _1>|_v == (Nil)}
+INTO {List {A6|False} <False>|_v == (Nil)}
+Checking Nil :: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} in
+\x . \xs . 
+    match xs with
+      Cons x11 x12 -> ??
+Typing Constraints
+snoc, x, x11, x12, xs True, C1, M1 |- {List {A6|False} <False>|_v == (Nil)} <: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs |- A6
+snoc, x, x11, x12, xs |- C1
+|- P4 :: A5 -> A5 -> Bool
+snoc, x, xs |- A5
+snoc, x, xs |- A4
+UNIFY A6 WITH a PRODUCING {a|U1}
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Typing Constraints
+snoc, x, xs |- A4
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Simple Constraints
+snoc, x, xs |- {a|p _v x}
+snoc, x, x11, x12, xs |- C1
+snoc, x, x11, x12, xs |- {a|U1}
+snoc, x, x11, x12, xs True, C1, M1 |- {List|_v == (Nil)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- {Int|False} <: {Int|p _0 _1} ()
+snoc, x, x11, x12, xs True, C1, M1 |- {a|False} <: a ()
+Pred assignment
+P3 -> P3
+P4 -> p _0 _1
+addSplitConstraint snoc, x, x11, x12, xs True, C1, M1 |- {List|len _v == 0} <: {List|len _v == len xs + 1} ()
+addSplitConstraint snoc, x, x11, x12, xs True, C1, M1 |- {List|elems _v == []} <: {List|elems _v == elems xs + [x]} ()
+Constraints
+  C1 && (M1 && (len _v == 0 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> len _v == len xs + 1
+  C1 && (M1 && (elems _v == [] && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> elems _v == elems xs + [x]
+QMap
+  C0 -> {}
+  C1 -> {}
+  M0 -> {xs == (Nil)}
+  M1 -> {xs == (Cons x11 x12)}
+  P3 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+  U1 -> {p x11 _v, p _v x, p _v x11, p x _v}
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, U0 -> {}, U1 -> {}] (5 2)
+Chosen candidate: 0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, U0 -> {}, U1 -> {}] (5 2)
+Invalid Constraint: C1 && (M1 && (len _v == 0 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> len _v == len xs + 1
+Strengthening: C1 && (M1 && (len _v == 0 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> len _v == len xs + 1
+Instantiated axioms:
+len ((Cons x11 x12)) == 1 + len x12, elems ((Cons x11 x12)) == [x11] + elems x12
+Optimal valuations:
+Pruned valuations:
+Diffs: (0)
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking Nil ::
+{List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]}
+in
+\x . \xs . 
+    match xs with
+      Cons x11 x12 -> Nil
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> x0:{List {a|p _v x} <p _0 _1>|len _v >= 0 && len _v < len xs} -> {List a <p _0 _1>|len _v == len x0 + 1 && elems _v == elems x0 + [x]}
+INTO x13:A6 -> x14:{List {A6|P5 _v x13} <P5 _0 _1>|len _v >= 0 && len _v < len xs} -> {List A6 <P5 _0 _1>|len _v == len x14 + 1 && elems _v == elems x14 + [x13]}
+Checking snoc ??
+           ?? :: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} in
+\x . \xs . 
+    match xs with
+      Cons x11 x12 -> ??
+Typing Constraints
+snoc, x, x11, x12, xs True, C1, M1 |- LET x14:(_) IN LET x13:(_) IN {List A6 <P5 _0 _1>|len _v == len x14 + 1 && elems _v == elems x14 + [x13]} <: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:{List {A6|P5 _v x13} <P5 _0 _1>|len _v >= 0 && len _v < len xs} -> {List A6 <P5 _0 _1>|len _v == len x14 + 1 && elems _v == elems x14 + [x13]} /\ X11:_ -> X10:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:{List {A6|P5 _v x13} <P5 _0 _1>|len _v >= 0 && len _v < len xs} -> {List A6 <P5 _0 _1>|len _v == len x14 + 1 && elems _v == elems x14 + [x13]} <: X11:_ -> X10:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+|- P5 :: A6 -> A6 -> Bool
+snoc, x, x11, x12, xs |- A6
+snoc, x, x11, x12, xs |- C1
+|- P4 :: A5 -> A5 -> Bool
+snoc, x, xs |- A5
+snoc, x, xs |- A4
+UNIFY A6 WITH a PRODUCING {a|U1}
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Typing Constraints
+snoc, x, xs |- A4
+|- P5 :: A6 -> A6 -> Bool
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Simple Constraints
+snoc, x, xs |- {a|p _v x}
+snoc, x, x11, x12, xs |- C1
+snoc, x, x11, x12, xs |- {a|U1}
+X10, X11, snoc, x, x11, x12, xs True, C1, M1 |- {List|len _v == len X10 + 1 && elems _v == elems X10 + [X11]} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+X10, X11, snoc, x, x11, x12, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+X10, X11, snoc, x, x11, x12, xs True, C1, M1 |- {a|U1} <: a ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {List|len _v == len x14 + 1 && elems _v == elems x14 + [x13]} /\ {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {Int|P5 _0 _1} /\ {Int|p _0 _1} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {a|U1} /\ a ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {List|len _v == len x14 + 1 && elems _v == elems x14 + [x13]} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {a|U1} <: a ()
+Pred assignment
+P3 -> P3
+P4 -> p _0 _1
+P5 -> P5
+addSplitConstraint X10, X11, snoc, x, x11, x12, xs True, C1, M1 |- {List|len _v == len X10 + 1} <: {List|len _v == len xs + 1} ()
+addSplitConstraint X10, X11, snoc, x, x11, x12, xs True, C1, M1 |- {List|elems _v == elems X10 + [X11]} <: {List|elems _v == elems xs + [x]} ()
+addSplitConstraint snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {List|len _v == len x14 + 1} <: {List|len _v == len xs + 1} ()
+addSplitConstraint snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {List|elems _v == elems x14 + [x13]} <: {List|elems _v == elems xs + [x]} ()
+Constraints
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+QMap
+  C0 -> {}
+  C1 -> {}
+  M0 -> {xs == (Nil)}
+  M1 -> {xs == (Cons x11 x12)}
+  P3 -> {p _1 _0, p _0 _1}
+  P5 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+  U1 -> {p x11 _v, p _v x, p _v x11, p x _v}
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (5 1)
+Chosen candidate: 0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (5 1)
+Invalid Constraint: C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+Strengthening: C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+Instantiated axioms:
+len ((Cons x11 x12)) == 1 + len x12, elems ((Cons x11 x12)) == [x11] + elems x12
+Optimal valuations:
+{p _0 _1}
+Pruned valuations:
+{p _0 _1}
+Diffs: (1)
+[C1 -> {}, M1 -> {}, P5 -> {p _0 _1}]
+Checking consistency
+  C1 && (M1 && ([_v -> x13]U1 && (len x12 >= 0 && (len x14 >= 0 && (len xs >= 0 && ((len _v == len x14 + 1 && elems _v == elems x14 + [x13]) && ((len _v == len xs + 1 && elems _v == elems xs + [x]) && ((len x14 >= 0 && len x14 < len xs) && p x11 x))))))))
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p _0 _1 && p x11 x)))))
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {p _0 _1}, U0 -> {}, U1 -> {}] (6 0)
+Remaining Candidates (0)
+TYPE ERROR: Found inconsistent refinements
+when checking snoc ?? ?? ::
+{List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]}
+in
+\x . \xs . 
+    match xs with
+      Cons x11 x12 -> snoc ?? ??
+Checking x12 :: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} in
+\x . \xs . 
+    match xs with
+      Cons x11 x12 -> ??
+Typing Constraints
+snoc, x, x11, x12, xs True, C1, M1 |- {List {a|p _v x && P4 x11 _v} <P4 _0 _1>|_v == x12} <: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs |- C1
+|- P4 :: A5 -> A5 -> Bool
+snoc, x, xs |- A5
+snoc, x, xs |- A4
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+Simple Constraints
+snoc, x, xs |- {a|p _v x}
+snoc, x, x11, x12, xs |- C1
+snoc, x, x11, x12, xs True, C1, M1 |- {List|_v == x12} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- {Int|P4 _0 _1} <: {Int|p _0 _1} ()
+snoc, x, x11, x12, xs True, C1, M1 |- {a|p _v x && P4 x11 _v} <: a ()
+Pred assignment
+P3 -> P3
+P4 -> p _0 _1
+Constraints
+  C1 && (M1 && (_v == x12 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> len _v == len xs + 1 && elems _v == elems xs + [x]
+  C1 && (M1 && (len x12 >= 0 && (len xs >= 0 && (p _0 _1 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+QMap
+  C0 -> {}
+  C1 -> {}
+  M0 -> {xs == (Nil)}
+  M1 -> {xs == (Cons x11 x12)}
+  P3 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, U0 -> {}] (6 1)
+Chosen candidate: 0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, U0 -> {}] (6 1)
+Invalid Constraint: C1 && (M1 && (_v == x12 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> len _v == len xs + 1 && elems _v == elems xs + [x]
+Strengthening: C1 && (M1 && (_v == x12 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> len _v == len xs + 1 && elems _v == elems xs + [x]
+Instantiated axioms:
+len ((Cons x11 x12)) == 1 + len x12, elems ((Cons x11 x12)) == [x11] + elems x12
+Optimal valuations:
+Pruned valuations:
+Diffs: (0)
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking x12 ::
+{List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]}
+in
+\x . \xs . 
+    match xs with
+      Cons x11 x12 -> x12
+Checking xs :: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} in
+\x . \xs . 
+    match xs with
+      Cons x11 x12 -> ??
+Typing Constraints
+snoc, x, x11, x12, xs True, C1, M1 |- {List {a|p _v x} <p _0 _1>|_v == xs} <: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs |- C1
+|- P4 :: A5 -> A5 -> Bool
+snoc, x, xs |- A5
+snoc, x, xs |- A4
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+Simple Constraints
+snoc, x, xs |- {a|p _v x}
+snoc, x, x11, x12, xs |- C1
+snoc, x, x11, x12, xs True, C1, M1 |- {List|_v == xs} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- {Int|p _0 _1} <: {Int|p _0 _1} ()
+snoc, x, x11, x12, xs True, C1, M1 |- {a|p _v x} <: a ()
+Pred assignment
+P3 -> P3
+P4 -> p _0 _1
+Constraints
+  C1 && (M1 && (_v == xs && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> len _v == len xs + 1 && elems _v == elems xs + [x]
+  C1 && (M1 && (len x12 >= 0 && (len xs >= 0 && (p _0 _1 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+QMap
+  C0 -> {}
+  C1 -> {}
+  M0 -> {xs == (Nil)}
+  M1 -> {xs == (Cons x11 x12)}
+  P3 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, U0 -> {}] (6 1)
+Chosen candidate: 0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, U0 -> {}] (6 1)
+Invalid Constraint: C1 && (M1 && (_v == xs && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> len _v == len xs + 1 && elems _v == elems xs + [x]
+Strengthening: C1 && (M1 && (_v == xs && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> len _v == len xs + 1 && elems _v == elems xs + [x]
+Instantiated axioms:
+len ((Cons x11 x12)) == 1 + len x12, elems ((Cons x11 x12)) == [x11] + elems x12
+Optimal valuations:
+Pruned valuations:
+Diffs: (0)
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking xs ::
+{List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]}
+in
+\x . \xs . 
+    match xs with
+      Cons x11 x12 -> xs
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> xs:List {a|p x _v} <p _0 _1> -> {List a <p _0 _1>|_v == (Cons x xs)}
+INTO x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)}
+Checking Cons x
+           ?? :: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} in
+\x . \xs . 
+    match xs with
+      Cons x11 x12 -> ??
+Typing Constraints
+snoc, x, x11, x12, xs True, C1, M1 |- LET x14:(_) IN {List A6 <P5 _0 _1>|_v == (Cons x x14)} <: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- {a|_v == x} <: _ ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} /\ X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} <: X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+|- P5 :: A6 -> A6 -> Bool
+snoc, x, x11, x12, xs |- A6
+snoc, x, x11, x12, xs |- C1
+|- P4 :: A5 -> A5 -> Bool
+snoc, x, xs |- A5
+snoc, x, xs |- A4
+UNIFY A6 WITH a PRODUCING {a|U1}
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Typing Constraints
+snoc, x, xs |- A4
+|- P5 :: A6 -> A6 -> Bool
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Simple Constraints
+snoc, x, xs |- {a|p _v x}
+snoc, x, x11, x12, xs |- C1
+snoc, x, x11, x12, xs |- {a|U1}
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|_v == (Cons X9 X8)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {a|U1} <: a ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {List|_v == (Cons x13 x14)} /\ {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {Int|P5 _0 _1} /\ {Int|p _0 _1} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {a|U1} /\ a ()
+snoc, x, x11, x12, x14, xs True, C1, M1 |- {List|_v == (Cons x x14)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, x14, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+snoc, x, x11, x12, x14, xs True, C1, M1 |- {a|U1} <: a ()
+Pred assignment
+P3 -> P3
+P4 -> p _0 _1
+P5 -> P5
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|len _v == 1 + len X8} <: {List|len _v == len xs + 1} ()
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|elems _v == [X9] + elems X8} <: {List|elems _v == elems xs + [x]} ()
+addSplitConstraint snoc, x, x11, x12, x14, xs True, C1, M1 |- {List|len _v == 1 + len x14} <: {List|len _v == len xs + 1} ()
+addSplitConstraint snoc, x, x11, x12, x14, xs True, C1, M1 |- {List|elems _v == [x] + elems x14} <: {List|elems _v == elems xs + [x]} ()
+Constraints
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+QMap
+  C0 -> {}
+  C1 -> {}
+  M0 -> {xs == (Nil)}
+  M1 -> {xs == (Cons x11 x12)}
+  P3 -> {p _1 _0, p _0 _1}
+  P5 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+  U1 -> {p x11 _v, p _v x, p _v x11, p x _v}
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (5 1)
+Chosen candidate: 0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (5 1)
+Invalid Constraint: C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+Strengthening: C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+Instantiated axioms:
+len ((Cons x11 x12)) == 1 + len x12, elems ((Cons x11 x12)) == [x11] + elems x12
+Optimal valuations:
+{p _0 _1}
+Pruned valuations:
+{p _0 _1}
+Diffs: (1)
+[C1 -> {}, M1 -> {}, P5 -> {p _0 _1}]
+Checking consistency
+  C1 && (M1 && ([_v -> x13]U1 && (_v == (Cons x13 x14) && (len x12 >= 0 && (len x14 >= 0 && (len xs >= 0 && ((len _v == len xs + 1 && elems _v == elems xs + [x]) && p x11 x)))))))
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p _0 _1 && p x11 x)))))
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {p _0 _1}, U0 -> {}, U1 -> {}] (6 0)
+Remaining Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {p _0 _1}, U0 -> {}, U1 -> {}] (6 0)
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> xs:List {a|p x _v} <p _0 _1> -> {List a <p _0 _1>|_v == (Cons x xs)}
+INTO x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)}
+Checking Cons x11
+           ?? :: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} in
+\x . \xs . 
+    match xs with
+      Cons x11 x12 -> ??
+Typing Constraints
+snoc, x, x11, x12, xs True, C1, M1 |- LET x14:(_) IN {List A6 <P5 _0 _1>|_v == (Cons x11 x14)} <: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- {a|_v == x11} <: _ ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} /\ X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} <: X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+|- P5 :: A6 -> A6 -> Bool
+snoc, x, x11, x12, xs |- A6
+snoc, x, x11, x12, xs |- C1
+|- P4 :: A5 -> A5 -> Bool
+snoc, x, xs |- A5
+snoc, x, xs |- A4
+UNIFY A6 WITH a PRODUCING {a|U1}
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Typing Constraints
+snoc, x, xs |- A4
+|- P5 :: A6 -> A6 -> Bool
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Simple Constraints
+snoc, x, xs |- {a|p _v x}
+snoc, x, x11, x12, xs |- C1
+snoc, x, x11, x12, xs |- {a|U1}
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|_v == (Cons X9 X8)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {a|U1} <: a ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {List|_v == (Cons x13 x14)} /\ {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {Int|P5 _0 _1} /\ {Int|p _0 _1} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {a|U1} /\ a ()
+snoc, x, x11, x12, x14, xs True, C1, M1 |- {List|_v == (Cons x11 x14)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, x14, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+snoc, x, x11, x12, x14, xs True, C1, M1 |- {a|U1} <: a ()
+Pred assignment
+P3 -> P3
+P4 -> p _0 _1
+P5 -> P5
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|len _v == 1 + len X8} <: {List|len _v == len xs + 1} ()
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|elems _v == [X9] + elems X8} <: {List|elems _v == elems xs + [x]} ()
+addSplitConstraint snoc, x, x11, x12, x14, xs True, C1, M1 |- {List|len _v == 1 + len x14} <: {List|len _v == len xs + 1} ()
+addSplitConstraint snoc, x, x11, x12, x14, xs True, C1, M1 |- {List|elems _v == [x11] + elems x14} <: {List|elems _v == elems xs + [x]} ()
+Constraints
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+QMap
+  C0 -> {}
+  C1 -> {}
+  M0 -> {xs == (Nil)}
+  M1 -> {xs == (Cons x11 x12)}
+  P3 -> {p _1 _0, p _0 _1}
+  P5 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+  U1 -> {p x11 _v, p _v x, p _v x11, p x _v}
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (5 1)
+Chosen candidate: 0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (5 1)
+Invalid Constraint: C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+Strengthening: C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+Instantiated axioms:
+len ((Cons x11 x12)) == 1 + len x12, elems ((Cons x11 x12)) == [x11] + elems x12
+Optimal valuations:
+{p _0 _1}
+Pruned valuations:
+{p _0 _1}
+Diffs: (1)
+[C1 -> {}, M1 -> {}, P5 -> {p _0 _1}]
+Checking consistency
+  C1 && (M1 && ([_v -> x13]U1 && (_v == (Cons x13 x14) && (len x12 >= 0 && (len x14 >= 0 && (len xs >= 0 && ((len _v == len xs + 1 && elems _v == elems xs + [x]) && p x11 x)))))))
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p _0 _1 && p x11 x)))))
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {p _0 _1}, U0 -> {}, U1 -> {}] (6 0)
+Remaining Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {p _0 _1}, U0 -> {}, U1 -> {}] (6 0)
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> xs:List {a|p x _v} <p _0 _1> -> {List a <p _0 _1>|_v == (Cons x xs)}
+INTO x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)}
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> xs:List {a|p x _v} <p _0 _1> -> {List a <p _0 _1>|_v == (Cons x xs)}
+INTO x15:A7 -> x16:List {A7|P6 x15 _v} <P6 _0 _1> -> {List A7 <P6 _0 _1>|_v == (Cons x15 x16)}
+Checking Cons x (Cons ??
+                   ??) :: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} in
+\x . \xs . 
+    match xs with
+      Cons x11 x12 -> ??
+Typing Constraints
+snoc, x, x11, x12, xs True, C1, M1 |- LET x14:(LET x16:(_) IN LET x15:(_) IN {List A7 <P6 _0 _1>|_v == (Cons x15 x16)}) IN {List A6 <P5 _0 _1>|_v == (Cons x x14)} <: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- x15:A7 -> x16:List {A7|P6 x15 _v} <P6 _0 _1> -> {List A7 <P6 _0 _1>|_v == (Cons x15 x16)} /\ X13:_ -> X12:_ -> _ ()
+snoc, x, x11, x12, xs True, C1, M1 |- x15:A7 -> x16:List {A7|P6 x15 _v} <P6 _0 _1> -> {List A7 <P6 _0 _1>|_v == (Cons x15 x16)} <: X13:_ -> X12:_ -> _ ()
+|- P6 :: A7 -> A7 -> Bool
+snoc, x, x11, x12, xs |- A7
+snoc, x, x11, x12, xs True, C1, M1 |- {a|_v == x} <: _ ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} /\ X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} <: X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+|- P5 :: A6 -> A6 -> Bool
+snoc, x, x11, x12, xs |- A6
+snoc, x, x11, x12, xs |- C1
+|- P4 :: A5 -> A5 -> Bool
+snoc, x, xs |- A5
+snoc, x, xs |- A4
+UNIFY A6 WITH a PRODUCING {a|U1}
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Typing Constraints
+snoc, x, xs |- A4
+|- P5 :: A6 -> A6 -> Bool
+snoc, x, x11, x12, xs |- A7
+|- P6 :: A7 -> A7 -> Bool
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Simple Constraints
+snoc, x, xs |- {a|p _v x}
+snoc, x, x11, x12, xs |- C1
+snoc, x, x11, x12, xs |- {a|U1}
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|_v == (Cons X9 X8)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {a|U1} <: a ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {List|_v == (Cons x13 x14)} /\ {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {Int|P5 _0 _1} /\ {Int|p _0 _1} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {a|U1} /\ a ()
+snoc, x, x11, x12, x14, xs True, C1, M1 |- {List|_v == (Cons x x14)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, x14, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+snoc, x, x11, x12, x14, xs True, C1, M1 |- {a|U1} <: a ()
+WARNING: free vars in predicate |- P6 :: A7 -> A7 -> Bool
+Pred assignment
+P3 -> P3
+P4 -> p _0 _1
+P5 -> P5
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|len _v == 1 + len X8} <: {List|len _v == len xs + 1} ()
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|elems _v == [X9] + elems X8} <: {List|elems _v == elems xs + [x]} ()
+addSplitConstraint snoc, x, x11, x12, x14, xs True, C1, M1 |- {List|len _v == 1 + len x14} <: {List|len _v == len xs + 1} ()
+addSplitConstraint snoc, x, x11, x12, x14, xs True, C1, M1 |- {List|elems _v == [x] + elems x14} <: {List|elems _v == elems xs + [x]} ()
+Constraints
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+QMap
+  C0 -> {}
+  C1 -> {}
+  M0 -> {xs == (Nil)}
+  M1 -> {xs == (Cons x11 x12)}
+  P3 -> {p _1 _0, p _0 _1}
+  P5 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+  U1 -> {p x11 _v, p _v x, p _v x11, p x _v}
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (5 1)
+Chosen candidate: 0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (5 1)
+Invalid Constraint: C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+Strengthening: C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+Instantiated axioms:
+len ((Cons x11 x12)) == 1 + len x12, elems ((Cons x11 x12)) == [x11] + elems x12
+Optimal valuations:
+{p _0 _1}
+Pruned valuations:
+{p _0 _1}
+Diffs: (1)
+[C1 -> {}, M1 -> {}, P5 -> {p _0 _1}]
+Checking consistency
+  C1 && (M1 && ([_v -> x13]U1 && (_v == (Cons x13 x14) && (len x12 >= 0 && (len x14 >= 0 && (len xs >= 0 && ((len _v == len xs + 1 && elems _v == elems xs + [x]) && p x11 x)))))))
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p _0 _1 && p x11 x)))))
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {p _0 _1}, U0 -> {}, U1 -> {}] (6 0)
+Remaining Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {p _0 _1}, U0 -> {}, U1 -> {}] (6 0)
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> xs:List {a|p x _v} <p _0 _1> -> {List a <p _0 _1>|_v == (Cons x xs)}
+INTO x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)}
+INSTANTIATE <a> . <p :: a -> a -> Bool> . {List a <p _0 _1>|_v == (Nil)}
+INTO {List {A7|False} <False>|_v == (Nil)}
+Checking Cons x
+           Nil :: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} in
+\x . \xs . 
+    match xs with
+      Cons x11 x12 -> ??
+Typing Constraints
+snoc, x, x11, x12, xs True, C1, M1 |- {List A6 <P5 _0 _1>|_v == (Cons x (Nil))} <: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- {List {A7|False} <False>|_v == (Nil)} <: _ ()
+snoc, x, x11, x12, xs |- A7
+snoc, x, x11, x12, xs True, C1, M1 |- {a|_v == x} <: _ ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} /\ X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} <: X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+|- P5 :: A6 -> A6 -> Bool
+snoc, x, x11, x12, xs |- A6
+snoc, x, x11, x12, xs |- C1
+|- P4 :: A5 -> A5 -> Bool
+snoc, x, xs |- A5
+snoc, x, xs |- A4
+UNIFY A6 WITH a PRODUCING {a|U1}
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Typing Constraints
+snoc, x, xs |- A4
+|- P5 :: A6 -> A6 -> Bool
+snoc, x, x11, x12, xs |- A7
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Simple Constraints
+snoc, x, xs |- {a|p _v x}
+snoc, x, x11, x12, xs |- C1
+snoc, x, x11, x12, xs |- {a|U1}
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|_v == (Cons X9 X8)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {a|U1} <: a ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {List|_v == (Cons x13 x14)} /\ {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {Int|P5 _0 _1} /\ {Int|p _0 _1} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {a|U1} /\ a ()
+snoc, x, x11, x12, xs True, C1, M1 |- {List|_v == (Cons x (Nil))} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+snoc, x, x11, x12, xs True, C1, M1 |- {a|U1} <: a ()
+Pred assignment
+P3 -> P3
+P4 -> p _0 _1
+P5 -> P5
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|len _v == 1 + len X8} <: {List|len _v == len xs + 1} ()
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|elems _v == [X9] + elems X8} <: {List|elems _v == elems xs + [x]} ()
+addSplitConstraint snoc, x, x11, x12, xs True, C1, M1 |- {List|len _v == 1 + len (Nil)} <: {List|len _v == len xs + 1} ()
+addSplitConstraint snoc, x, x11, x12, xs True, C1, M1 |- {List|elems _v == [x] + elems (Nil)} <: {List|elems _v == elems xs + [x]} ()
+Constraints
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+  C1 && (M1 && (len _v == 1 + len (Nil) && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> len _v == len xs + 1
+  C1 && (M1 && (elems _v == [x] + elems (Nil) && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+QMap
+  C0 -> {}
+  C1 -> {}
+  M0 -> {xs == (Nil)}
+  M1 -> {xs == (Cons x11 x12)}
+  P3 -> {p _1 _0, p _0 _1}
+  P5 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+  U1 -> {p x11 _v, p _v x, p _v x11, p x _v}
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (5 3)
+Chosen candidate: 0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (5 3)
+Invalid Constraint: C1 && (M1 && (len _v == 1 + len (Nil) && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> len _v == len xs + 1
+Strengthening: C1 && (M1 && (len _v == 1 + len (Nil) && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> len _v == len xs + 1
+Instantiated axioms:
+len (Nil) == 0, len ((Cons x11 x12)) == 1 + len x12, elems (Nil) == [], elems ((Cons x11 x12)) == [x11] + elems x12
+Optimal valuations:
+Pruned valuations:
+Diffs: (0)
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking Cons x Nil ::
+{List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]}
+in
+\x . \xs . 
+    match xs with
+      Cons x11 x12 -> Cons x Nil
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> xs:List {a|p x _v} <p _0 _1> -> {List a <p _0 _1>|_v == (Cons x xs)}
+INTO x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)}
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> x0:{List {a|p _v x} <p _0 _1>|len _v >= 0 && len _v < len xs} -> {List a <p _0 _1>|len _v == len x0 + 1 && elems _v == elems x0 + [x]}
+INTO x15:A7 -> x16:{List {A7|P6 _v x15} <P6 _0 _1>|len _v >= 0 && len _v < len xs} -> {List A7 <P6 _0 _1>|len _v == len x16 + 1 && elems _v == elems x16 + [x15]}
+Checking Cons x (snoc ??
+                   ??) :: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} in
+\x . \xs . 
+    match xs with
+      Cons x11 x12 -> ??
+Typing Constraints
+snoc, x, x11, x12, xs True, C1, M1 |- LET x14:(LET x16:(_) IN LET x15:(_) IN {List A7 <P6 _0 _1>|len _v == len x16 + 1 && elems _v == elems x16 + [x15]}) IN {List A6 <P5 _0 _1>|_v == (Cons x x14)} <: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- x15:A7 -> x16:{List {A7|P6 _v x15} <P6 _0 _1>|len _v >= 0 && len _v < len xs} -> {List A7 <P6 _0 _1>|len _v == len x16 + 1 && elems _v == elems x16 + [x15]} /\ X15:_ -> X14:_ -> _ ()
+snoc, x, x11, x12, xs True, C1, M1 |- x15:A7 -> x16:{List {A7|P6 _v x15} <P6 _0 _1>|len _v >= 0 && len _v < len xs} -> {List A7 <P6 _0 _1>|len _v == len x16 + 1 && elems _v == elems x16 + [x15]} <: X15:_ -> X14:_ -> _ ()
+|- P6 :: A7 -> A7 -> Bool
+snoc, x, x11, x12, xs |- A7
+snoc, x, x11, x12, xs True, C1, M1 |- {a|_v == x} <: _ ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} /\ X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} <: X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+|- P5 :: A6 -> A6 -> Bool
+snoc, x, x11, x12, xs |- A6
+snoc, x, x11, x12, xs |- C1
+|- P4 :: A5 -> A5 -> Bool
+snoc, x, xs |- A5
+snoc, x, xs |- A4
+UNIFY A6 WITH a PRODUCING {a|U1}
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Typing Constraints
+snoc, x, xs |- A4
+|- P5 :: A6 -> A6 -> Bool
+snoc, x, x11, x12, xs |- A7
+|- P6 :: A7 -> A7 -> Bool
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Simple Constraints
+snoc, x, xs |- {a|p _v x}
+snoc, x, x11, x12, xs |- C1
+snoc, x, x11, x12, xs |- {a|U1}
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|_v == (Cons X9 X8)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {a|U1} <: a ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {List|_v == (Cons x13 x14)} /\ {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {Int|P5 _0 _1} /\ {Int|p _0 _1} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {a|U1} /\ a ()
+snoc, x, x11, x12, x14, xs True, C1, M1 |- {List|_v == (Cons x x14)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, x14, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+snoc, x, x11, x12, x14, xs True, C1, M1 |- {a|U1} <: a ()
+WARNING: free vars in predicate |- P6 :: A7 -> A7 -> Bool
+Pred assignment
+P3 -> P3
+P4 -> p _0 _1
+P5 -> P5
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|len _v == 1 + len X8} <: {List|len _v == len xs + 1} ()
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|elems _v == [X9] + elems X8} <: {List|elems _v == elems xs + [x]} ()
+addSplitConstraint snoc, x, x11, x12, x14, xs True, C1, M1 |- {List|len _v == 1 + len x14} <: {List|len _v == len xs + 1} ()
+addSplitConstraint snoc, x, x11, x12, x14, xs True, C1, M1 |- {List|elems _v == [x] + elems x14} <: {List|elems _v == elems xs + [x]} ()
+Constraints
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+QMap
+  C0 -> {}
+  C1 -> {}
+  M0 -> {xs == (Nil)}
+  M1 -> {xs == (Cons x11 x12)}
+  P3 -> {p _1 _0, p _0 _1}
+  P5 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+  U1 -> {p x11 _v, p _v x, p _v x11, p x _v}
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (5 1)
+Chosen candidate: 0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (5 1)
+Invalid Constraint: C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+Strengthening: C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+Instantiated axioms:
+len ((Cons x11 x12)) == 1 + len x12, elems ((Cons x11 x12)) == [x11] + elems x12
+Optimal valuations:
+{p _0 _1}
+Pruned valuations:
+{p _0 _1}
+Diffs: (1)
+[C1 -> {}, M1 -> {}, P5 -> {p _0 _1}]
+Checking consistency
+  C1 && (M1 && ([_v -> x13]U1 && (_v == (Cons x13 x14) && (len x12 >= 0 && (len x14 >= 0 && (len xs >= 0 && ((len _v == len xs + 1 && elems _v == elems xs + [x]) && p x11 x)))))))
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p _0 _1 && p x11 x)))))
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {p _0 _1}, U0 -> {}, U1 -> {}] (6 0)
+Remaining Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {p _0 _1}, U0 -> {}, U1 -> {}] (6 0)
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> xs:List {a|p x _v} <p _0 _1> -> {List a <p _0 _1>|_v == (Cons x xs)}
+INTO x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)}
+Checking Cons x
+           x12 :: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} in
+\x . \xs . 
+    match xs with
+      Cons x11 x12 -> ??
+Typing Constraints
+snoc, x, x11, x12, xs True, C1, M1 |- {List A6 <P5 _0 _1>|_v == (Cons x x12)} <: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- {List {a|p _v x && P4 x11 _v} <P4 _0 _1>|_v == x12} <: _ ()
+snoc, x, x11, x12, xs True, C1, M1 |- {a|_v == x} <: _ ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} /\ X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} <: X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+|- P5 :: A6 -> A6 -> Bool
+snoc, x, x11, x12, xs |- A6
+snoc, x, x11, x12, xs |- C1
+|- P4 :: A5 -> A5 -> Bool
+snoc, x, xs |- A5
+snoc, x, xs |- A4
+UNIFY A6 WITH a PRODUCING {a|U1}
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Typing Constraints
+snoc, x, xs |- A4
+|- P5 :: A6 -> A6 -> Bool
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Simple Constraints
+snoc, x, xs |- {a|p _v x}
+snoc, x, x11, x12, xs |- C1
+snoc, x, x11, x12, xs |- {a|U1}
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|_v == (Cons X9 X8)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {a|U1} <: a ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {List|_v == (Cons x13 x14)} /\ {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {Int|P5 _0 _1} /\ {Int|p _0 _1} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {a|U1} /\ a ()
+snoc, x, x11, x12, xs True, C1, M1 |- {List|_v == (Cons x x12)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+snoc, x, x11, x12, xs True, C1, M1 |- {a|U1} <: a ()
+Pred assignment
+P3 -> P3
+P4 -> p _0 _1
+P5 -> P5
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|len _v == 1 + len X8} <: {List|len _v == len xs + 1} ()
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|elems _v == [X9] + elems X8} <: {List|elems _v == elems xs + [x]} ()
+addSplitConstraint snoc, x, x11, x12, xs True, C1, M1 |- {List|len _v == 1 + len x12} <: {List|len _v == len xs + 1} ()
+addSplitConstraint snoc, x, x11, x12, xs True, C1, M1 |- {List|elems _v == [x] + elems x12} <: {List|elems _v == elems xs + [x]} ()
+Constraints
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+  C1 && (M1 && (len _v == 1 + len x12 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> len _v == len xs + 1
+  C1 && (M1 && (elems _v == [x] + elems x12 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+QMap
+  C0 -> {}
+  C1 -> {}
+  M0 -> {xs == (Nil)}
+  M1 -> {xs == (Cons x11 x12)}
+  P3 -> {p _1 _0, p _0 _1}
+  P5 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+  U1 -> {p x11 _v, p _v x, p _v x11, p x _v}
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (5 3)
+Chosen candidate: 0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (5 3)
+Invalid Constraint: C1 && (M1 && (len _v == 1 + len x12 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> len _v == len xs + 1
+Strengthening: C1 && (M1 && (len _v == 1 + len x12 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> len _v == len xs + 1
+Instantiated axioms:
+len ((Cons x11 x12)) == 1 + len x12, elems ((Cons x11 x12)) == [x11] + elems x12
+Optimal valuations:
+Pruned valuations:
+Diffs: (0)
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking Cons x x12 ::
+{List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]}
+in
+\x . \xs . 
+    match xs with
+      Cons x11 x12 -> Cons x x12
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> xs:List {a|p x _v} <p _0 _1> -> {List a <p _0 _1>|_v == (Cons x xs)}
+INTO x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)}
+Checking Cons x
+           xs :: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} in
+\x . \xs . 
+    match xs with
+      Cons x11 x12 -> ??
+Typing Constraints
+snoc, x, x11, x12, xs True, C1, M1 |- {List A6 <P5 _0 _1>|_v == (Cons x xs)} <: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- {List {a|p _v x} <p _0 _1>|_v == xs} <: _ ()
+snoc, x, x11, x12, xs True, C1, M1 |- {a|_v == x} <: _ ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} /\ X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} <: X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+|- P5 :: A6 -> A6 -> Bool
+snoc, x, x11, x12, xs |- A6
+snoc, x, x11, x12, xs |- C1
+|- P4 :: A5 -> A5 -> Bool
+snoc, x, xs |- A5
+snoc, x, xs |- A4
+UNIFY A6 WITH a PRODUCING {a|U1}
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Typing Constraints
+snoc, x, xs |- A4
+|- P5 :: A6 -> A6 -> Bool
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Simple Constraints
+snoc, x, xs |- {a|p _v x}
+snoc, x, x11, x12, xs |- C1
+snoc, x, x11, x12, xs |- {a|U1}
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|_v == (Cons X9 X8)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {a|U1} <: a ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {List|_v == (Cons x13 x14)} /\ {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {Int|P5 _0 _1} /\ {Int|p _0 _1} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {a|U1} /\ a ()
+snoc, x, x11, x12, xs True, C1, M1 |- {List|_v == (Cons x xs)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+snoc, x, x11, x12, xs True, C1, M1 |- {a|U1} <: a ()
+Pred assignment
+P3 -> P3
+P4 -> p _0 _1
+P5 -> P5
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|len _v == 1 + len X8} <: {List|len _v == len xs + 1} ()
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|elems _v == [X9] + elems X8} <: {List|elems _v == elems xs + [x]} ()
+addSplitConstraint snoc, x, x11, x12, xs True, C1, M1 |- {List|len _v == 1 + len xs} <: {List|len _v == len xs + 1} ()
+addSplitConstraint snoc, x, x11, x12, xs True, C1, M1 |- {List|elems _v == [x] + elems xs} <: {List|elems _v == elems xs + [x]} ()
+Constraints
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+  C1 && (M1 && (len _v == 1 + len xs && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> len _v == len xs + 1
+  C1 && (M1 && (elems _v == [x] + elems xs && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+QMap
+  C0 -> {}
+  C1 -> {}
+  M0 -> {xs == (Nil)}
+  M1 -> {xs == (Cons x11 x12)}
+  P3 -> {p _1 _0, p _0 _1}
+  P5 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+  U1 -> {p x11 _v, p _v x, p _v x11, p x _v}
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (7 1)
+Chosen candidate: 0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (7 1)
+Invalid Constraint: C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+Strengthening: C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+Instantiated axioms:
+len ((Cons x11 x12)) == 1 + len x12, elems ((Cons x11 x12)) == [x11] + elems x12
+Optimal valuations:
+{p _0 _1}
+Pruned valuations:
+{p _0 _1}
+Diffs: (1)
+[C1 -> {}, M1 -> {}, P5 -> {p _0 _1}]
+Checking consistency
+  C1 && (M1 && ([_v -> x13]U1 && (_v == (Cons x13 x14) && (len x12 >= 0 && (len x14 >= 0 && (len xs >= 0 && ((len _v == len xs + 1 && elems _v == elems xs + [x]) && p x11 x)))))))
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p _0 _1 && p x11 x)))))
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {p _0 _1}, U0 -> {}, U1 -> {}] (8 0)
+Remaining Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {p _0 _1}, U0 -> {}, U1 -> {}] (8 0)
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> xs:List {a|p x _v} <p _0 _1> -> {List a <p _0 _1>|_v == (Cons x xs)}
+INTO x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)}
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> xs:List {a|p x _v} <p _0 _1> -> {List a <p _0 _1>|_v == (Cons x xs)}
+INTO x15:A7 -> x16:List {A7|P6 x15 _v} <P6 _0 _1> -> {List A7 <P6 _0 _1>|_v == (Cons x15 x16)}
+Checking Cons x11 (Cons ??
+                     ??) :: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} in
+\x . \xs . 
+    match xs with
+      Cons x11 x12 -> ??
+Typing Constraints
+snoc, x, x11, x12, xs True, C1, M1 |- LET x14:(LET x16:(_) IN LET x15:(_) IN {List A7 <P6 _0 _1>|_v == (Cons x15 x16)}) IN {List A6 <P5 _0 _1>|_v == (Cons x11 x14)} <: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- x15:A7 -> x16:List {A7|P6 x15 _v} <P6 _0 _1> -> {List A7 <P6 _0 _1>|_v == (Cons x15 x16)} /\ X17:_ -> X16:_ -> _ ()
+snoc, x, x11, x12, xs True, C1, M1 |- x15:A7 -> x16:List {A7|P6 x15 _v} <P6 _0 _1> -> {List A7 <P6 _0 _1>|_v == (Cons x15 x16)} <: X17:_ -> X16:_ -> _ ()
+|- P6 :: A7 -> A7 -> Bool
+snoc, x, x11, x12, xs |- A7
+snoc, x, x11, x12, xs True, C1, M1 |- {a|_v == x11} <: _ ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} /\ X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} <: X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+|- P5 :: A6 -> A6 -> Bool
+snoc, x, x11, x12, xs |- A6
+snoc, x, x11, x12, xs |- C1
+|- P4 :: A5 -> A5 -> Bool
+snoc, x, xs |- A5
+snoc, x, xs |- A4
+UNIFY A6 WITH a PRODUCING {a|U1}
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Typing Constraints
+snoc, x, xs |- A4
+|- P5 :: A6 -> A6 -> Bool
+snoc, x, x11, x12, xs |- A7
+|- P6 :: A7 -> A7 -> Bool
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Simple Constraints
+snoc, x, xs |- {a|p _v x}
+snoc, x, x11, x12, xs |- C1
+snoc, x, x11, x12, xs |- {a|U1}
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|_v == (Cons X9 X8)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {a|U1} <: a ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {List|_v == (Cons x13 x14)} /\ {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {Int|P5 _0 _1} /\ {Int|p _0 _1} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {a|U1} /\ a ()
+snoc, x, x11, x12, x14, xs True, C1, M1 |- {List|_v == (Cons x11 x14)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, x14, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+snoc, x, x11, x12, x14, xs True, C1, M1 |- {a|U1} <: a ()
+WARNING: free vars in predicate |- P6 :: A7 -> A7 -> Bool
+Pred assignment
+P3 -> P3
+P4 -> p _0 _1
+P5 -> P5
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|len _v == 1 + len X8} <: {List|len _v == len xs + 1} ()
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|elems _v == [X9] + elems X8} <: {List|elems _v == elems xs + [x]} ()
+addSplitConstraint snoc, x, x11, x12, x14, xs True, C1, M1 |- {List|len _v == 1 + len x14} <: {List|len _v == len xs + 1} ()
+addSplitConstraint snoc, x, x11, x12, x14, xs True, C1, M1 |- {List|elems _v == [x11] + elems x14} <: {List|elems _v == elems xs + [x]} ()
+Constraints
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+QMap
+  C0 -> {}
+  C1 -> {}
+  M0 -> {xs == (Nil)}
+  M1 -> {xs == (Cons x11 x12)}
+  P3 -> {p _1 _0, p _0 _1}
+  P5 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+  U1 -> {p x11 _v, p _v x, p _v x11, p x _v}
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (5 1)
+Chosen candidate: 0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (5 1)
+Invalid Constraint: C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+Strengthening: C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+Instantiated axioms:
+len ((Cons x11 x12)) == 1 + len x12, elems ((Cons x11 x12)) == [x11] + elems x12
+Optimal valuations:
+{p _0 _1}
+Pruned valuations:
+{p _0 _1}
+Diffs: (1)
+[C1 -> {}, M1 -> {}, P5 -> {p _0 _1}]
+Checking consistency
+  C1 && (M1 && ([_v -> x13]U1 && (_v == (Cons x13 x14) && (len x12 >= 0 && (len x14 >= 0 && (len xs >= 0 && ((len _v == len xs + 1 && elems _v == elems xs + [x]) && p x11 x)))))))
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p _0 _1 && p x11 x)))))
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {p _0 _1}, U0 -> {}, U1 -> {}] (6 0)
+Remaining Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {p _0 _1}, U0 -> {}, U1 -> {}] (6 0)
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> xs:List {a|p x _v} <p _0 _1> -> {List a <p _0 _1>|_v == (Cons x xs)}
+INTO x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)}
+INSTANTIATE <a> . <p :: a -> a -> Bool> . {List a <p _0 _1>|_v == (Nil)}
+INTO {List {A7|False} <False>|_v == (Nil)}
+Checking Cons x11
+           Nil :: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} in
+\x . \xs . 
+    match xs with
+      Cons x11 x12 -> ??
+Typing Constraints
+snoc, x, x11, x12, xs True, C1, M1 |- {List A6 <P5 _0 _1>|_v == (Cons x11 (Nil))} <: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- {List {A7|False} <False>|_v == (Nil)} <: _ ()
+snoc, x, x11, x12, xs |- A7
+snoc, x, x11, x12, xs True, C1, M1 |- {a|_v == x11} <: _ ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} /\ X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} <: X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+|- P5 :: A6 -> A6 -> Bool
+snoc, x, x11, x12, xs |- A6
+snoc, x, x11, x12, xs |- C1
+|- P4 :: A5 -> A5 -> Bool
+snoc, x, xs |- A5
+snoc, x, xs |- A4
+UNIFY A6 WITH a PRODUCING {a|U1}
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Typing Constraints
+snoc, x, xs |- A4
+|- P5 :: A6 -> A6 -> Bool
+snoc, x, x11, x12, xs |- A7
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Simple Constraints
+snoc, x, xs |- {a|p _v x}
+snoc, x, x11, x12, xs |- C1
+snoc, x, x11, x12, xs |- {a|U1}
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|_v == (Cons X9 X8)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {a|U1} <: a ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {List|_v == (Cons x13 x14)} /\ {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {Int|P5 _0 _1} /\ {Int|p _0 _1} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {a|U1} /\ a ()
+snoc, x, x11, x12, xs True, C1, M1 |- {List|_v == (Cons x11 (Nil))} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+snoc, x, x11, x12, xs True, C1, M1 |- {a|U1} <: a ()
+Pred assignment
+P3 -> P3
+P4 -> p _0 _1
+P5 -> P5
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|len _v == 1 + len X8} <: {List|len _v == len xs + 1} ()
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|elems _v == [X9] + elems X8} <: {List|elems _v == elems xs + [x]} ()
+addSplitConstraint snoc, x, x11, x12, xs True, C1, M1 |- {List|len _v == 1 + len (Nil)} <: {List|len _v == len xs + 1} ()
+addSplitConstraint snoc, x, x11, x12, xs True, C1, M1 |- {List|elems _v == [x11] + elems (Nil)} <: {List|elems _v == elems xs + [x]} ()
+Constraints
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+  C1 && (M1 && (len _v == 1 + len (Nil) && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> len _v == len xs + 1
+  C1 && (M1 && (elems _v == [x11] + elems (Nil) && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+QMap
+  C0 -> {}
+  C1 -> {}
+  M0 -> {xs == (Nil)}
+  M1 -> {xs == (Cons x11 x12)}
+  P3 -> {p _1 _0, p _0 _1}
+  P5 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+  U1 -> {p x11 _v, p _v x, p _v x11, p x _v}
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (5 3)
+Chosen candidate: 0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (5 3)
+Invalid Constraint: C1 && (M1 && (len _v == 1 + len (Nil) && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> len _v == len xs + 1
+Strengthening: C1 && (M1 && (len _v == 1 + len (Nil) && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> len _v == len xs + 1
+Instantiated axioms:
+len (Nil) == 0, len ((Cons x11 x12)) == 1 + len x12, elems (Nil) == [], elems ((Cons x11 x12)) == [x11] + elems x12
+Optimal valuations:
+Pruned valuations:
+Diffs: (0)
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking Cons x11 Nil ::
+{List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]}
+in
+\x . \xs . 
+    match xs with
+      Cons x11 x12 -> Cons x11 Nil
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> xs:List {a|p x _v} <p _0 _1> -> {List a <p _0 _1>|_v == (Cons x xs)}
+INTO x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)}
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> x0:{List {a|p _v x} <p _0 _1>|len _v >= 0 && len _v < len xs} -> {List a <p _0 _1>|len _v == len x0 + 1 && elems _v == elems x0 + [x]}
+INTO x15:A7 -> x16:{List {A7|P6 _v x15} <P6 _0 _1>|len _v >= 0 && len _v < len xs} -> {List A7 <P6 _0 _1>|len _v == len x16 + 1 && elems _v == elems x16 + [x15]}
+Checking Cons x11 (snoc ??
+                     ??) :: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} in
+\x . \xs . 
+    match xs with
+      Cons x11 x12 -> ??
+Typing Constraints
+snoc, x, x11, x12, xs True, C1, M1 |- LET x14:(LET x16:(_) IN LET x15:(_) IN {List A7 <P6 _0 _1>|len _v == len x16 + 1 && elems _v == elems x16 + [x15]}) IN {List A6 <P5 _0 _1>|_v == (Cons x11 x14)} <: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- x15:A7 -> x16:{List {A7|P6 _v x15} <P6 _0 _1>|len _v >= 0 && len _v < len xs} -> {List A7 <P6 _0 _1>|len _v == len x16 + 1 && elems _v == elems x16 + [x15]} /\ X19:_ -> X18:_ -> _ ()
+snoc, x, x11, x12, xs True, C1, M1 |- x15:A7 -> x16:{List {A7|P6 _v x15} <P6 _0 _1>|len _v >= 0 && len _v < len xs} -> {List A7 <P6 _0 _1>|len _v == len x16 + 1 && elems _v == elems x16 + [x15]} <: X19:_ -> X18:_ -> _ ()
+|- P6 :: A7 -> A7 -> Bool
+snoc, x, x11, x12, xs |- A7
+snoc, x, x11, x12, xs True, C1, M1 |- {a|_v == x11} <: _ ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} /\ X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} <: X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+|- P5 :: A6 -> A6 -> Bool
+snoc, x, x11, x12, xs |- A6
+snoc, x, x11, x12, xs |- C1
+|- P4 :: A5 -> A5 -> Bool
+snoc, x, xs |- A5
+snoc, x, xs |- A4
+UNIFY A6 WITH a PRODUCING {a|U1}
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Typing Constraints
+snoc, x, xs |- A4
+|- P5 :: A6 -> A6 -> Bool
+snoc, x, x11, x12, xs |- A7
+|- P6 :: A7 -> A7 -> Bool
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Simple Constraints
+snoc, x, xs |- {a|p _v x}
+snoc, x, x11, x12, xs |- C1
+snoc, x, x11, x12, xs |- {a|U1}
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|_v == (Cons X9 X8)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {a|U1} <: a ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {List|_v == (Cons x13 x14)} /\ {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {Int|P5 _0 _1} /\ {Int|p _0 _1} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {a|U1} /\ a ()
+snoc, x, x11, x12, x14, xs True, C1, M1 |- {List|_v == (Cons x11 x14)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, x14, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+snoc, x, x11, x12, x14, xs True, C1, M1 |- {a|U1} <: a ()
+WARNING: free vars in predicate |- P6 :: A7 -> A7 -> Bool
+Pred assignment
+P3 -> P3
+P4 -> p _0 _1
+P5 -> P5
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|len _v == 1 + len X8} <: {List|len _v == len xs + 1} ()
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|elems _v == [X9] + elems X8} <: {List|elems _v == elems xs + [x]} ()
+addSplitConstraint snoc, x, x11, x12, x14, xs True, C1, M1 |- {List|len _v == 1 + len x14} <: {List|len _v == len xs + 1} ()
+addSplitConstraint snoc, x, x11, x12, x14, xs True, C1, M1 |- {List|elems _v == [x11] + elems x14} <: {List|elems _v == elems xs + [x]} ()
+Constraints
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+QMap
+  C0 -> {}
+  C1 -> {}
+  M0 -> {xs == (Nil)}
+  M1 -> {xs == (Cons x11 x12)}
+  P3 -> {p _1 _0, p _0 _1}
+  P5 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+  U1 -> {p x11 _v, p _v x, p _v x11, p x _v}
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (5 1)
+Chosen candidate: 0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (5 1)
+Invalid Constraint: C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+Strengthening: C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+Instantiated axioms:
+len ((Cons x11 x12)) == 1 + len x12, elems ((Cons x11 x12)) == [x11] + elems x12
+Optimal valuations:
+{p _0 _1}
+Pruned valuations:
+{p _0 _1}
+Diffs: (1)
+[C1 -> {}, M1 -> {}, P5 -> {p _0 _1}]
+Checking consistency
+  C1 && (M1 && ([_v -> x13]U1 && (_v == (Cons x13 x14) && (len x12 >= 0 && (len x14 >= 0 && (len xs >= 0 && ((len _v == len xs + 1 && elems _v == elems xs + [x]) && p x11 x)))))))
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p _0 _1 && p x11 x)))))
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {p _0 _1}, U0 -> {}, U1 -> {}] (6 0)
+Remaining Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {p _0 _1}, U0 -> {}, U1 -> {}] (6 0)
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> xs:List {a|p x _v} <p _0 _1> -> {List a <p _0 _1>|_v == (Cons x xs)}
+INTO x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)}
+Checking Cons x11
+           x12 :: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} in
+\x . \xs . 
+    match xs with
+      Cons x11 x12 -> ??
+Typing Constraints
+snoc, x, x11, x12, xs True, C1, M1 |- {List A6 <P5 _0 _1>|_v == (Cons x11 x12)} <: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- {List {a|p _v x && P4 x11 _v} <P4 _0 _1>|_v == x12} <: _ ()
+snoc, x, x11, x12, xs True, C1, M1 |- {a|_v == x11} <: _ ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} /\ X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} <: X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+|- P5 :: A6 -> A6 -> Bool
+snoc, x, x11, x12, xs |- A6
+snoc, x, x11, x12, xs |- C1
+|- P4 :: A5 -> A5 -> Bool
+snoc, x, xs |- A5
+snoc, x, xs |- A4
+UNIFY A6 WITH a PRODUCING {a|U1}
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Typing Constraints
+snoc, x, xs |- A4
+|- P5 :: A6 -> A6 -> Bool
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Simple Constraints
+snoc, x, xs |- {a|p _v x}
+snoc, x, x11, x12, xs |- C1
+snoc, x, x11, x12, xs |- {a|U1}
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|_v == (Cons X9 X8)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {a|U1} <: a ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {List|_v == (Cons x13 x14)} /\ {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {Int|P5 _0 _1} /\ {Int|p _0 _1} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {a|U1} /\ a ()
+snoc, x, x11, x12, xs True, C1, M1 |- {List|_v == (Cons x11 x12)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+snoc, x, x11, x12, xs True, C1, M1 |- {a|U1} <: a ()
+Pred assignment
+P3 -> P3
+P4 -> p _0 _1
+P5 -> P5
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|len _v == 1 + len X8} <: {List|len _v == len xs + 1} ()
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|elems _v == [X9] + elems X8} <: {List|elems _v == elems xs + [x]} ()
+addSplitConstraint snoc, x, x11, x12, xs True, C1, M1 |- {List|len _v == 1 + len x12} <: {List|len _v == len xs + 1} ()
+addSplitConstraint snoc, x, x11, x12, xs True, C1, M1 |- {List|elems _v == [x11] + elems x12} <: {List|elems _v == elems xs + [x]} ()
+Constraints
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+  C1 && (M1 && (len _v == 1 + len x12 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> len _v == len xs + 1
+  C1 && (M1 && (elems _v == [x11] + elems x12 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+QMap
+  C0 -> {}
+  C1 -> {}
+  M0 -> {xs == (Nil)}
+  M1 -> {xs == (Cons x11 x12)}
+  P3 -> {p _1 _0, p _0 _1}
+  P5 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+  U1 -> {p x11 _v, p _v x, p _v x11, p x _v}
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (5 3)
+Chosen candidate: 0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (5 3)
+Invalid Constraint: C1 && (M1 && (len _v == 1 + len x12 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> len _v == len xs + 1
+Strengthening: C1 && (M1 && (len _v == 1 + len x12 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> len _v == len xs + 1
+Instantiated axioms:
+len ((Cons x11 x12)) == 1 + len x12, elems ((Cons x11 x12)) == [x11] + elems x12
+Optimal valuations:
+Pruned valuations:
+Diffs: (0)
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking Cons x11 x12 ::
+{List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]}
+in
+\x . \xs . 
+    match xs with
+      Cons x11 x12 -> Cons x11 x12
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> xs:List {a|p x _v} <p _0 _1> -> {List a <p _0 _1>|_v == (Cons x xs)}
+INTO x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)}
+Checking Cons x11
+           xs :: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} in
+\x . \xs . 
+    match xs with
+      Cons x11 x12 -> ??
+Typing Constraints
+snoc, x, x11, x12, xs True, C1, M1 |- {List A6 <P5 _0 _1>|_v == (Cons x11 xs)} <: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- {List {a|p _v x} <p _0 _1>|_v == xs} <: _ ()
+snoc, x, x11, x12, xs True, C1, M1 |- {a|_v == x11} <: _ ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} /\ X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} <: X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+|- P5 :: A6 -> A6 -> Bool
+snoc, x, x11, x12, xs |- A6
+snoc, x, x11, x12, xs |- C1
+|- P4 :: A5 -> A5 -> Bool
+snoc, x, xs |- A5
+snoc, x, xs |- A4
+UNIFY A6 WITH a PRODUCING {a|U1}
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Typing Constraints
+snoc, x, xs |- A4
+|- P5 :: A6 -> A6 -> Bool
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Simple Constraints
+snoc, x, xs |- {a|p _v x}
+snoc, x, x11, x12, xs |- C1
+snoc, x, x11, x12, xs |- {a|U1}
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|_v == (Cons X9 X8)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {a|U1} <: a ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {List|_v == (Cons x13 x14)} /\ {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {Int|P5 _0 _1} /\ {Int|p _0 _1} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {a|U1} /\ a ()
+snoc, x, x11, x12, xs True, C1, M1 |- {List|_v == (Cons x11 xs)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+snoc, x, x11, x12, xs True, C1, M1 |- {a|U1} <: a ()
+Pred assignment
+P3 -> P3
+P4 -> p _0 _1
+P5 -> P5
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|len _v == 1 + len X8} <: {List|len _v == len xs + 1} ()
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|elems _v == [X9] + elems X8} <: {List|elems _v == elems xs + [x]} ()
+addSplitConstraint snoc, x, x11, x12, xs True, C1, M1 |- {List|len _v == 1 + len xs} <: {List|len _v == len xs + 1} ()
+addSplitConstraint snoc, x, x11, x12, xs True, C1, M1 |- {List|elems _v == [x11] + elems xs} <: {List|elems _v == elems xs + [x]} ()
+Constraints
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+  C1 && (M1 && (len _v == 1 + len xs && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> len _v == len xs + 1
+  C1 && (M1 && (elems _v == [x11] + elems xs && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+QMap
+  C0 -> {}
+  C1 -> {}
+  M0 -> {xs == (Nil)}
+  M1 -> {xs == (Cons x11 x12)}
+  P3 -> {p _1 _0, p _0 _1}
+  P5 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+  U1 -> {p x11 _v, p _v x, p _v x11, p x _v}
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (6 2)
+Chosen candidate: 0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (6 2)
+Invalid Constraint: C1 && (M1 && (elems _v == [x11] + elems xs && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> elems _v == elems xs + [x]
+Strengthening: C1 && (M1 && (elems _v == [x11] + elems xs && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> elems _v == elems xs + [x]
+Instantiated axioms:
+len ((Cons x11 x12)) == 1 + len x12, elems ((Cons x11 x12)) == [x11] + elems x12
+Optimal valuations:
+Pruned valuations:
+Diffs: (0)
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking Cons x11 xs ::
+{List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]}
+in
+\x . \xs . 
+    match xs with
+      Cons x11 x12 -> Cons x11 xs
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> xs:List {a|p x _v} <p _0 _1> -> {List a <p _0 _1>|_v == (Cons x xs)}
+INTO x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)}
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> xs:List {a|p x _v} <p _0 _1> -> {List a <p _0 _1>|_v == (Cons x xs)}
+INTO x15:A7 -> x16:List {A7|P6 x15 _v} <P6 _0 _1> -> {List A7 <P6 _0 _1>|_v == (Cons x15 x16)}
+Checking Cons x (Cons x
+                   ??) :: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} in
+\x . \xs . 
+    match xs with
+      Cons x11 x12 -> ??
+Typing Constraints
+snoc, x, x11, x12, xs True, C1, M1 |- LET x14:(LET x16:(_) IN {List A7 <P6 _0 _1>|_v == (Cons x x16)}) IN {List A6 <P5 _0 _1>|_v == (Cons x x14)} <: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- {a|_v == x} <: _ ()
+snoc, x, x11, x12, xs True, C1, M1 |- x15:A7 -> x16:List {A7|P6 x15 _v} <P6 _0 _1> -> {List A7 <P6 _0 _1>|_v == (Cons x15 x16)} /\ X13:_ -> X12:_ -> _ ()
+snoc, x, x11, x12, xs True, C1, M1 |- x15:A7 -> x16:List {A7|P6 x15 _v} <P6 _0 _1> -> {List A7 <P6 _0 _1>|_v == (Cons x15 x16)} <: X13:_ -> X12:_ -> _ ()
+|- P6 :: A7 -> A7 -> Bool
+snoc, x, x11, x12, xs |- A7
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} /\ X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} <: X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+|- P5 :: A6 -> A6 -> Bool
+snoc, x, x11, x12, xs |- A6
+snoc, x, x11, x12, xs |- C1
+|- P4 :: A5 -> A5 -> Bool
+snoc, x, xs |- A5
+snoc, x, xs |- A4
+UNIFY A6 WITH a PRODUCING {a|U1}
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Typing Constraints
+snoc, x, xs |- A4
+|- P5 :: A6 -> A6 -> Bool
+snoc, x, x11, x12, xs |- A7
+|- P6 :: A7 -> A7 -> Bool
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Simple Constraints
+snoc, x, xs |- {a|p _v x}
+snoc, x, x11, x12, xs |- C1
+snoc, x, x11, x12, xs |- {a|U1}
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|_v == (Cons X9 X8)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {a|U1} <: a ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {List|_v == (Cons x13 x14)} /\ {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {Int|P5 _0 _1} /\ {Int|p _0 _1} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {a|U1} /\ a ()
+snoc, x, x11, x12, x14, xs True, C1, M1 |- {List|_v == (Cons x x14)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, x14, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+snoc, x, x11, x12, x14, xs True, C1, M1 |- {a|U1} <: a ()
+WARNING: free vars in predicate |- P6 :: A7 -> A7 -> Bool
+Pred assignment
+P3 -> P3
+P4 -> p _0 _1
+P5 -> P5
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|len _v == 1 + len X8} <: {List|len _v == len xs + 1} ()
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|elems _v == [X9] + elems X8} <: {List|elems _v == elems xs + [x]} ()
+addSplitConstraint snoc, x, x11, x12, x14, xs True, C1, M1 |- {List|len _v == 1 + len x14} <: {List|len _v == len xs + 1} ()
+addSplitConstraint snoc, x, x11, x12, x14, xs True, C1, M1 |- {List|elems _v == [x] + elems x14} <: {List|elems _v == elems xs + [x]} ()
+Constraints
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+QMap
+  C0 -> {}
+  C1 -> {}
+  M0 -> {xs == (Nil)}
+  M1 -> {xs == (Cons x11 x12)}
+  P3 -> {p _1 _0, p _0 _1}
+  P5 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+  U1 -> {p x11 _v, p _v x, p _v x11, p x _v}
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (5 1)
+Chosen candidate: 0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (5 1)
+Invalid Constraint: C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+Strengthening: C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+Instantiated axioms:
+len ((Cons x11 x12)) == 1 + len x12, elems ((Cons x11 x12)) == [x11] + elems x12
+Optimal valuations:
+{p _0 _1}
+Pruned valuations:
+{p _0 _1}
+Diffs: (1)
+[C1 -> {}, M1 -> {}, P5 -> {p _0 _1}]
+Checking consistency
+  C1 && (M1 && ([_v -> x13]U1 && (_v == (Cons x13 x14) && (len x12 >= 0 && (len x14 >= 0 && (len xs >= 0 && ((len _v == len xs + 1 && elems _v == elems xs + [x]) && p x11 x)))))))
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p _0 _1 && p x11 x)))))
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {p _0 _1}, U0 -> {}, U1 -> {}] (6 0)
+Remaining Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {p _0 _1}, U0 -> {}, U1 -> {}] (6 0)
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> xs:List {a|p x _v} <p _0 _1> -> {List a <p _0 _1>|_v == (Cons x xs)}
+INTO x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)}
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> xs:List {a|p x _v} <p _0 _1> -> {List a <p _0 _1>|_v == (Cons x xs)}
+INTO x15:A7 -> x16:List {A7|P6 x15 _v} <P6 _0 _1> -> {List A7 <P6 _0 _1>|_v == (Cons x15 x16)}
+Checking Cons x (Cons x11
+                   ??) :: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} in
+\x . \xs . 
+    match xs with
+      Cons x11 x12 -> ??
+Typing Constraints
+snoc, x, x11, x12, xs True, C1, M1 |- LET x14:(LET x16:(_) IN {List A7 <P6 _0 _1>|_v == (Cons x11 x16)}) IN {List A6 <P5 _0 _1>|_v == (Cons x x14)} <: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- {a|_v == x11} <: _ ()
+snoc, x, x11, x12, xs True, C1, M1 |- x15:A7 -> x16:List {A7|P6 x15 _v} <P6 _0 _1> -> {List A7 <P6 _0 _1>|_v == (Cons x15 x16)} /\ X13:_ -> X12:_ -> _ ()
+snoc, x, x11, x12, xs True, C1, M1 |- x15:A7 -> x16:List {A7|P6 x15 _v} <P6 _0 _1> -> {List A7 <P6 _0 _1>|_v == (Cons x15 x16)} <: X13:_ -> X12:_ -> _ ()
+|- P6 :: A7 -> A7 -> Bool
+snoc, x, x11, x12, xs |- A7
+snoc, x, x11, x12, xs True, C1, M1 |- {a|_v == x} <: _ ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} /\ X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} <: X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+|- P5 :: A6 -> A6 -> Bool
+snoc, x, x11, x12, xs |- A6
+snoc, x, x11, x12, xs |- C1
+|- P4 :: A5 -> A5 -> Bool
+snoc, x, xs |- A5
+snoc, x, xs |- A4
+UNIFY A6 WITH a PRODUCING {a|U1}
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Typing Constraints
+snoc, x, xs |- A4
+|- P5 :: A6 -> A6 -> Bool
+snoc, x, x11, x12, xs |- A7
+|- P6 :: A7 -> A7 -> Bool
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Simple Constraints
+snoc, x, xs |- {a|p _v x}
+snoc, x, x11, x12, xs |- C1
+snoc, x, x11, x12, xs |- {a|U1}
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|_v == (Cons X9 X8)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {a|U1} <: a ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {List|_v == (Cons x13 x14)} /\ {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {Int|P5 _0 _1} /\ {Int|p _0 _1} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {a|U1} /\ a ()
+snoc, x, x11, x12, x14, xs True, C1, M1 |- {List|_v == (Cons x x14)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, x14, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+snoc, x, x11, x12, x14, xs True, C1, M1 |- {a|U1} <: a ()
+WARNING: free vars in predicate |- P6 :: A7 -> A7 -> Bool
+Pred assignment
+P3 -> P3
+P4 -> p _0 _1
+P5 -> P5
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|len _v == 1 + len X8} <: {List|len _v == len xs + 1} ()
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|elems _v == [X9] + elems X8} <: {List|elems _v == elems xs + [x]} ()
+addSplitConstraint snoc, x, x11, x12, x14, xs True, C1, M1 |- {List|len _v == 1 + len x14} <: {List|len _v == len xs + 1} ()
+addSplitConstraint snoc, x, x11, x12, x14, xs True, C1, M1 |- {List|elems _v == [x] + elems x14} <: {List|elems _v == elems xs + [x]} ()
+Constraints
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+QMap
+  C0 -> {}
+  C1 -> {}
+  M0 -> {xs == (Nil)}
+  M1 -> {xs == (Cons x11 x12)}
+  P3 -> {p _1 _0, p _0 _1}
+  P5 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+  U1 -> {p x11 _v, p _v x, p _v x11, p x _v}
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (5 1)
+Chosen candidate: 0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (5 1)
+Invalid Constraint: C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+Strengthening: C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+Instantiated axioms:
+len ((Cons x11 x12)) == 1 + len x12, elems ((Cons x11 x12)) == [x11] + elems x12
+Optimal valuations:
+{p _0 _1}
+Pruned valuations:
+{p _0 _1}
+Diffs: (1)
+[C1 -> {}, M1 -> {}, P5 -> {p _0 _1}]
+Checking consistency
+  C1 && (M1 && ([_v -> x13]U1 && (_v == (Cons x13 x14) && (len x12 >= 0 && (len x14 >= 0 && (len xs >= 0 && ((len _v == len xs + 1 && elems _v == elems xs + [x]) && p x11 x)))))))
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p _0 _1 && p x11 x)))))
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {p _0 _1}, U0 -> {}, U1 -> {}] (6 0)
+Remaining Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {p _0 _1}, U0 -> {}, U1 -> {}] (6 0)
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> xs:List {a|p x _v} <p _0 _1> -> {List a <p _0 _1>|_v == (Cons x xs)}
+INTO x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)}
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> x0:{List {a|p _v x} <p _0 _1>|len _v >= 0 && len _v < len xs} -> {List a <p _0 _1>|len _v == len x0 + 1 && elems _v == elems x0 + [x]}
+INTO x15:A7 -> x16:{List {A7|P6 _v x15} <P6 _0 _1>|len _v >= 0 && len _v < len xs} -> {List A7 <P6 _0 _1>|len _v == len x16 + 1 && elems _v == elems x16 + [x15]}
+Checking Cons x (snoc x
+                   ??) :: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} in
+\x . \xs . 
+    match xs with
+      Cons x11 x12 -> ??
+Typing Constraints
+snoc, x, x11, x12, xs True, C1, M1 |- LET x14:(LET x16:(_) IN {List A7 <P6 _0 _1>|len _v == len x16 + 1 && elems _v == elems x16 + [x]}) IN {List A6 <P5 _0 _1>|_v == (Cons x x14)} <: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- {a|_v == x} <: _ ()
+snoc, x, x11, x12, xs True, C1, M1 |- x15:A7 -> x16:{List {A7|P6 _v x15} <P6 _0 _1>|len _v >= 0 && len _v < len xs} -> {List A7 <P6 _0 _1>|len _v == len x16 + 1 && elems _v == elems x16 + [x15]} /\ X15:_ -> X14:_ -> _ ()
+snoc, x, x11, x12, xs True, C1, M1 |- x15:A7 -> x16:{List {A7|P6 _v x15} <P6 _0 _1>|len _v >= 0 && len _v < len xs} -> {List A7 <P6 _0 _1>|len _v == len x16 + 1 && elems _v == elems x16 + [x15]} <: X15:_ -> X14:_ -> _ ()
+|- P6 :: A7 -> A7 -> Bool
+snoc, x, x11, x12, xs |- A7
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} /\ X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} <: X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+|- P5 :: A6 -> A6 -> Bool
+snoc, x, x11, x12, xs |- A6
+snoc, x, x11, x12, xs |- C1
+|- P4 :: A5 -> A5 -> Bool
+snoc, x, xs |- A5
+snoc, x, xs |- A4
+UNIFY A6 WITH a PRODUCING {a|U1}
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Typing Constraints
+snoc, x, xs |- A4
+|- P5 :: A6 -> A6 -> Bool
+snoc, x, x11, x12, xs |- A7
+|- P6 :: A7 -> A7 -> Bool
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Simple Constraints
+snoc, x, xs |- {a|p _v x}
+snoc, x, x11, x12, xs |- C1
+snoc, x, x11, x12, xs |- {a|U1}
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|_v == (Cons X9 X8)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {a|U1} <: a ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {List|_v == (Cons x13 x14)} /\ {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {Int|P5 _0 _1} /\ {Int|p _0 _1} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {a|U1} /\ a ()
+snoc, x, x11, x12, x14, xs True, C1, M1 |- {List|_v == (Cons x x14)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, x14, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+snoc, x, x11, x12, x14, xs True, C1, M1 |- {a|U1} <: a ()
+WARNING: free vars in predicate |- P6 :: A7 -> A7 -> Bool
+Pred assignment
+P3 -> P3
+P4 -> p _0 _1
+P5 -> P5
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|len _v == 1 + len X8} <: {List|len _v == len xs + 1} ()
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|elems _v == [X9] + elems X8} <: {List|elems _v == elems xs + [x]} ()
+addSplitConstraint snoc, x, x11, x12, x14, xs True, C1, M1 |- {List|len _v == 1 + len x14} <: {List|len _v == len xs + 1} ()
+addSplitConstraint snoc, x, x11, x12, x14, xs True, C1, M1 |- {List|elems _v == [x] + elems x14} <: {List|elems _v == elems xs + [x]} ()
+Constraints
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+QMap
+  C0 -> {}
+  C1 -> {}
+  M0 -> {xs == (Nil)}
+  M1 -> {xs == (Cons x11 x12)}
+  P3 -> {p _1 _0, p _0 _1}
+  P5 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+  U1 -> {p x11 _v, p _v x, p _v x11, p x _v}
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (5 1)
+Chosen candidate: 0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (5 1)
+Invalid Constraint: C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+Strengthening: C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+Instantiated axioms:
+len ((Cons x11 x12)) == 1 + len x12, elems ((Cons x11 x12)) == [x11] + elems x12
+Optimal valuations:
+{p _0 _1}
+Pruned valuations:
+{p _0 _1}
+Diffs: (1)
+[C1 -> {}, M1 -> {}, P5 -> {p _0 _1}]
+Checking consistency
+  C1 && (M1 && ([_v -> x13]U1 && (_v == (Cons x13 x14) && (len x12 >= 0 && (len x14 >= 0 && (len xs >= 0 && ((len _v == len xs + 1 && elems _v == elems xs + [x]) && p x11 x)))))))
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p _0 _1 && p x11 x)))))
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {p _0 _1}, U0 -> {}, U1 -> {}] (6 0)
+Remaining Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {p _0 _1}, U0 -> {}, U1 -> {}] (6 0)
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> xs:List {a|p x _v} <p _0 _1> -> {List a <p _0 _1>|_v == (Cons x xs)}
+INTO x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)}
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> x0:{List {a|p _v x} <p _0 _1>|len _v >= 0 && len _v < len xs} -> {List a <p _0 _1>|len _v == len x0 + 1 && elems _v == elems x0 + [x]}
+INTO x15:A7 -> x16:{List {A7|P6 _v x15} <P6 _0 _1>|len _v >= 0 && len _v < len xs} -> {List A7 <P6 _0 _1>|len _v == len x16 + 1 && elems _v == elems x16 + [x15]}
+Checking Cons x (snoc x11
+                   ??) :: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} in
+\x . \xs . 
+    match xs with
+      Cons x11 x12 -> ??
+Typing Constraints
+snoc, x, x11, x12, xs True, C1, M1 |- LET x14:(LET x16:(_) IN {List A7 <P6 _0 _1>|len _v == len x16 + 1 && elems _v == elems x16 + [x11]}) IN {List A6 <P5 _0 _1>|_v == (Cons x x14)} <: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- {a|_v == x11} <: _ ()
+snoc, x, x11, x12, xs True, C1, M1 |- x15:A7 -> x16:{List {A7|P6 _v x15} <P6 _0 _1>|len _v >= 0 && len _v < len xs} -> {List A7 <P6 _0 _1>|len _v == len x16 + 1 && elems _v == elems x16 + [x15]} /\ X15:_ -> X14:_ -> _ ()
+snoc, x, x11, x12, xs True, C1, M1 |- x15:A7 -> x16:{List {A7|P6 _v x15} <P6 _0 _1>|len _v >= 0 && len _v < len xs} -> {List A7 <P6 _0 _1>|len _v == len x16 + 1 && elems _v == elems x16 + [x15]} <: X15:_ -> X14:_ -> _ ()
+|- P6 :: A7 -> A7 -> Bool
+snoc, x, x11, x12, xs |- A7
+snoc, x, x11, x12, xs True, C1, M1 |- {a|_v == x} <: _ ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} /\ X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} <: X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+|- P5 :: A6 -> A6 -> Bool
+snoc, x, x11, x12, xs |- A6
+snoc, x, x11, x12, xs |- C1
+|- P4 :: A5 -> A5 -> Bool
+snoc, x, xs |- A5
+snoc, x, xs |- A4
+UNIFY A6 WITH a PRODUCING {a|U1}
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Typing Constraints
+snoc, x, xs |- A4
+|- P5 :: A6 -> A6 -> Bool
+snoc, x, x11, x12, xs |- A7
+|- P6 :: A7 -> A7 -> Bool
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Simple Constraints
+snoc, x, xs |- {a|p _v x}
+snoc, x, x11, x12, xs |- C1
+snoc, x, x11, x12, xs |- {a|U1}
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|_v == (Cons X9 X8)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {a|U1} <: a ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {List|_v == (Cons x13 x14)} /\ {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {Int|P5 _0 _1} /\ {Int|p _0 _1} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {a|U1} /\ a ()
+snoc, x, x11, x12, x14, xs True, C1, M1 |- {List|_v == (Cons x x14)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, x14, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+snoc, x, x11, x12, x14, xs True, C1, M1 |- {a|U1} <: a ()
+WARNING: free vars in predicate |- P6 :: A7 -> A7 -> Bool
+Pred assignment
+P3 -> P3
+P4 -> p _0 _1
+P5 -> P5
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|len _v == 1 + len X8} <: {List|len _v == len xs + 1} ()
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|elems _v == [X9] + elems X8} <: {List|elems _v == elems xs + [x]} ()
+addSplitConstraint snoc, x, x11, x12, x14, xs True, C1, M1 |- {List|len _v == 1 + len x14} <: {List|len _v == len xs + 1} ()
+addSplitConstraint snoc, x, x11, x12, x14, xs True, C1, M1 |- {List|elems _v == [x] + elems x14} <: {List|elems _v == elems xs + [x]} ()
+Constraints
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+QMap
+  C0 -> {}
+  C1 -> {}
+  M0 -> {xs == (Nil)}
+  M1 -> {xs == (Cons x11 x12)}
+  P3 -> {p _1 _0, p _0 _1}
+  P5 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+  U1 -> {p x11 _v, p _v x, p _v x11, p x _v}
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (5 1)
+Chosen candidate: 0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (5 1)
+Invalid Constraint: C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+Strengthening: C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+Instantiated axioms:
+len ((Cons x11 x12)) == 1 + len x12, elems ((Cons x11 x12)) == [x11] + elems x12
+Optimal valuations:
+{p _0 _1}
+Pruned valuations:
+{p _0 _1}
+Diffs: (1)
+[C1 -> {}, M1 -> {}, P5 -> {p _0 _1}]
+Checking consistency
+  C1 && (M1 && ([_v -> x13]U1 && (_v == (Cons x13 x14) && (len x12 >= 0 && (len x14 >= 0 && (len xs >= 0 && ((len _v == len xs + 1 && elems _v == elems xs + [x]) && p x11 x)))))))
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p _0 _1 && p x11 x)))))
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {p _0 _1}, U0 -> {}, U1 -> {}] (6 0)
+Remaining Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {p _0 _1}, U0 -> {}, U1 -> {}] (6 0)
+INSTANTIATE <a> . <p :: a -> a -> Bool> . x:a -> xs:List {a|p x _v} <p _0 _1> -> {List a <p _0 _1>|_v == (Cons x xs)}
+INTO x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)}
+Checking program Cons x xs
+Checking Cons x
+           xs :: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} in
+\x . \xs . 
+    match xs with
+      Cons x11 x12 -> ??
+Typing Constraints
+snoc, x, x11, x12, xs True, C1, M1 |- {List A6 <P5 _0 _1>|_v == (Cons x xs)} <: {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- {List {a|p _v x} <p _0 _1>|_v == xs} <: _ ()
+snoc, x, x11, x12, xs True, C1, M1 |- {a|_v == x} <: _ ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} /\ X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- x13:A6 -> x14:List {A6|P5 x13 _v} <P5 _0 _1> -> {List A6 <P5 _0 _1>|_v == (Cons x13 x14)} <: X9:_ -> X8:_ -> {List a <p _0 _1>|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+|- P5 :: A6 -> A6 -> Bool
+snoc, x, x11, x12, xs |- A6
+snoc, x, x11, x12, xs |- C1
+|- P4 :: A5 -> A5 -> Bool
+snoc, x, xs |- A5
+snoc, x, xs |- A4
+UNIFY A6 WITH a PRODUCING {a|U1}
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Typing Constraints
+snoc, x, xs |- A4
+|- P5 :: A6 -> A6 -> Bool
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Simple Constraints
+snoc, x, xs |- {a|p _v x}
+snoc, x, x11, x12, xs |- C1
+snoc, x, x11, x12, xs |- {a|U1}
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|_v == (Cons X9 X8)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {a|U1} <: a ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {List|_v == (Cons x13 x14)} /\ {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {Int|P5 _0 _1} /\ {Int|p _0 _1} ()
+snoc, x, x11, x12, x13, x14, xs True, C1, M1 |- {a|U1} /\ a ()
+snoc, x, x11, x12, xs True, C1, M1 |- {List|_v == (Cons x xs)} <: {List|len _v == len xs + 1 && elems _v == elems xs + [x]} ()
+snoc, x, x11, x12, xs True, C1, M1 |- {Int|P5 _0 _1} <: {Int|p _0 _1} ()
+snoc, x, x11, x12, xs True, C1, M1 |- {a|U1} <: a ()
+Pred assignment
+P3 -> P3
+P4 -> p _0 _1
+P5 -> P5
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|len _v == 1 + len X8} <: {List|len _v == len xs + 1} ()
+addSplitConstraint X8, X9, snoc, x, x11, x12, xs True, C1, M1 |- {List|elems _v == [X9] + elems X8} <: {List|elems _v == elems xs + [x]} ()
+addSplitConstraint snoc, x, x11, x12, xs True, C1, M1 |- {List|len _v == 1 + len xs} <: {List|len _v == len xs + 1} ()
+addSplitConstraint snoc, x, x11, x12, xs True, C1, M1 |- {List|elems _v == [x] + elems xs} <: {List|elems _v == elems xs + [x]} ()
+Constraints
+  False ==> len _v == len xs + 1
+  False ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+  C1 && (M1 && (len _v == 1 + len xs && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> len _v == len xs + 1
+  C1 && (M1 && (elems _v == [x] + elems xs && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> elems _v == elems xs + [x]
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+QMap
+  C0 -> {}
+  C1 -> {}
+  M0 -> {xs == (Nil)}
+  M1 -> {xs == (Cons x11 x12)}
+  P3 -> {p _1 _0, p _0 _1}
+  P5 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+  U1 -> {p x11 _v, p _v x, p _v x11, p x _v}
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (7 1)
+Chosen candidate: 0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {}, U0 -> {}, U1 -> {}] (7 1)
+Invalid Constraint: C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+Strengthening: C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+Instantiated axioms:
+len ((Cons x11 x12)) == 1 + len x12, elems ((Cons x11 x12)) == [x11] + elems x12
+Optimal valuations:
+{p _0 _1}
+Pruned valuations:
+{p _0 _1}
+Diffs: (1)
+[C1 -> {}, M1 -> {}, P5 -> {p _0 _1}]
+Checking consistency
+  C1 && (M1 && ([_v -> x13]U1 && (_v == (Cons x13 x14) && (len x12 >= 0 && (len x14 >= 0 && (len xs >= 0 && ((len _v == len xs + 1 && elems _v == elems xs + [x]) && p x11 x)))))))
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p _0 _1 && p x11 x)))))
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {p _0 _1}, U0 -> {}, U1 -> {}] (8 0)
+Remaining Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {p _0 _1}, U0 -> {}, U1 -> {}] (8 0)
+Typing Constraints
+snoc, x, xs |- A4
+Type assignment
+A3 -> {a|U0}
+A5 -> {a|p _v x}
+A6 -> {a|U1}
+Simple Constraints
+Pred assignment
+P3 -> P3
+P4 -> p _0 _1
+P5 -> P5
+Constraints
+QMap
+  C0 -> {}
+  C1 -> {}
+  M0 -> {xs == (Nil)}
+  M1 -> {xs == (Cons x11 x12)}
+  P3 -> {p _1 _0, p _0 _1}
+  P5 -> {p _1 _0, p _0 _1}
+  U0 -> {p x _v, p _v x}
+  U1 -> {p x11 _v, p _v x, p _v x11, p x _v}
+Checking consistency
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {p _0 _1}, U0 -> {}, U1 -> {}] (8 0)
+Remaining Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {xs == (Cons x11 x12)}, P3 -> {p _0 _1}, P5 -> {p _0 _1}, U0 -> {}, U1 -> {}] (8 0)
+Auxiliary goals are:
+Re-checking candidates after updating M1
+Checking validity
+  C1 && (M1 && (P5 && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> p _0 _1
+  C1 && (M1 && (len _v == 1 + len xs && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> len _v == len xs + 1
+  C1 && (M1 && (elems _v == [x] + elems xs && (len x12 >= 0 && (len xs >= 0 && (p x11 x && ((forall _x . _x in elems x12 ==> p _x x && p x11 _x) && (forall _x . _x in elems xs ==> p _x x))))))) ==> elems _v == elems xs + [x]
+Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {}, P3 -> {p _0 _1}, P5 -> {p _0 _1}, U0 -> {}, U1 -> {}] (8 0)
+Remaining Candidates (1)
+  0: [C0 -> {}, C1 -> {}, M0 -> {xs == (Nil)}, M1 -> {}, P3 -> {p _0 _1}, P5 -> {p _0 _1}, U0 -> {}, U1 -> {}] (8 0)

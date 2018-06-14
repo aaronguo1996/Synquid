@@ -17,14 +17,16 @@ import Control.Lens as Lens
 
 data SuccinctType = 
   SuccinctScalar (BaseType ()) |
-  SuccinctFunction (Set SuccinctType) SuccinctType |
-  SuccinctDatatype (Set (Id, Int)) (Set SuccinctType) (Map Id (Set Id)) | -- Datatype names, included types and datatype constructors
-  SuccinctAll (Set Id) SuccinctType |
-  SuccinctComposite (Set SuccinctType) |
-  SuccinctLet Id SuccinctType SuccinctType |
-  SuccinctAny |
-  SuccinctInhabited SuccinctType
+  SuccinctFunction [SuccinctType] SuccinctType | -- parameters (convert to set in the graph) -> return type
+  SuccinctDatatype (Id, Int) (Set (Id, Int)) (Set SuccinctType) (Map Id Id) (Set Id) | -- Outmost datatype, Datatype names, included types, datatype constructors, datatype measures
+  SuccinctAll (Set Id) SuccinctType | -- type variables, type
+  SuccinctComposite (Set SuccinctType) | -- composite type nodes for the function parameters
+  SuccinctLet Id SuccinctType SuccinctType | -- actually, this can be removed, [TODO] safely check this type
+  SuccinctAny | -- any type
+  SuccinctInhabited SuccinctType -- inhabited type node, only work in the graph
   deriving (Eq, Ord)
+
+type SuccinctParams = [SuccinctType]
 
 instance Hashable SuccinctType where
   hash sty = hash (succinct2str sty)
@@ -49,7 +51,7 @@ extractSTyVars _ = Set.empty
 extractSuccinctTyVars :: SuccinctType -> Set Id
 extractSuccinctTyVars (SuccinctScalar t) = extractBaseTyVars t
 extractSuccinctTyVars (SuccinctFunction args ret) = foldr (\t acc -> (extractSuccinctTyVars t) `Set.union` acc) (extractSuccinctTyVars ret) args
-extractSuccinctTyVars (SuccinctDatatype _ tys _) = foldr (\t acc -> (extractSuccinctTyVars t) `Set.union` acc) Set.empty tys
+extractSuccinctTyVars (SuccinctDatatype _ _ tys _ _) = foldr (\t acc -> (extractSuccinctTyVars t) `Set.union` acc) Set.empty tys
 extractSuccinctTyVars (SuccinctAll ids _) = ids
 extractSuccinctTyVars (SuccinctComposite tys) = foldr (\t acc -> (extractSuccinctTyVars t) `Set.union` acc) Set.empty tys
 extractSuccinctTyVars _ = Set.empty
@@ -57,12 +59,12 @@ extractSuccinctTyVars _ = Set.empty
 baseToSuccinctType :: BaseType () -> SuccinctType
 baseToSuccinctType (DatatypeT id ts _) = if "_" == id 
   then SuccinctAny --SuccinctAll (Set.singleton "_") (SuccinctScalar (TypeVarT Map.empty "_"))
-  else SuccinctDatatype resIds resTys Map.empty
+  else SuccinctDatatype (id, length ts) resIds resTys Map.empty Set.empty
   where
     mergeDt t (accIds, accTys) = case outOfSuccinctAll (toSuccinctType t) of
-      SuccinctDatatype ids tys _ -> (ids `Set.union` accIds, tys `Set.union` accTys)
+      SuccinctDatatype _ ids tys _ _ -> (ids `Set.union` accIds, tys `Set.union` accTys)
       ty                         -> (accIds, Set.singleton ty `Set.union` accTys)
-    (resIds, resTys) = foldr mergeDt (Set.singleton (id, length ts), Set.empty) ts
+    (resIds, resTys) = foldr mergeDt (Set.empty, Set.empty) ts
 baseToSuccinctType t = SuccinctScalar t
 
 toSuccinctType :: SType -> SuccinctType
@@ -73,8 +75,8 @@ toSuccinctType t@(ScalarT bt _) = let
 toSuccinctType t@(FunctionT _ param ret) = let
   vars = extractSTyVars t
   ty = case outOfSuccinctAll (toSuccinctType ret) of
-    SuccinctFunction paramSet retTy -> SuccinctFunction (Set.singleton (toSuccinctType param) `Set.union` paramSet) retTy
-    ty'                             -> SuccinctFunction (Set.singleton (toSuccinctType param)) ty'
+    SuccinctFunction paramSet retTy -> SuccinctFunction ((toSuccinctType param):paramSet) retTy
+    ty'                             -> SuccinctFunction [toSuccinctType param] ty'
   in if Set.size vars == 0 then ty else simplifySuccinctType $ SuccinctAll vars ty
 toSuccinctType t@(LetT id varty bodyty) = let
   vars = extractSTyVars t
@@ -83,23 +85,23 @@ toSuccinctType t@(LetT id varty bodyty) = let
 toSuccinctType AnyT = SuccinctAny
 
 outOfSuccinctAll :: SuccinctType -> SuccinctType
-outOfSuccinctAll (SuccinctFunction paramSet ret) = SuccinctFunction (Set.map outOfSuccinctAll paramSet) (outOfSuccinctAll ret)
-outOfSuccinctAll (SuccinctDatatype ids tys cons) = SuccinctDatatype ids (Set.map outOfSuccinctAll tys) cons
+outOfSuccinctAll (SuccinctFunction paramSet ret) = SuccinctFunction (map outOfSuccinctAll paramSet) (outOfSuccinctAll ret)
+outOfSuccinctAll (SuccinctDatatype id ids tys cons measures) = SuccinctDatatype id ids (Set.map outOfSuccinctAll tys) cons measures
 outOfSuccinctAll (SuccinctAll ids ty) = ty
 outOfSuccinctAll ty = ty
 
 simplifySuccinctType :: SuccinctType -> SuccinctType
 simplifySuccinctType t@(SuccinctFunction paramSet ret) = case ret of
-  SuccinctFunction ps rt -> SuccinctFunction (paramSet `Set.union` ps) rt
+  SuccinctFunction ps rt -> SuccinctFunction (paramSet ++ ps) rt
   _ -> t
-simplifySuccinctType t@(SuccinctDatatype idsIn tysIn consIn) = let
+simplifySuccinctType t@(SuccinctDatatype idIn idsIn tysIn consIn measuresIn) = let
   fold_fun ty (accIds, accTys, accCons) = case ty of
-    SuccinctDatatype ids tys cons -> (ids `Set.union` accIds, tys `Set.union` accTys, accCons  `Map.union` cons)
+    SuccinctDatatype id ids tys cons _ -> (Set.insert id (ids `Set.union` accIds), tys `Set.union` accTys, accCons  `Map.union` cons)
     _ -> (accIds, Set.insert ty accTys, accCons)
   (ids, tys, cons) = Set.foldr fold_fun (idsIn, Set.empty, consIn) (Set.map simplifySuccinctType tysIn)
   (names,_) = unzip (Set.toList ids)
   cons' = Map.filterWithKey (\k v -> elem k names) cons
-  in SuccinctDatatype ids tys cons'
+  in SuccinctDatatype idIn ids tys cons' measuresIn
 simplifySuccinctType t@(SuccinctAll ids ty) = case simplifySuccinctType ty of
   SuccinctAll ids' ty' -> SuccinctAll (ids `Set.union` ids') (outOfSuccinctAll ty')
   _ -> SuccinctAll ids (outOfSuccinctAll ty)
@@ -117,9 +119,9 @@ succinctTypeSubstitute subst (SuccinctScalar baseT) = case baseT of
   _ -> SuccinctScalar baseT
 succinctTypeSubstitute subst (SuccinctFunction tArgs tRes) = simplifySuccinctType $ SuccinctFunction tArgs' tRes'
   where
-    tArgs' = Set.map (succinctTypeSubstitute subst) tArgs
+    tArgs' = map (succinctTypeSubstitute subst) tArgs
     tRes' = succinctTypeSubstitute subst tRes
-succinctTypeSubstitute subst (SuccinctDatatype idSet tySet constructors) = simplifySuccinctType $ SuccinctDatatype idSet tySet' constructors
+succinctTypeSubstitute subst (SuccinctDatatype id idSet tySet constructors measures) = simplifySuccinctType $ SuccinctDatatype id idSet tySet' constructors measures
   where
     tySet' = Set.map (succinctTypeSubstitute subst) tySet
 succinctTypeSubstitute subst (SuccinctAll idSet ty) = simplifySuccinctType $ SuccinctAll idSet' ty'
@@ -144,7 +146,7 @@ unifySuccinct comp target boundedTys = case (comp, target) of
       else (False, [Map.empty]) 
     else (True, [Map.singleton id target])
   (SuccinctScalar t1, SuccinctScalar t2) -> (t1 == t2, [Map.empty])
-  (SuccinctDatatype idSet1 tySet1 consMap1, SuccinctDatatype idSet2 tySet2 consMap2) -> 
+  (SuccinctDatatype id1 idSet1 tySet1 consMap1 measures1, SuccinctDatatype id2 idSet2 tySet2 consMap2 measures2) -> 
     if Set.size idSet1 > 2 || Set.size idSet2 > 2
       then (False, [Map.empty])
       else if idSet1 `Set.isSubsetOf` idSet2
@@ -162,9 +164,9 @@ unifySuccinct comp target boundedTys = case (comp, target) of
           in 
             if bound1 `Set.isSubsetOf` bound2
               then
-                let consMapDiff = Map.intersectionWith Set.difference consMap1 consMap2
-                    isConsMatch = Map.foldr (\s acc -> acc && (Set.null s)) True consMapDiff
-                in if isConsMatch
+                let consMapDiff = Map.intersection consMap1 consMap2
+                    isConsMatch = Map.null consMapDiff
+                in if isConsMatch && id1 == id2
                   then
                     let 
                       consDiff = idSet2 `Set.difference` idSet1
@@ -172,7 +174,7 @@ unifySuccinct comp target boundedTys = case (comp, target) of
                       freeVt = tySet1 `Set.difference` bound1
                       optCons = idSet2 `Set.intersection` idSet1
                       optTy = tySet1 `Set.intersection` tySet2
-                    in (True, allCombos consDiff tyDiff freeVt optCons optTy (Map.union consMap1 consMap2))
+                    in (True, allCombos consDiff tyDiff freeVt optCons optTy (Map.union consMap1 consMap2) id2)
                   else (False, [Map.empty])
               else (False, [Map.empty])
         else (False, [Map.empty])
@@ -193,8 +195,8 @@ unifySuccinct comp target boundedTys = case (comp, target) of
           mergeRemain s ss acc = acc ++ (map ((:) s) (distribute (n-1) ss))
       in Set.foldr (\s acc -> acc ++ (foldr (mergeRemain s) [] (allRemain s))) [] pset
 
-    allCombos :: Set (Id,Int) -> Set SuccinctType -> Set SuccinctType -> Set (Id,Int) -> Set SuccinctType -> Map Id (Set Id) -> [SuccTypeSubstitution]
-    allCombos cons tys freeVars tcons tty consMaps =
+    allCombos :: Set (Id,Int) -> Set SuccinctType -> Set SuccinctType -> Set (Id,Int) -> Set SuccinctType -> Map Id Id -> (Id, Int) -> [SuccTypeSubstitution]
+    allCombos cons tys freeVars tcons tty consMaps outerId =
       if length freeVars == 0 -- (length cons /= 0 || length tys /= 0) && (length freeVars == 0) -- no freeVars to fill
         then [Map.empty]
         else
@@ -214,7 +216,7 @@ unifySuccinct comp target boundedTys = case (comp, target) of
                   then if Set.size yy > 0
                     then Map.insert id (Set.findMin yy) (assign vs xs ys)
                     else Map.empty
-                  else Map.insert id (SuccinctDatatype xx yy consMaps) (assign vs xs ys)
+                  else Map.insert id (SuccinctDatatype outerId xx yy consMaps Set.empty) (assign vs xs ys)
                 _ -> Map.empty
               isValid x y = if Set.null x
                 then Set.size y == 1
@@ -242,11 +244,11 @@ unifySuccinct comp target boundedTys = case (comp, target) of
 getSuccinctDestructors :: Id -> SuccinctType -> Set SuccinctType
 getSuccinctDestructors name sty = case sty of
   SuccinctFunction params ret -> case ret of
-    SuccinctDatatype ids tys consMap -> let
+    SuccinctDatatype id ids tys consMap _ -> let
       (datatypeName, _) = Set.findMin ids
       -- TODO how to deal with the destructor name here
-      destructors = Set.map (\param -> SuccinctFunction (Set.singleton ret) param) params
-      in destructors
+      destructors = map (\param -> SuccinctFunction [ret] param) params
+      in Set.fromList destructors
     _ -> Set.empty
   _ -> Set.empty
 
@@ -260,7 +262,7 @@ getSuccinctDestructors name sty = case sty of
 allSuccinctIndices :: Map SuccinctType Int -> Set Int
 allSuccinctIndices nodesMap = Set.fromList $ Map.elems nodesMap
 
-mergeMapOfSet :: (Hashable a, Ord a) => HashMap a (Set Id) -> HashMap a (Set Id) -> HashMap a (Set Id)
+mergeMapOfSet :: (Hashable a, Ord a, Ord b) => HashMap a (Set b) -> HashMap a (Set b) -> HashMap a (Set b)
 mergeMapOfSet new old = HashMap.foldrWithKey fold_fun old new
   where
     fold_fun kty idSet accMap = HashMap.insert kty ((HashMap.lookupDefault Set.empty kty accMap) `Set.union` idSet) accMap
@@ -281,8 +283,14 @@ isSuccinctConcrete (SuccinctInhabited _) = False
 isSuccinctConcrete (SuccinctComposite _) = False
 isSuccinctConcrete (SuccinctFunction _ _) = False
 isSuccinctConcrete (SuccinctAny) = False
-isSuccinctConcrete (SuccinctDatatype _ tys _) = Set.foldr (\t acc -> acc && isSuccinctConcrete t) True tys
+isSuccinctConcrete (SuccinctDatatype _ _ tys _ _) = Set.foldr (\t acc -> acc && isSuccinctConcrete t) True tys
 isSuccinctConcrete _ = True
+
+hasSuccinctAny (SuccinctComposite tys) = Set.foldr (\t acc -> acc || hasSuccinctAny t) False tys
+hasSuccinctAny (SuccinctFunction targ tret) = (hasSuccinctAny (SuccinctComposite (Set.fromList targ))) || (hasSuccinctAny tret)
+hasSuccinctAny (SuccinctAny) = True
+hasSuccinctAny (SuccinctDatatype _ _ tys _ _) = hasSuccinctAny (SuccinctComposite tys)
+hasSuccinctAny _ = False
 
 -- | function for debug
 printGraph :: HashMap SuccinctType (HashMap SuccinctType (Set Id)) -> String
@@ -293,8 +301,11 @@ printGraph graph = HashMap.foldrWithKey printMap "" graph
 
 succinctAnyEq :: SuccinctType -> SuccinctType -> Bool
 succinctAnyEq (SuccinctScalar t1) (SuccinctScalar t2) = t1 == t2
-succinctAnyEq (SuccinctFunction targ1 tret1) (SuccinctFunction targ2 tret2) = (succinctAnyEq (SuccinctComposite targ1) (SuccinctComposite targ2)) && (tret1 == tret2 || (tret1 == SuccinctAny) || (tret2 == SuccinctAny))
-succinctAnyEq (SuccinctDatatype ids1 tys1 cons1) (SuccinctDatatype ids2 tys2 cons2) = (succinctAnyEq (SuccinctComposite tys1) (SuccinctComposite tys2)) && ids1 == ids2
+succinctAnyEq (SuccinctFunction targ1 tret1) (SuccinctFunction targ2 tret2) = (succinctAnyEq (SuccinctComposite (Set.fromList targ1)) (SuccinctComposite (Set.fromList targ2))) && (tret1 == tret2 || (tret1 == SuccinctAny) || (tret2 == SuccinctAny))
+succinctAnyEq t1@(SuccinctDatatype id1 ids1 tys1 cons1 measures1) t2@(SuccinctDatatype id2 ids2 tys2 cons2 measures2) = 
+  if hasSuccinctAny t1 || hasSuccinctAny t2
+    then (succinctAnyEq (SuccinctComposite tys1) (SuccinctComposite tys2)) && (Set.isSubsetOf ids1 ids2 || Set.isSubsetOf ids2 ids1) && id1 == id2 && (Set.isSubsetOf measures1 measures2 || Set.isSubsetOf measures2 measures1)
+    else tys1 == tys2 && id1 == id2 && ids1 == ids2 && (Map.null cons1 || Map.null cons2 || cons1 == cons2) && (Set.isSubsetOf measures1 measures2 || Set.isSubsetOf measures2 measures1)
 succinctAnyEq (SuccinctComposite tys1) (SuccinctComposite tys2) =
   if Set.member SuccinctAny tys1
     then let diff = tys1 `Set.difference` tys2 in Set.size diff == 0 || (Set.size diff == 1 && Set.findMin diff == SuccinctAny)
@@ -309,6 +320,18 @@ base2str BoolT = "Bool"
 base2str (TypeVarT _ id) = id
 base2str _ = ""
 
+sizeof :: SuccinctType -> Int
+sizeof (SuccinctComposite tySet) = Set.foldr (\x -> (+) (sizeof x)) 0 tySet
+sizeof (SuccinctFunction argSet _) = sizeof (SuccinctComposite (Set.fromList argSet))
+sizeof (SuccinctDatatype id ids tys cons _) = 1 + (Set.size ids) + (Set.size tys)
+sizeof (SuccinctInhabited _) = 0
+sizeof _ = 1
+
+-- hasShapeOf :: SuccinctType -> SuccinctType -> Bool
+-- hasShapeOf (SuccinctFunction _ _) (SuccinctFunction _ _) = True
+-- hasShapeOf (SuccinctDatatype ids1 tys1 cons1) (SuccinctDatatype ids2 tys2 cons2) = not $ Set.null $ ids1 `Set.intersection` ids2
+-- hasShapeOf _ _ = False
+
 succinct2str :: SuccinctType -> String
 succinct2str sty = case sty of
     SuccinctScalar t           ->  base2str t
@@ -318,13 +341,17 @@ succinct2str sty = case sty of
                         ,"}->"
                         ,(succinct2str retTy)
                         ]
-    SuccinctDatatype names tys cons   -> concat
+    SuccinctDatatype (id,_) names tys cons measures   -> concat
                         ["{"
+                        , id
+                        ," | "
                         ,(foldl (\acc (x,n)->acc++x++(replicate n '*')++",") "" names)
                         ," | "
                         ,(foldl (\acc x->acc++(succinct2str x)++",") "" tys)
+                        , " | "
+                        ,(foldl (\acc x->acc++x++",") "" (Map.elems cons))
                         ," | "
-                        ,(foldl (\acc x->acc++(Set.foldl (\str s -> str++","++s) "" x)) "" (Map.elems cons))
+                        ,(Set.foldl (\acc x->acc++x++",") "" (measures))
                         ,"}"
                         ]
     SuccinctAll names ty    -> concat

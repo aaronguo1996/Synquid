@@ -1,0 +1,273 @@
+data List a where
+  Nil :: List a
+  Cons :: x: a -> xs: List a -> List a
+  
+termination measure len :: List a -> {Int | _v >= 0} where
+  Nil -> 0
+  Cons x xs -> 1 + len xs  
+  
+append :: xs: List a -> ys: List a -> {List a | len _v == len xs + len ys}  
+  
+data Info where
+  Info :: streetAddr: Int -> zipcode: Int -> local: Bool -> Info
+    
+data Address where
+  Address :: info: Info -> priv: Bool -> Address
+  
+measure isPriv :: Address -> Bool where
+  Address info priv -> priv  
+  
+getPriv :: a:Address -> {Bool | _v == isPriv a}
+
+data AddressBook where
+  AddressBook :: business: List {Address | !(isPriv _v)} -> personal: List {Address | isPriv _v} -> AddressBook  
+  
+measure size :: AddressBook -> {Int | _v >= 0} where
+  AddressBook bs ps -> len bs + len ps
+  
+mkAddressBook :: adds: List Address -> {AddressBook | size _v == len adds}
+mkAddressBook = ??
+
+mergeAddressBooks :: a: AddressBook -> b: AddressBook -> {AddressBook | size _v == size a + size b}
+mergeAddressBooks = ??      
+
+data Heap a where
+  Empty :: Heap a
+  Node :: x: a -> l: Heap {a | _v > x} -> r: Heap {a | _v > x} -> Heap a
+                                                                              
+termination measure size :: Heap a -> {Int | _v >= 0} where
+  Empty -> 0
+  Node x l r -> 1 + size l + size r  
+  
+measure elems :: Heap a -> Set a where
+  Empty -> []
+  Node x l r -> elems l + elems r + [x]    
+
+insert :: t: Heap a -> x: a -> {Heap a | elems _v == elems t + [x]}
+insert = ??
+
+false :: {Bool | !_v}
+not :: x: Bool -> {Bool | _v == !x}
+or :: x: Bool -> y: Bool -> {Bool | _v == (x || y)}
+
+member :: x: a -> t: Heap a -> {Bool | _v == (x in elems t)}
+member = ??
+
+data BST a where
+  Empty :: BST a
+  Node  :: x: a -> l: BST {a | _v < x} -> r: BST {a | x < _v} -> BST a
+                          
+termination measure size :: BST a -> {Int | _v >= 0} where
+  Empty -> 0
+  Node x l r -> size l + size r + 1
+  
+measure telems :: BST a -> Set a where
+  Empty -> []
+  Node x l r -> telems l + telems r + [x]
+
+delete :: t: BST a -> x: a -> {BST a | telems _v == telems t - [x]}
+delete = ??
+
+data MinPair a where
+  MinPair :: x: a -> t: BST {a | x < _v}  -> MinPair a
+  
+measure min :: MinPair a -> a where
+  MinPair x t -> x
+  
+measure rest :: MinPair a -> BST a where
+  MinPair x t -> t  
+
+extractMin :: t: {BST a | size _v > 0} -> {MinPair a | telems t == [min _v] + telems (rest _v)}
+extractMin = ??
+
+insert :: x: a -> t: BST a -> {BST a | telems _v == telems t + [x]}
+insert = ??
+
+member :: x: a -> t: BST a -> {Bool | _v == (x in telems t)}
+member = ??
+
+data IList a where
+  INil :: IList a
+  ICons :: x: a -> xs: IList {a | x < _v} -> IList a
+  
+termination measure ilen :: IList a -> {Int | _v >= 0} where
+  INil -> 0
+  ICons x xs -> 1 + ilen xs  
+
+measure ielems :: IList a -> Set a where
+  INil -> []
+  ICons x xs -> [x] + ielems xs  
+
+insert :: x: a -> t: BST a -> {BST a | telems _v == telems t + [x]}
+insert = ??
+
+toBST :: xs: List a -> {BST a | telems _v == elems xs}
+toBST = ??
+
+pivotAppend :: p: a -> xs: IList {a | _v < p} -> ys: IList {a | _v > p} -> {IList a | ilen _v == ilen xs + ilen ys + 1 && ielems _v == ielems xs + ielems ys + [p] }
+pivotAppend = ??
+
+flatten :: t: BST a -> {IList a | ielems _v == telems t}
+flatten = ??
+
+sort :: xs: List a -> {IList a | ielems _v == elems xs}
+sort = ??
+
+inline bit b = if b then 1 else 0 
+
+data BitVec where
+  Bit :: x: Bool -> BitVec
+  Cons :: x: Bool -> xs: BitVec -> BitVec
+  
+termination measure len :: BitVec -> {Int | _v > 0} where
+  Bit x -> 1
+  Cons x xs -> 1 + len xs   
+  
+measure value :: BitVec -> {Int | _v >= 0} where
+  Bit x -> bit x
+  Cons x xs -> bit x + 2 * (value xs)
+    
+true :: {Bool | _v}
+false :: {Bool | !_v}
+  
+plus' :: x: BitVec -> y: {BitVec | len _v == len x} -> carry: Bool -> {BitVec | value _v == value x + value y + bit carry}
+plus' = ??
+
+plus :: x: BitVec -> y: {BitVec | len _v == len x} -> {BitVec | value _v == value x + value y}
+plus = ??
+
+dec :: x: {BitVec | value _v > 0} -> {BitVec | value _v == value x - 1}
+dec = ??
+
+inc :: x: BitVec -> {BitVec | value _v == value x + 1}
+inc = ??
+
+zero :: {Int | _v == 0}
+one :: {Int | _v == 1}
+two :: {Int | _v == 2}
+
+data AST where
+  Zero :: AST
+  One :: AST
+  Two :: AST
+  PlusNode :: l: AST -> r: AST -> AST
+  MinusNode :: l: AST -> r: AST -> AST
+  ProductNode :: l: AST -> r: AST -> AST
+  
+termination measure size :: AST -> {Int | _v >= 0} where
+  Zero -> 1
+  One -> 1
+  Two -> 1
+  PlusNode l r -> 1 + size l + size r + 1
+  MinusNode l r -> 1 + size l + size r + 1
+  ProductNode l r -> 1 + size l + size r + 1
+
+measure result :: AST -> Int where
+  Zero -> 0
+  One -> 1
+  Two -> 2
+  PlusNode l r -> result l + result r
+  MinusNode l r -> result l - result r
+  ProductNode l r -> result l * result r
+
+type OpCode = {Int | _v >= 0 && _v <= 2}
+
+data PAST where
+  IntNode :: x: Int -> PAST
+  OpNode :: op: OpCode -> l: PAST -> r: PAST -> PAST
+  
+termination measure size2 :: PAST -> {Int | _v >= 0} where
+  IntNode x -> 1
+  OpNode op l r -> 1 + size2 l + size2 r
+
+measure result2 :: PAST -> Int where
+  IntNode x -> x
+  OpNode op l r -> if op == 0 then result2 l + result2 r else (if op == 1 then result2 l - result2 r else result2 l * result2 r)
+
+transform :: x: AST -> {PAST | result2 _v == result x}
+transform = ??
+
+merge :: xs: IList a -> ys: IList a -> {IList a | ilen _v == ilen xs + ilen ys && ielems _v == ielems xs + ielems ys}
+merge = ??
+
+data Pair a b where
+  Pair :: x: a -> y: b -> Pair a b
+  
+measure fst :: Pair a b -> a where
+  Pair x y -> x
+  
+measure snd :: Pair a b -> b where
+  Pair x y -> y
+
+inline abs x = if x >= 0 then x else -x  
+  
+split :: xs: List a -> {Pair {List a | abs (len xs - len _v * 2) <= 1} (List a) | len (fst _v) + len (snd _v) == len xs && elems (fst _v) + elems (snd _v) == elems xs }  
+
+merge :: xs: IList a -> ys: {IList a | abs (ilen _v - ilen xs) <= 1 } -> {IList a | ilen _v == ilen xs + ilen ys && ielems _v == ielems xs + ielems ys}
+
+mergeSort :: xs: List a -> {IList a | ilen _v == len xs && ielems _v == elems xs }
+mergeSort = ??
+
+pivotAppend :: p: a -> xs: IList {a | _v <= p} -> ys: IList {a | _v > p} -> {IList a | ilen _v == ilen xs + ilen ys + 1 && ielems _v == ielems xs + ielems ys + [p] }
+pivotAppend = ??
+
+partition :: p: a -> xs: List a -> {Pair {List {a | _v <= p} | len _v >= 0} {List {a | _v > p} | len _v >= 0} | len (fst _v) + len (snd _v) == len xs && elems (fst _v) + elems (snd _v) == elems xs }
+
+quickSort :: xs: List a -> {IList a | ilen _v == len xs && ielems _v == elems xs }
+quickSort = ??
+
+type Nat = {Int | _v >= 0}
+
+add :: x:Nat -> y:Nat -> {Int | _v == x + y}
+add = ??
+
+all :: <p :: a -> Bool> . 
+  f:(x: a -> {Bool | _v == p x}) -> xs: List a -> { Bool | _v <==> (elems xs == [x | x in elems xs && p x]) }
+all = ??
+
+any :: <p :: a -> Bool> . 
+  f:(x: a -> {Bool | _v == p x}) -> xs: List a -> { Bool | _v <==> !([x | x in elems xs && p x] == []) }
+any = ??
+
+append :: xs: List a -> ys: List a -> {List a | len _v == len xs + len ys && elems _v == elems xs + elems ys}
+append = ??
+
+data PList a <p :: a -> PList a -> Bool> where
+  Nil :: PList a <p>
+  Cons :: x: a -> xs: {PList a <p> | p x _v} -> PList a <p>
+  
+termination measure len :: PList a -> {Int | _v >= 0} where
+  Nil -> 0
+  Cons x xs -> 1 + len xs  
+
+measure elems :: PList a -> Set a where
+  Nil -> []
+  Cons x xs -> [x] + elems xs
+
+measure heads :: PList a -> Set a where
+  Nil -> []
+  Cons x xs -> [x]
+
+type List a = PList a <{True}>  
+type CList a = PList a <{!(_0 in heads _1)}>
+  
+qualifier {x == y, x != y}  
+
+compress :: xs: List a -> {CList a | elems _v == elems xs}
+compress = ??  
+
+data ListOfLists a where
+  Nil2 :: ListOfLists a
+  Cons2 :: x: List a -> xs: ListOfLists a -> ListOfLists a
+  
+termination measure len2 :: ListOfLists a -> {Int | _v >= 0} where
+  Nil2 -> 0
+  Cons2 x xs -> 1 + len2 xs
+  
+measure sumLen :: ListOfLists a -> {Int | _v >= 0} where
+  Nil2 -> 0
+  Cons2 x xs -> sumLen xs + len x
+
+concat :: xss: ListOfLists a -> { List a | len _v == sumLen xss }
+concat = ??
+

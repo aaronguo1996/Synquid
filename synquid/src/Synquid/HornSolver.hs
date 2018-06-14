@@ -213,6 +213,8 @@ strengthen qmap extractAssumptions fml@(Binary Implies lhs rhs) sol = do
     let n = maxValSize qmap sol unknowns
     writeLog 3 (text "Instantiated axioms:" $+$ commaSep (map pretty $ Set.toList assumptions))
     let allAssumptions = usedLhsQuals `Set.union` assumptions
+    writeLog 3 (text "All assumptions:" $+$ commaSep (map pretty $ Set.toList allAssumptions))
+    writeLog 3 (text "RHS:" <+> pretty rhs)
     lhsValuations <- optimalValuations n (lhsQuals Set.\\ usedLhsQuals) allAssumptions rhs -- all minimal valid valuations of the whole antecedent
     writeLog 3 (text "Optimal valuations:" $+$ vsep (map pretty lhsValuations))    
     let splitVals vals = nub $ concatMap splitLhsValuation vals 
@@ -290,7 +292,11 @@ optimalValuationsBFS maxSize quals lhs rhs = map qualsAt <$> filterSubsets (chec
           else return False
     
 optimalValuationsMarco :: MonadSMT s => Set Formula -> Set Formula -> Formula -> FixPointSolver s [Valuation]
-optimalValuationsMarco quals lhs rhs = map Set.fromList <$> lift (allUnsatCores assumption mustHave qualsList)
+optimalValuationsMarco quals lhs rhs = do
+    writeLog 3 (text "assumption" <+> pretty assumption)
+    writeLog 3 (text "mustHave" <+> pretty mustHave)
+    writeLog 3 (text "qualsList" <+> pretty qualsList)
+    map Set.fromList <$> lift (allUnsatCores assumption mustHave qualsList)
   where
     qualsList = Set.toList $ Set.filter (\q -> not $ q `Set.member` lhs || fnot q `Set.member` lhs) quals
     fixedLhs = conjunction lhs

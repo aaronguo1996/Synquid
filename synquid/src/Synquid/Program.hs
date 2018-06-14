@@ -19,6 +19,8 @@ import qualified Data.Map as Map
 import Data.Map (Map)
 import qualified Data.HashMap.Strict as HashMap
 import Data.HashMap.Strict (HashMap)
+import qualified Data.Sequence as Seq
+import Data.Sequence (Seq)
 
 import Control.Monad
 import Control.Lens
@@ -61,6 +63,9 @@ instance Ord (Program t) where
 type UProgram = Program RType
 -- | Refinement-typed programs
 type RProgram = Program RType
+-- | Succinct typed programs
+-- type SProgram = Program SuccinctType
+type SProgram = Program (SuccinctType, RType)
 
 untyped c = Program c AnyT
 uHole = untyped PHole
@@ -83,6 +88,11 @@ symbolsOf (Program p _) = case p of
   PFix x body -> symbolsOf body
   PLet x def body -> symbolsOf def `Set.union` symbolsOf body
   _ -> Set.empty
+
+hasHole (Program p _) = case p of
+  PApp fun arg -> hasHole fun || hasHole arg
+  PHole -> True
+  _ -> False
 
 errorProgram = Program PErr (vart dontCare ftrue)
 isError (Program PErr _) = True
@@ -171,12 +181,10 @@ data Environment = Environment {
   -- | Variable part:
   _symbols :: Map Int (Map Id RSchema),    -- ^ Variables and constants (with their refinement types), indexed by arity
   _succinctSymbols :: HashMap Id SuccinctType,    -- ^ Symbols with succinct types
-  _succinctGraph :: HashMap SuccinctType (HashMap SuccinctType (Set Id)), -- ^ Graph built upon succinct types
-  _graphFromGoal :: HashMap SuccinctType (HashMap SuccinctType (Set Id)),
+  _succinctGraph :: HashMap SuccinctType (HashMap SuccinctType (Set (Id, SuccinctParams))), -- ^ Graph built upon succinct types
+  _graphFromGoal :: HashMap SuccinctType (HashMap SuccinctType (Set (Id, SuccinctParams))),
   _succinctGraphRev :: HashMap SuccinctType (Set SuccinctType), -- ^ Graph for reachability check
-  -- _undecidableSymbols :: Map SuccinctType (Map SuccinctType (Set Id)), -- ^ the going to type has some variable in it to be decided until the graph is built
-  -- _reachableSymbols :: Set Int, -- ^ reachable symbols in the succinct graph
-  -- _succinctNodes :: Map SuccinctType Int, -- ^ All succinct nodes in succinct graph
+  _termQueue :: Seq SProgram,
   _boundTypeVars :: [Id],                  -- ^ Bound type variables
   _boundPredicates :: [PredSig],           -- ^ Argument sorts of bound abstract refinements
   _assumptions :: Set Formula,             -- ^ Unknown assumptions
@@ -208,9 +216,7 @@ emptyEnv = Environment {
   _succinctGraph = HashMap.empty,
   _graphFromGoal = HashMap.empty,
   _succinctGraphRev = HashMap.empty,
-  -- _undecidableSymbols = Map.empty,
-  -- _reachableSymbols = Set.empty,
-  -- _succinctNodes = Map.empty,
+  _termQueue = Seq.empty,
   _boundTypeVars = [],
   _boundPredicates = [],
   _assumptions = Set.empty,
@@ -469,4 +475,9 @@ data Goal = Goal {
 
 unresolvedType env ident = (env ^. unresolvedConstants) Map.! ident
 unresolvedSpec goal = unresolvedType (gEnvironment goal) (gName goal)
-  
+
+depth (Program p (t,_)) = case p of
+  PApp fun arg -> case t of
+    SuccinctFunction _ _ -> max (depth fun) (depth arg)
+    _ -> 1 + max (depth fun) (depth arg)
+  _ -> 0

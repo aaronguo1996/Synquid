@@ -26,7 +26,7 @@ import Control.Lens
 
 -- | 'reconstruct' @eParams tParams goal@ : reconstruct missing types and terms in the body of @goal@ so that it represents a valid type judgment;
 -- return a type error if that is impossible
-reconstruct :: (MonadHorn s, MonadPlus s) => ExplorerParams -> TypingParams -> Goal -> s (Either ErrorMessage RProgram)
+reconstruct :: MonadHorn s => ExplorerParams -> TypingParams -> Goal -> s (Either ErrorMessage RProgram)
 reconstruct eParams tParams goal = do
     initTS <- initTypingState $ gEnvironment goal
     runExplorer (eParams { _sourcePos = gSourcePos goal }) tParams (Reconstructor reconstructTopLevel) initTS go
@@ -36,7 +36,7 @@ reconstruct eParams tParams goal = do
       p <- flip insertAuxSolutions pMain <$> use solvedAuxGoals            -- Insert solutions for auxiliary goals stored in @solvedAuxGoals@
       runInSolver $ finalizeProgram p                                      -- Substitute all type/predicates variables and unknowns
     
-reconstructTopLevel :: (MonadHorn s, MonadPlus s) => Goal -> Explorer s RProgram
+reconstructTopLevel :: MonadHorn s => Goal -> Explorer s RProgram
 reconstructTopLevel (Goal funName env (ForallT a sch) impl depth pos) = reconstructTopLevel (Goal funName (addTypeVar a env) sch impl depth pos)
 reconstructTopLevel (Goal funName env (ForallP sig sch) impl depth pos) = reconstructTopLevel (Goal funName (addBoundPredicate sig env) sch impl depth pos)
 reconstructTopLevel (Goal funName env (Monotype typ@(FunctionT _ _ _)) impl depth _) = local (set (_1 . auxDepth) depth) $ reconstructFix
@@ -113,7 +113,7 @@ reconstructTopLevel (Goal _ env (Monotype t) impl depth _) = local (set (_1 . au
 
 -- | 'reconstructI' @env t impl@ :: reconstruct unknown types and terms in a judgment @env@ |- @impl@ :: @t@ where @impl@ is a (possibly) introduction term
 -- (top-down phase of bidirectional reconstruction)
-reconstructI :: (MonadHorn s, MonadPlus s) => Environment -> RType -> UProgram -> Explorer s RProgram
+reconstructI :: MonadHorn s => Environment -> RType -> UProgram -> Explorer s RProgram
 reconstructI env t (Program p AnyT) = reconstructI' env t p
 reconstructI env t (Program p t') = do
   t'' <- checkAnnotation env t t' p
@@ -207,7 +207,7 @@ reconstructI' env t@(ScalarT _ _) impl = case impl of
     checkCases _ [] = return []
   
   -- [TODO] cut here
-reconstructCase env scrVar pScrutinee t (Case consName args iBody) consT = do  
+reconstructCase env scrVar pScrutinee t (Case consName args iBody) consT = cut $ do  
   runInSolver $ matchConsType (lastType consT) (typeOf pScrutinee)
   consT' <- runInSolver $ currentAssignment consT
   (syms, ass) <- caseSymbols env scrVar args consT'
@@ -222,14 +222,14 @@ reconstructCase env scrVar pScrutinee t (Case consName args iBody) consT = do
 
 -- | 'reconstructE' @env t impl@ :: reconstruct unknown types and terms in a judgment @env@ |- @impl@ :: @t@ where @impl@ is an elimination term
 -- (bottom-up phase of bidirectional reconstruction)    
-reconstructETopLevel :: (MonadHorn s, MonadPlus s) => Environment -> RType -> UProgram -> Explorer s RProgram
+reconstructETopLevel :: MonadHorn s => Environment -> RType -> UProgram -> Explorer s RProgram
 reconstructETopLevel env t impl = do
   (Program pTerm pTyp) <- reconstructE env t impl
   generateAuxGoals
   pTyp' <- runInSolver $ currentAssignment pTyp
   return $ Program pTerm pTyp'
 
-reconstructE :: (MonadHorn s, MonadPlus s) => Environment -> RType -> UProgram -> Explorer s RProgram
+reconstructE :: MonadHorn s => Environment -> RType -> UProgram -> Explorer s RProgram
 reconstructE env t (Program p AnyT) = reconstructE' env t p
 reconstructE env t (Program p t') = do
   t'' <- checkAnnotation env t t' p
@@ -285,7 +285,7 @@ reconstructE' env typ impl = do
     
 -- | 'checkAnnotation' @env t t' p@ : if user annotation @t'@ for program @p@ is a subtype of the goal type @t@,
 -- return resolved @t'@, otherwise fail
-checkAnnotation :: (MonadHorn s, MonadPlus s) => Environment -> RType -> RType -> BareProgram RType -> Explorer s RType  
+checkAnnotation :: MonadHorn s => Environment -> RType -> RType -> BareProgram RType -> Explorer s RType  
 checkAnnotation env t t' p = do
   tass <- use (typingState . typeAssignment)
   case resolveRefinedType (typeSubstituteEnv tass env) t' of

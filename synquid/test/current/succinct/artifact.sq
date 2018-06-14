@@ -1,0 +1,21 @@
+inc :: x:Int -> {Int | _v == x+1}
+
+data Char
+
+data List a where
+    Nil :: List a
+    Cons :: x: a -> xs: List a -> List a
+
+termination measure len :: List a -> {Int | _v >= 0} where
+  Nil -> 0
+  Cons x xs -> 1 + len xs  
+
+type String = List Char
+
+stringSize :: s:String -> {Int | _v == len s}
+magic1 :: x:Int -> y:Int -> z:Int -> c:Char -> {String | len _v == x + y + z}
+magic2 :: x:List Int -> y:Int -> z:Char -> {Char | _v == z}
+magic3 :: x:a -> y: List a -> {List a | len _v == len y + 1}
+
+artifact :: x:Int -> {Int | _v == x+5}
+artifact = ??

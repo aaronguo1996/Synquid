@@ -1,0 +1,24 @@
+digraph name{
+layout=dot;
+splines=true;
+margin="0.5,0.5";
+fontsize=16;
+dpi=250;
+concentrate=True;
+rankdir=BT;
+ratio=fill;
+size="25,25";
+node  [style="rounded,filled,bold", shape=box, width=2, fontsize=20];
+edge [fontsize=20]
+"a"
+"{IList |  | a, |  | }"
+"{a,{IList |  | a, |  | },}"
+""
+""
+"a" -> "" [label = ",x9[],x13[]"];
+"{a,{IList |  | a, |  | },}" -> "a" [label = ",[]"];
+"{a,{IList |  | a, |  | },}" -> "{IList |  | a, |  | }" [label = ",[]"];
+"{IList |  | a, |  | }" -> "{a,{IList |  | a, |  | },}" [label = ",ICons[a,{IList |  | a, |  | },]"];
+"{IList |  | a, |  | }" -> "{IList |  | a, |  | }" [label = ",merge[{IList |  | a, |  | },{IList |  | a, |  | },],__goal__[{IList |  | a, |  | },{IList |  | a, |  | },]"];
+"{IList |  | a, |  | }" -> "" [label = ",ys[],xs[],x14[],x10[],INil[]"];
+}

@@ -1,0 +1,31 @@
+digraph name{
+layout=dot;
+splines=true;
+margin="0.5,0.5";
+fontsize=16;
+dpi=250;
+concentrate=True;
+rankdir=BT;
+ratio=fill;
+size="25,25";
+node  [style="rounded,filled,bold", shape=box, width=2, fontsize=20];
+edge [fontsize=20]
+"Int"
+"{Char, |  | }"
+"{Char,List*, |  | }"
+"{Char,List*, |  | ,Cons}"
+"{{Char, |  | },{Char,List*, |  | },}"
+""
+""
+"{Char,List*, |  | ,Cons}" -> "{Char,List*, |  | ,Cons}" [label = ",magic3[{Char,List*, |  | ,Cons},{Char,List*, |  | ,Cons},],Cons[{Char,List*, |  | ,Cons},{Char,List*, |  | ,Cons},]"];
+"{Char,List*, |  | ,Cons}" -> "{{Char, |  | },{Char,List*, |  | },}" [label = ",magic3[{Char, |  | },{Char,List*, |  | },],Cons[{Char, |  | },{Char,List*, |  | },]"];
+"{Char,List*, |  | }" -> "{Char,List*, |  | ,Cons}" [label = ",Cons[{Char,List*, |  | ,Cons},{Char,List*, |  | ,Cons},]"];
+"{Char,List*, |  | }" -> "{Char,List*, |  | }" [label = ",magic3[{Char,List*, |  | },{Char,List*, |  | },]"];
+"{Char,List*, |  | }" -> "{{Char, |  | },{Char,List*, |  | },}" [label = ",magic3[{Char, |  | },{Char,List*, |  | },],Cons[{Char, |  | },{Char,List*, |  | },]"];
+"{Char,List*, |  | }" -> "" [label = ",Nil[]"];
+"{{Char, |  | },{Char,List*, |  | },}" -> "{Char,List*, |  | }" [label = ",[]"];
+"{{Char, |  | },{Char,List*, |  | },}" -> "{Char, |  | }" [label = ",[]"];
+"Int" -> "{Char,List*, |  | }" [label = ",stringSize[{Char,List*, |  | },]"];
+"Int" -> "Int" [label = ",inc[Int,],artifact[Int,],__goal__[Int,]"];
+"Int" -> "" [label = ",x[]"];
+}

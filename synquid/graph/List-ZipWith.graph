@@ -1,0 +1,110 @@
+digraph name{
+layout=dot;
+splines=true;
+margin="0.5,0.5";
+fontsize=16;
+dpi=250;
+concentrate=True;
+rankdir=BT;
+ratio=fill;
+size="25,25";
+node  [style="rounded,filled,bold", shape=box, width=2, fontsize=20];
+edge [fontsize=20]
+"a"
+"b"
+"c"
+"{a,b,}->c"
+"{any,any,}->a"
+"{any,any,}->b"
+"{any,any,}->c"
+"{any,any,}->{List*, | a, | }"
+"{any,any,}->{List*, | a, | ,Cons}"
+"{any,any,}->{List*, | b, | }"
+"{any,any,}->{List*, | b, | ,Cons}"
+"{any,any,}->{List*, | c, | }"
+"{any,any,}->{List*, | c, | ,Cons}"
+"{List*, | a, | }"
+"{List*, | a, | ,Cons}"
+"{List*, | b, | }"
+"{List*, | b, | ,Cons}"
+"{List*, | c, | }"
+"{List*, | c, | ,Cons}"
+"{List*, | any, | }"
+"{a,b,}"
+"{a,{List*, | a, | },}"
+"{b,{List*, | b, | },}"
+"{c,{List*, | c, | },}"
+"{{a,b,}->c,{List*, | a, | },{List*, | b, | },}"
+"{{any,any,}->a,{List*, | any, | },}"
+"{{any,any,}->b,{List*, | any, | },}"
+"{{any,any,}->c,{List*, | any, | },}"
+"{{any,any,}->{List*, | a, | },{List*, | any, | },}"
+"{{any,any,}->{List*, | a, | ,Cons},{List*, | any, | },}"
+"{{any,any,}->{List*, | b, | },{List*, | any, | },}"
+"{{any,any,}->{List*, | b, | ,Cons},{List*, | any, | },}"
+"{{any,any,}->{List*, | c, | },{List*, | any, | },}"
+"{{any,any,}->{List*, | c, | ,Cons},{List*, | any, | },}"
+""
+""
+""
+""
+""
+""
+""
+"{List*, | b, | ,Cons}" -> "{{any,any,}->b,{List*, | any, | },}" [label = ",zipWith[{List*, | any, | },{List*, | any, | },{any,any,}->b,]"];
+"{List*, | b, | ,Cons}" -> "{{any,any,}->{List*, | b, | ,Cons},{List*, | any, | },}" [label = ",zipWith[{List*, | any, | },{List*, | any, | },{any,any,}->{List*, | b, | ,Cons},]"];
+"{{any,any,}->{List*, | c, | },{List*, | any, | },}" -> "{any,any,}->{List*, | c, | }" [label = ",[]"];
+"{{any,any,}->{List*, | c, | },{List*, | any, | },}" -> "{List*, | any, | }" [label = ",[]"];
+"{List*, | c, | }" -> "{{any,any,}->{List*, | c, | },{List*, | any, | },}" [label = ",zipWith[{List*, | any, | },{List*, | any, | },{any,any,}->{List*, | c, | },]"];
+"{List*, | c, | }" -> "{c,{List*, | c, | },}" [label = ",Cons[{List*, | c, | },c,]"];
+"{List*, | c, | }" -> "{{any,any,}->c,{List*, | any, | },}" [label = ",zipWith[{List*, | any, | },{List*, | any, | },{any,any,}->c,]"];
+"{List*, | c, | }" -> "" [label = ",Nil[]"];
+"{List*, | c, | }" -> "{{a,b,}->c,{List*, | a, | },{List*, | b, | },}" [label = ",__goal__[{List*, | b, | },{List*, | a, | },{a,b,}->c,]"];
+"{List*, | c, | }" -> "{List*, | c, | ,Cons}" [label = ",Cons[{List*, | c, | ,Cons},{List*, | c, | ,Cons},]"];
+"{c,{List*, | c, | },}" -> "{List*, | c, | }" [label = ",[]"];
+"{c,{List*, | c, | },}" -> "c" [label = ",[]"];
+"{{any,any,}->{List*, | a, | ,Cons},{List*, | any, | },}" -> "{any,any,}->{List*, | a, | ,Cons}" [label = ",[]"];
+"{{any,any,}->{List*, | a, | ,Cons},{List*, | any, | },}" -> "{List*, | any, | }" [label = ",[]"];
+"{{any,any,}->b,{List*, | any, | },}" -> "{any,any,}->b" [label = ",[]"];
+"{{any,any,}->b,{List*, | any, | },}" -> "{List*, | any, | }" [label = ",[]"];
+"{b,{List*, | b, | },}" -> "b" [label = ",[]"];
+"{b,{List*, | b, | },}" -> "{List*, | b, | }" [label = ",[]"];
+"{{any,any,}->c,{List*, | any, | },}" -> "{any,any,}->c" [label = ",[]"];
+"{{any,any,}->c,{List*, | any, | },}" -> "{List*, | any, | }" [label = ",[]"];
+"{a,{List*, | a, | },}" -> "a" [label = ",[]"];
+"{a,{List*, | a, | },}" -> "{List*, | a, | }" [label = ",[]"];
+"{{any,any,}->{List*, | b, | ,Cons},{List*, | any, | },}" -> "{any,any,}->{List*, | b, | ,Cons}" [label = ",[]"];
+"{{any,any,}->{List*, | b, | ,Cons},{List*, | any, | },}" -> "{List*, | any, | }" [label = ",[]"];
+"a" -> "" [label = ",x17[]"];
+"{{any,any,}->{List*, | b, | },{List*, | any, | },}" -> "{List*, | any, | }" [label = ",[]"];
+"{{any,any,}->{List*, | b, | },{List*, | any, | },}" -> "{any,any,}->{List*, | b, | }" [label = ",[]"];
+"{List*, | a, | }" -> "{a,{List*, | a, | },}" [label = ",Cons[{List*, | a, | },a,]"];
+"{List*, | a, | }" -> "{List*, | a, | ,Cons}" [label = ",Cons[{List*, | a, | ,Cons},{List*, | a, | ,Cons},]"];
+"{List*, | a, | }" -> "{{any,any,}->{List*, | a, | },{List*, | any, | },}" [label = ",zipWith[{List*, | any, | },{List*, | any, | },{any,any,}->{List*, | a, | },]"];
+"{List*, | a, | }" -> "{{any,any,}->a,{List*, | any, | },}" [label = ",zipWith[{List*, | any, | },{List*, | any, | },{any,any,}->a,]"];
+"{List*, | a, | }" -> "" [label = ",Nil[]"];
+"{List*, | a, | }" -> "" [label = ",xs[],x18[]"];
+"{List*, | a, | ,Cons}" -> "{{any,any,}->{List*, | a, | ,Cons},{List*, | any, | },}" [label = ",zipWith[{List*, | any, | },{List*, | any, | },{any,any,}->{List*, | a, | ,Cons},]"];
+"{List*, | a, | ,Cons}" -> "{{any,any,}->a,{List*, | any, | },}" [label = ",zipWith[{List*, | any, | },{List*, | any, | },{any,any,}->a,]"];
+"{{any,any,}->{List*, | a, | },{List*, | any, | },}" -> "{any,any,}->{List*, | a, | }" [label = ",[]"];
+"{{any,any,}->{List*, | a, | },{List*, | any, | },}" -> "{List*, | any, | }" [label = ",[]"];
+"{{any,any,}->a,{List*, | any, | },}" -> "{any,any,}->a" [label = ",[]"];
+"{{any,any,}->a,{List*, | any, | },}" -> "{List*, | any, | }" [label = ",[]"];
+"b" -> "" [label = ",x21[]"];
+"{List*, | b, | }" -> "{List*, | b, | ,Cons}" [label = ",Cons[{List*, | b, | ,Cons},{List*, | b, | ,Cons},]"];
+"{List*, | b, | }" -> "{{any,any,}->b,{List*, | any, | },}" [label = ",zipWith[{List*, | any, | },{List*, | any, | },{any,any,}->b,]"];
+"{List*, | b, | }" -> "{b,{List*, | b, | },}" [label = ",Cons[{List*, | b, | },b,]"];
+"{List*, | b, | }" -> "{{any,any,}->{List*, | b, | },{List*, | any, | },}" [label = ",zipWith[{List*, | any, | },{List*, | any, | },{any,any,}->{List*, | b, | },]"];
+"{List*, | b, | }" -> "" [label = ",Nil[]"];
+"{List*, | b, | }" -> "" [label = ",ys[],x22[]"];
+"c" -> "{a,b,}" [label = ",f[b,a,]"];
+"{{a,b,}->c,{List*, | a, | },{List*, | b, | },}" -> "{a,b,}->c" [label = ",[]"];
+"{{a,b,}->c,{List*, | a, | },{List*, | b, | },}" -> "{List*, | a, | }" [label = ",[]"];
+"{{a,b,}->c,{List*, | a, | },{List*, | b, | },}" -> "{List*, | b, | }" [label = ",[]"];
+"{{any,any,}->{List*, | c, | ,Cons},{List*, | any, | },}" -> "{any,any,}->{List*, | c, | ,Cons}" [label = ",[]"];
+"{{any,any,}->{List*, | c, | ,Cons},{List*, | any, | },}" -> "{List*, | any, | }" [label = ",[]"];
+"{a,b,}" -> "a" [label = ",[]"];
+"{a,b,}" -> "b" [label = ",[]"];
+"{List*, | c, | ,Cons}" -> "{{any,any,}->c,{List*, | any, | },}" [label = ",zipWith[{List*, | any, | },{List*, | any, | },{any,any,}->c,]"];
+"{List*, | c, | ,Cons}" -> "{{any,any,}->{List*, | c, | ,Cons},{List*, | any, | },}" [label = ",zipWith[{List*, | any, | },{List*, | any, | },{any,any,}->{List*, | c, | ,Cons},]"];
+}

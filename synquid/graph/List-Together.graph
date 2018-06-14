@@ -1,0 +1,37 @@
+digraph name{
+layout=dot;
+splines=true;
+margin="0.5,0.5";
+fontsize=16;
+dpi=250;
+concentrate=True;
+rankdir=BT;
+ratio=fill;
+size="25,25";
+node  [style="rounded,filled,bold", shape=box, width=2, fontsize=20];
+edge [fontsize=20]
+"Bool"
+"a"
+"{Address, |  | }"
+"{IList*, | a, | }"
+"{IList*, | a, | ,ICons}"
+"{List*, | any, | }"
+"{a,{IList*, | a, | },}"
+"{{List*, | any, | },any,}"
+"any"
+""
+""
+"Bool" -> "{Address, |  | }" [label = ",getPriv"];
+"Bool" -> "{{List*, | any, | },any,}" [label = ",elem"];
+"{{List*, | any, | },any,}" -> "any" [label = ","];
+"{{List*, | any, | },any,}" -> "{List*, | any, | }" [label = ","];
+"{IList*, | a, | ,ICons}" -> "{IList*, | a, | ,ICons}" [label = ",merge"];
+"{IList*, | a, | ,ICons}" -> "{IList*, | a, | }" [label = ",merge"];
+"{IList*, | a, | }" -> "{IList*, | a, | ,ICons}" [label = ",ICons"];
+"{IList*, | a, | }" -> "" [label = ",INil"];
+"{IList*, | a, | }" -> "" [label = ",ys,xs"];
+"{IList*, | a, | }" -> "{IList*, | a, | }" [label = ",merge,__goal__"];
+"{IList*, | a, | }" -> "{a,{IList*, | a, | },}" [label = ",ICons"];
+"{a,{IList*, | a, | },}" -> "a" [label = ","];
+"{a,{IList*, | a, | },}" -> "{IList*, | a, | }" [label = ","];
+}

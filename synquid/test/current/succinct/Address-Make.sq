@@ -1,0 +1,35 @@
+data List a where
+    Nil :: List a
+    Cons :: x: a -> xs: List a -> List a
+
+data Info where
+  Info :: streetAddr: Int -> zipcode: Int -> local: Bool -> Info
+    
+measure getZipcode :: Info -> Int where
+  Info saddr zipcode local -> zipcode
+
+measure getStreet :: Info -> Int where
+  Info saddr zipcode local -> saddr
+
+data Address where
+  Address :: info: Info -> priv: Bool -> Address
+  
+measure isPriv :: Address -> Bool where
+  Address info priv -> priv  
+
+measure getInfo :: Address -> Info where
+  Address info priv -> info
+
+getPriv :: a:Address -> {Bool | _v == isPriv a}
+
+data AddressBook where
+  AddressBook :: business: List {Address | !(isPriv _v)} -> personal: List {Address | isPriv _v} -> AddressBook
+
+mkAddress:: street: Int -> zip: Int -> local: Bool -> priv:Bool -> {Address | _v == Address (Info street zip local) priv}
+mkAddress = ??
+
+extractZipcode :: addr: Address -> {Int | _v == getZipcode (getInfo addr)}
+extractZipcode = ??
+
+changeZipcode :: addr: Address -> newZip: Int -> {Address | getZipcode (getInfo _v) == newZip && getStreet (getInfo _v) == getStreet (getInfo addr)}
+changeZipcode = ??

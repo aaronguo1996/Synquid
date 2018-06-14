@@ -1,0 +1,44 @@
+digraph name{
+layout=dot;
+splines=true;
+margin="0.5,0.5";
+fontsize=16;
+dpi=250;
+concentrate=True;
+rankdir=BT;
+ratio=fill;
+size="25,25";
+node  [style="rounded,filled,bold", shape=box, width=2, fontsize=20];
+edge [fontsize=20]
+"Int"
+"{any,}->Int"
+"{any,}->{List*, | Int, | }"
+"{any,}->{List*, | Int, | ,Cons}"
+"{List*, | Int, | }"
+"{List*, | Int, | ,Cons}"
+"{List*, | any, | }"
+"{Int,{List*, | Int, | },}"
+"{{any,}->Int,{List*, | any, | },}"
+"{{any,}->{List*, | Int, | },{List*, | any, | },}"
+"{{any,}->{List*, | Int, | ,Cons},{List*, | any, | },}"
+""
+""
+"{{any,}->{List*, | Int, | },{List*, | any, | },}" -> "{List*, | any, | }" [label = ","];
+"{{any,}->{List*, | Int, | },{List*, | any, | },}" -> "{any,}->{List*, | Int, | }" [label = ","];
+"{List*, | Int, | ,Cons}" -> "{{any,}->{List*, | Int, | ,Cons},{List*, | any, | },}" [label = ",map"];
+"{List*, | Int, | ,Cons}" -> "{{any,}->Int,{List*, | any, | },}" [label = ",map"];
+"Int" -> "Int" [label = ",neg"];
+"{{any,}->{List*, | Int, | ,Cons},{List*, | any, | },}" -> "{any,}->{List*, | Int, | ,Cons}" [label = ","];
+"{{any,}->{List*, | Int, | ,Cons},{List*, | any, | },}" -> "{List*, | any, | }" [label = ","];
+"{{any,}->Int,{List*, | any, | },}" -> "{any,}->Int" [label = ","];
+"{{any,}->Int,{List*, | any, | },}" -> "{List*, | any, | }" [label = ","];
+"{Int,{List*, | Int, | },}" -> "Int" [label = ","];
+"{Int,{List*, | Int, | },}" -> "{List*, | Int, | }" [label = ","];
+"{List*, | Int, | }" -> "{{any,}->{List*, | Int, | },{List*, | any, | },}" [label = ",map"];
+"{List*, | Int, | }" -> "{List*, | Int, | ,Cons}" [label = ",Cons"];
+"{List*, | Int, | }" -> "{{any,}->Int,{List*, | any, | },}" [label = ",map"];
+"{List*, | Int, | }" -> "" [label = ",Nil"];
+"{List*, | Int, | }" -> "" [label = ",xs"];
+"{List*, | Int, | }" -> "{Int,{List*, | Int, | },}" [label = ",Cons"];
+"{List*, | Int, | }" -> "{List*, | Int, | }" [label = ",toNat,__goal__"];
+}
