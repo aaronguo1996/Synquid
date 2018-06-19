@@ -292,7 +292,9 @@ resolveType (FunctionT x tArg tRes) =
           when (not $ isFunctionType tArg') (environment %= addVariable x tArg')
           resolveType tRes
         return $ FunctionT x tArg' tRes'
-  
+resolveType (LetT x bind typ) = do
+  typ' <- resolveType typ
+  return $ LetT x bind typ'
 resolveType AnyT = return AnyT  
 
 -- | Check that sort has no unknown datatypes

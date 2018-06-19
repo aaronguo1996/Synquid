@@ -184,7 +184,6 @@ data Environment = Environment {
   _succinctGraph :: HashMap SuccinctType (HashMap SuccinctType (Set (Id, SuccinctParams))), -- ^ Graph built upon succinct types
   _graphFromGoal :: HashMap SuccinctType (HashMap SuccinctType (Set (Id, SuccinctParams))),
   _succinctGraphRev :: HashMap SuccinctType (Set SuccinctType), -- ^ Graph for reachability check
-  _termQueue :: Seq SProgram,
   _boundTypeVars :: [Id],                  -- ^ Bound type variables
   _boundPredicates :: [PredSig],           -- ^ Argument sorts of bound abstract refinements
   _assumptions :: Set Formula,             -- ^ Unknown assumptions
@@ -216,7 +215,6 @@ emptyEnv = Environment {
   _succinctGraph = HashMap.empty,
   _graphFromGoal = HashMap.empty,
   _succinctGraphRev = HashMap.empty,
-  _termQueue = Seq.empty,
   _boundTypeVars = [],
   _boundPredicates = [],
   _assumptions = Set.empty,

@@ -29,7 +29,7 @@ import Control.Lens
 reconstruct :: MonadHorn s => ExplorerParams -> TypingParams -> Goal -> s (Either ErrorMessage RProgram)
 reconstruct eParams tParams goal = do
     initTS <- initTypingState $ gEnvironment goal
-    runExplorer (eParams { _sourcePos = gSourcePos goal }) tParams (Reconstructor reconstructTopLevel) initTS go
+    runExplorer (eParams { _sourcePos = gSourcePos goal }) tParams (Reconstructor reconstructTopLevel reconstructETopLevel) initTS go
   where
     go = do
       pMain <- reconstructTopLevel goal { gDepth = _auxDepth eParams }     -- Reconstruct the program
@@ -120,7 +120,7 @@ reconstructI env t (Program p t') = do
   reconstructI' env t'' p
 
 reconstructI' env t PErr = generateError env
-reconstructI' env t PHole = generateError env `mplus` generateI env t
+reconstructI' env t PHole = generateError env `mplus` generateI env t False
 reconstructI' env t (PLet x iDef@(Program (PFun _ _) _) iBody) = do -- lambda-let: remember and type-check on use
   lambdaLets %= Map.insert x (env, iDef)
   let ctx = \p -> Program (PLet x uHole p) t
