@@ -64,7 +64,15 @@ type UProgram = Program RType
 -- | Refinement-typed programs
 type RProgram = Program RType
 -- | Succinct typed programs
--- type SProgram = Program SuccinctType
+-- data SuccinctProgram = SuccinctProgram {
+--   prog :: BareProgram,
+--   rtyp :: RType,
+--   styp :: SuccinctType,
+--   checkAgainst :: RType
+-- }
+
+-- makeLenses ''SuccinctProgram
+
 type SProgram = Program (SuccinctType, RType)
 
 untyped c = Program c AnyT
@@ -175,14 +183,30 @@ data MeasureDef = MeasureDef {
 makeLenses ''MeasureDef
 
 {- Evaluation environment -}
+data SuccinctContext = SuccinctContext {
+  _srcType :: SuccinctType
+} deriving (Eq)
+
+makeLenses ''SuccinctContext
+
+data SuccinctEdge = SuccinctEdge {
+  _symbolId :: Id,
+  _params :: SuccinctParams,
+  _weight :: HashMap SuccinctContext Double
+} deriving (Eq)
+
+instance Ord (SuccinctEdge) where
+  (<=) (SuccinctEdge id1 params1 _) (SuccinctEdge id2 params2 _) = id1 <= id2 || ((id1 == id2) && params1 <= params2)
+
+makeLenses ''SuccinctEdge
 
 -- | Typing environment
 data Environment = Environment {
   -- | Variable part:
   _symbols :: Map Int (Map Id RSchema),    -- ^ Variables and constants (with their refinement types), indexed by arity
   _succinctSymbols :: HashMap Id SuccinctType,    -- ^ Symbols with succinct types
-  _succinctGraph :: HashMap SuccinctType (HashMap SuccinctType (Set (Id, SuccinctParams))), -- ^ Graph built upon succinct types
-  _graphFromGoal :: HashMap SuccinctType (HashMap SuccinctType (Set (Id, SuccinctParams))),
+  _succinctGraph :: HashMap SuccinctType (HashMap SuccinctType (Set SuccinctEdge)), -- ^ Graph built upon succinct types
+  _graphFromGoal :: HashMap SuccinctType (HashMap SuccinctType (Set SuccinctEdge)),
   _succinctGraphRev :: HashMap SuccinctType (Set SuccinctType), -- ^ Graph for reachability check
   _boundTypeVars :: [Id],                  -- ^ Bound type variables
   _boundPredicates :: [PredSig],           -- ^ Argument sorts of bound abstract refinements
