@@ -86,9 +86,10 @@ data ExplorerState = ExplorerState {
   _solvedAuxGoals :: Map Id RProgram,              -- ^ Synthesized auxiliary goals, to be inserted into the main program
   _lambdaLets :: Map Id (Environment, UProgram),   -- ^ Local bindings to be checked upon use (in type checking mode)
   _requiredTypes :: Requirements,                  -- ^ All types that a variable is required to comply to (in repair mode)
-  _symbolUseCount :: Map Id Int,                    -- ^ Number of times each symbol has been used in the program so far
+  _symbolUseCount :: Map Id Int,                   -- ^ Number of times each symbol has been used in the program so far
   -- temporary storage of the queue state
-  _termQueueState :: ProgramQueue    -- ^ Candidate term queue, only used when we use succinct type graph for generateE
+  _termQueueState :: ProgramQueue,                 -- ^ Candidate term queue, only used when we use succinct type graph for generateE
+  _matchQueueState :: ProgramQueue                 -- ^.Candidate match scrutinee queue, only used when we use succinct type graph for generateE
 } deriving (Eq, Ord)
 
 makeLenses ''ExplorerState
@@ -154,7 +155,7 @@ runExplorer eParams tParams topLevel initTS go = do
     [] -> return $ Left $ head errs
     res:_ -> return $ Right res
   where
-    initExplorerState = ExplorerState initTS [] Map.empty Map.empty Map.empty Map.empty PQ.empty
+    initExplorerState = ExplorerState initTS [] Map.empty Map.empty Map.empty Map.empty PQ.empty PQ.empty
 
 -- | 'generateI' @env t@ : explore all terms that have refined type @t@ in environment @env@
 -- (top-down phase of bidirectional typechecking)
@@ -176,22 +177,13 @@ generateMaybeIf :: MonadHorn s => Environment -> RType -> Bool -> Explorer s RPr
 generateMaybeIf env t isElseBranch = -- (generateThen >>= (uncurry3 $ generateElse env t)) `mplus` generateMatch env t
   ifte generateThen
     (uncurry3 $ generateElse env t)
-    (generateMatch env t)
-  -- let gt = generateThen
-  -- case gt of
-  --   mzero -> (do
-  --     writeLog 2 $ text "in generate match" <+> pretty t
-  --     generateMatch env t)
-  --   _ -> (do
-  --     writeLog 2 $ text "in generate else" <+> pretty t
-  --     gt >>= (uncurry3 $ generateElse env t)) -- If at least one solution without a match exists, go with it and continue with the else branch; otherwise try to match
+    (generateMatch env t False)
   where
     -- | Guess an E-term and abduce a condition for it
     generateThen = do
       cUnknown <- Unknown Map.empty <$> freshId "C"
       addConstraint $ WellFormedCond env cUnknown
-      --[TODO: cut here]
-      pThen <- cut $ generateE (addAssumption cUnknown env) t True isElseBranch -- Do not backtrack: if we managed to find a solution for a nonempty subset of inputs, we go with it      
+      pThen <- cut $ generateE (addAssumption cUnknown env) t True isElseBranch False -- Do not backtrack: if we managed to find a solution for a nonempty subset of inputs, we go with it      
       cond <- conjunction <$> currentValuation cUnknown
       return (cond, unknownName cUnknown, pThen)
 
@@ -225,7 +217,7 @@ generateCondition env fml = do
     genConjunct c = if isExecutable c
                               then return $ fmlToProgram c
                               -- [TODO] cut here
-                              else cut (generateE env (ScalarT BoolT $ valBool |=| c) False False)
+                              else cut (generateE env (ScalarT BoolT $ valBool |=| c) False False False)
     andSymb = Program (PSymbol $ binOpTokens Map.! And) (toMonotype $ binOpType And)
     conjoin p1 p2 = Program (PApp (Program (PApp andSymb p1) boolAll) p2) boolAll
                 
@@ -233,38 +225,64 @@ generateCondition env fml = do
 optionalInPartial :: MonadHorn s => RType -> Explorer s RProgram -> Explorer s RProgram
 optionalInPartial t gen = ifM (asks . view $ _1 . partialSolution) (ifte gen return (return $ Program PHole t)) gen
 
+checkScrutinee env (Program p tScr) = let
+  (env', tScr') = embedContext env tScr
+  pScrutinee = Program p tScr'
+  in case tScr of
+    (ScalarT (DatatypeT scrDT _ _) _) -> let 
+      ctors = ((env ^. datatypes) Map.! scrDT) ^. constructors
+      scrutineeSymbols = symbolList pScrutinee
+      isGoodScrutinee = not (null ctors) &&                                               -- Datatype is not abstract
+                        (not $ pScrutinee `elem` (env ^. usedScrutinees)) &&              -- Hasn't been scrutinized yet
+                        (not $ head scrutineeSymbols `elem` ctors) &&                     -- Is not a value
+                        (any (not . flip Set.member (env ^. constants)) scrutineeSymbols) -- Has variables (not just constants)
+      in isGoodScrutinee
+    _ -> False
+
 -- | Generate a match term of type @t@
-generateMatch env t = do
+generateMatch env t notFirstScrutinee = do
   d <- asks . view $ _1 . matchDepth
   if d == 0
     then mzero
     else do
-      (Program p tScr) <- local (over _1 (\params -> set eGuessDepth (view scrutineeDepth params) params))
-                      $ inContext (\p -> Program (PMatch p []) t)
-                      $ generateE env anyDatatype False False-- Generate a scrutinee of an arbitrary type
-      let (env', tScr') = embedContext env tScr
-      let pScrutinee = Program p tScr'
+      useSucc <- asks . view $ _1 . useSuccinct
+      if useSucc
+        then do
+          (Program p tScr) <- local (over _1 (\params -> set eGuessDepth (view scrutineeDepth params) params))
+                          $ inContext (\p -> Program (PMatch p []) t)
+                          $ generateE env anyDatatype (not notFirstScrutinee) notFirstScrutinee True -- Generate a scrutinee of an arbitrary type
+          if not (checkScrutinee env (Program p tScr))
+            then generateMatch env t True
+            else do
+              let (env', tScr') = embedContext env tScr
+              let pScrutinee = Program p tScr'
+              case tScr of
+                (ScalarT (DatatypeT scrDT _ _) _) -> do -- Type of the scrutinee is a datatype
+                  let ctors = ((env ^. datatypes) Map.! scrDT) ^. constructors
+                  (env'', x) <- toVar (addScrutinee pScrutinee env') pScrutinee
+                  (pCase, cond, condUnknown) <- cut $ generateFirstCase env'' x pScrutinee t (head ctors)                  -- First case generated separately in an attempt to abduce a condition for the whole match
+                  pCases <- map fst <$> mapM (cut . generateCase (addAssumption cond env'') x pScrutinee t) (tail ctors)  -- Generate a case for each of the remaining constructors under the assumption
+                  let pThen = Program (PMatch pScrutinee (pCase : pCases)) t
+                  generateElse env t cond condUnknown pThen                                                               -- Generate the else branch
 
-      case tScr of
-        (ScalarT (DatatypeT scrDT _ _) _) -> do -- Type of the scrutinee is a datatype
-          let ctors = ((env ^. datatypes) Map.! scrDT) ^. constructors
+                _ -> mzero -- Type of the scrutinee is not a datatype: it cannot be used in a match
+        else do
+          (Program p tScr) <- local (over _1 (\params -> set eGuessDepth (view scrutineeDepth params) params))
+                          $ inContext (\p -> Program (PMatch p []) t)
+                          $ generateE env anyDatatype False False True -- Generate a scrutinee of an arbitrary type
+          let (env', tScr') = embedContext env tScr
+          let pScrutinee = Program p tScr'
+          guard (checkScrutinee env (Program p tScr))
+          case tScr of
+            (ScalarT (DatatypeT scrDT _ _) _) -> do -- Type of the scrutinee is a datatype
+              let ctors = ((env ^. datatypes) Map.! scrDT) ^. constructors
+              (env'', x) <- toVar (addScrutinee pScrutinee env') pScrutinee
+              (pCase, cond, condUnknown) <- cut $ generateFirstCase env'' x pScrutinee t (head ctors)                  -- First case generated separately in an attempt to abduce a condition for the whole match
+              pCases <- map fst <$> mapM (cut . generateCase (addAssumption cond env'') x pScrutinee t) (tail ctors)  -- Generate a case for each of the remaining constructors under the assumption
+              let pThen = Program (PMatch pScrutinee (pCase : pCases)) t
+              generateElse env t cond condUnknown pThen                                                               -- Generate the else branch
 
-          let scrutineeSymbols = symbolList pScrutinee
-          let isGoodScrutinee = not (null ctors) &&                                               -- Datatype is not abstract
-                                (not $ pScrutinee `elem` (env ^. usedScrutinees)) &&              -- Hasn't been scrutinized yet
-                                (not $ head scrutineeSymbols `elem` ctors) &&                     -- Is not a value
-                                (any (not . flip Set.member (env ^. constants)) scrutineeSymbols) -- Has variables (not just constants)
-          guard isGoodScrutinee
-
-          (env'', x) <- toVar (addScrutinee pScrutinee env') pScrutinee
-          -- [TODO] cut here
-          (pCase, cond, condUnknown) <- cut $ generateFirstCase env'' x pScrutinee t (head ctors)                  -- First case generated separately in an attempt to abduce a condition for the whole match
-          -- [TODO] cut here in mapM
-          pCases <- map fst <$> mapM (cut . generateCase (addAssumption cond env'') x pScrutinee t) (tail ctors)  -- Generate a case for each of the remaining constructors under the assumption
-          let pThen = Program (PMatch pScrutinee (pCase : pCases)) t
-          generateElse env t cond condUnknown pThen                                                               -- Generate the else branch
-
-        _ -> mzero -- Type of the scrutinee is not a datatype: it cannot be used in a match
+            _ -> mzero -- Type of the scrutinee is not a datatype: it cannot be used in a match
         
 generateFirstCase env scrVar pScrutinee t consName = do
   case Map.lookup consName (allSymbols env) of
@@ -332,7 +350,7 @@ caseSymbols env x (name : names) (FunctionT y tArg tRes) = do
 
 -- | Generate a possibly conditional possibly match term, depending on which conditions are abduced
 generateMaybeMatchIf :: MonadHorn s => Environment -> RType -> Bool -> Explorer s RProgram
-generateMaybeMatchIf env t isElseBranch = (generateOneBranch >>= generateOtherBranches) `mplus` (generateMatch env t) -- might need to backtrack a successful match due to match depth limitation
+generateMaybeMatchIf env t isElseBranch = (generateOneBranch >>= generateOtherBranches) `mplus` (generateMatch env t False) -- might need to backtrack a successful match due to match depth limitation
   where
     -- | Guess an E-term and abduce a condition and a match-condition for it
     generateOneBranch = do
@@ -354,7 +372,7 @@ generateMaybeMatchIf env t isElseBranch = (generateOneBranch >>= generateOtherBr
         guard $ length matchConds <= d
         return (matchConds, conjunction condValuation, unknownName condUnknown, p0)
         
-    generateEOrError env typ = generateError env `mplus` generateE env typ True isElseBranch
+    generateEOrError env typ = generateError env `mplus` generateE env typ True isElseBranch False
 
     -- | Proceed after solution @p0@ has been found under assumption @cond@ and match-assumption @matchCond@
     generateOtherBranches (matchConds, cond, condUnknown, p0) = do
@@ -577,8 +595,8 @@ initProgramQueue env typ = do
   let pq = PQ.singleton 0 (p, ts)
   return pq
 
-generateEWithGraph :: MonadHorn s => Environment -> ProgramQueue -> RType -> Bool -> Bool -> Explorer s RProgram
-generateEWithGraph env pq typ isThenBranch isElseBranch = do
+generateEWithGraph :: MonadHorn s => Environment -> ProgramQueue -> RType -> Bool -> Bool -> Bool -> Explorer s RProgram
+generateEWithGraph env pq typ isThenBranch isElseBranch isMatchScrutinee = do
   ts <- use typingState
   res <- walkThrough env pq
   case res of
@@ -589,8 +607,10 @@ generateEWithGraph env pq typ isThenBranch isElseBranch = do
       writeLog 2 $ text "Checking program" <+> pretty refinedP
       p' <- if isElseBranch then checkArguments env refinedP else return refinedP
       ifte (checkE env typ p')
-        (\() -> when isThenBranch (termQueueState .= newPQ) >> return p')
-        (typingState .= ts >> generateEWithGraph env newPQ typ isThenBranch isElseBranch)
+        (\() -> do
+          when isThenBranch (termQueueState .= newPQ) >> return p'
+          when isMatchScrutinee (matchQueueState .= newPQ) >> return p')
+        (typingState .= ts >> generateEWithGraph env newPQ typ isThenBranch isElseBranch isMatchScrutinee)
 
 mergeTypingState :: TypingState -> TypingState -> TypingState
 mergeTypingState ts pts = pts {
@@ -605,18 +625,24 @@ mergeTypingState ts pts = pts {
 
 -- | 'generateE' @env typ@ : explore all elimination terms of type @typ@ in environment @env@
 -- (bottom-up phase of bidirectional typechecking)
-generateE :: MonadHorn s => Environment -> RType -> Bool -> Bool -> Explorer s RProgram
-generateE env typ isThenBranch isElseBranch = do
+generateE :: MonadHorn s => Environment -> RType -> Bool -> Bool -> Bool -> Explorer s RProgram
+generateE env typ isThenBranch isElseBranch isMatchScrutinee = do
   useFilter <- asks . view $ _1 . useSuccinct
   d <- asks . view $ _1 . eGuessDepth
-  pq <- if isElseBranch 
+  pq <- if isElseBranch && isMatchScrutinee -- generate match scrutinee and is not the previous state has been stored
     then do
-      q <- use termQueueState
+      q <- use matchQueueState
       ts <- use typingState
       resQ <- mapM (\(k, (prog, pts)) -> return $ Just (k, (prog, mergeTypingState ts pts))) (PQ.toList q)
       return $ PQ.fromList $ map fromJust $ filter isJust resQ
-    else initProgramQueue env typ
-  prog@(Program pTerm pTyp) <- if useFilter then generateEWithGraph env pq typ isThenBranch isElseBranch else generateEUpTo env typ d
+    else if isElseBranch
+      then do
+        q <- use termQueueState
+        ts <- use typingState
+        resQ <- mapM (\(k, (prog, pts)) -> return $ Just (k, (prog, mergeTypingState ts pts))) (PQ.toList q)
+        return $ PQ.fromList $ map fromJust $ filter isJust resQ
+      else initProgramQueue env typ
+  prog@(Program pTerm pTyp) <- if useFilter then generateEWithGraph env pq typ isThenBranch isElseBranch isMatchScrutinee else generateEUpTo env typ d
   -- (Program pTerm pTyp) <- generateEUpTo env typ d
   runInSolver $ isFinal .= True >> solveTypeConstraints >> isFinal .= False  -- Final type checking pass that eliminates all free type variables
   newGoals <- uses auxGoals (map gName)                                      -- Remember unsolved auxiliary goals
