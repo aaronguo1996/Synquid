@@ -1,4 +1,4 @@
-qualifier {x <= y}
+qualifier {x <= y, x < y}
 
 data Pair a b where
 	Pair :: x: a -> y: b -> Pair a b

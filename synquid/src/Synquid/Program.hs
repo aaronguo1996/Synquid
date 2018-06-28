@@ -191,7 +191,7 @@ makeLenses ''SuccinctContext
 
 data SuccinctEdge = SuccinctEdge {
   _symbolId :: Id,
-  _params :: SuccinctParams,
+  _params :: Int,
   _weight :: HashMap SuccinctContext Double
 } deriving (Eq)
 
@@ -498,8 +498,23 @@ data Goal = Goal {
 unresolvedType env ident = (env ^. unresolvedConstants) Map.! ident
 unresolvedSpec goal = unresolvedType (gEnvironment goal) (gName goal)
 
-depth (Program p (t,_)) = case p of
+-- | analysis of program components for exploration convenience
+depth (Program p (_,t)) = case p of
   PApp fun arg -> case t of
-    SuccinctFunction _ _ -> max (depth fun) (depth arg)
+    FunctionT _ _ _ -> max (depth fun) (depth arg)
     _ -> 1 + max (depth fun) (depth arg)
   _ -> 0
+
+countHole (Program p _) = case p of
+  PApp fun arg -> (countHole fun) + (countHole arg)
+  PHole -> 1
+  _ -> 0
+
+holeTypes (Program p (sty, rty)) = case p of
+  PApp fun arg -> holeTypes fun `Set.union` holeTypes arg
+  PHole -> Set.singleton sty
+  _ -> Set.empty
+
+termSize (Program p _) = case p of
+  PApp fun arg -> 1 + (termSize fun) + (termSize arg)
+  _ -> 1

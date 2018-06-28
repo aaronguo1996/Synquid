@@ -9,7 +9,7 @@ data RBT a where
               RBT a
     Bad :: x: a ->
               leftIsR:  Bool ->
-              left:  { RBT {a | _v < x} | isOk _v && (isRed _v == leftIsR)} ->
+              left:  { RBT {a | _v < x } | isOk _v && (isRed _v == leftIsR)} ->
               right: { RBT {a | x < _v } | isOk _v && (isRed _v != leftIsR) && (bHeight _v == bHeight left)} ->
               RBT a             
                       

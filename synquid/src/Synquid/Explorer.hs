@@ -77,7 +77,7 @@ data ExplorerParams = ExplorerParams {
 makeLenses ''ExplorerParams
 
 type Requirements = Map Id [RType]
-type ProgramQueue = MaxPQueue Int (SProgram, TypingState)
+type ProgramQueue = MaxPQueue Double (SProgram, ExplorerState)
 
 -- | State of program exploration
 data ExplorerState = ExplorerState {
@@ -88,8 +88,8 @@ data ExplorerState = ExplorerState {
   _requiredTypes :: Requirements,                  -- ^ All types that a variable is required to comply to (in repair mode)
   _symbolUseCount :: Map Id Int,                   -- ^ Number of times each symbol has been used in the program so far
   -- temporary storage of the queue state
-  _termQueueState :: ProgramQueue,                 -- ^ Candidate term queue, only used when we use succinct type graph for generateE
-  _matchQueueState :: ProgramQueue                 -- ^.Candidate match scrutinee queue, only used when we use succinct type graph for generateE
+  _termQueueState :: ProgramQueue                  -- ^ Candidate term queue, only used when we use succinct type graph for generateE
+  -- _matchQueueState :: ProgramQueue                 -- ^.Candidate match scrutinee queue, only used when we use succinct type graph for generateE
 } deriving (Eq, Ord)
 
 makeLenses ''ExplorerState
@@ -155,7 +155,7 @@ runExplorer eParams tParams topLevel initTS go = do
     [] -> return $ Left $ head errs
     res:_ -> return $ Right res
   where
-    initExplorerState = ExplorerState initTS [] Map.empty Map.empty Map.empty Map.empty PQ.empty PQ.empty
+    initExplorerState = ExplorerState initTS [] Map.empty Map.empty Map.empty Map.empty PQ.empty
 
 -- | 'generateI' @env t@ : explore all terms that have refined type @t@ in environment @env@
 -- (top-down phase of bidirectional typechecking)
@@ -176,8 +176,8 @@ generateI env t@(ScalarT _ _) isElseBranch = do
 generateMaybeIf :: MonadHorn s => Environment -> RType -> Bool -> Explorer s RProgram
 generateMaybeIf env t isElseBranch = -- (generateThen >>= (uncurry3 $ generateElse env t)) `mplus` generateMatch env t
   ifte generateThen
-    (uncurry3 $ generateElse env t)
-    (generateMatch env t False)
+    (uncurry3 $ generateElse env t True)
+    (generateMatch env t)
   where
     -- | Guess an E-term and abduce a condition for it
     generateThen = do
@@ -188,14 +188,14 @@ generateMaybeIf env t isElseBranch = -- (generateThen >>= (uncurry3 $ generateEl
       return (cond, unknownName cUnknown, pThen)
 
 -- | Proceed after solution @pThen@ has been found under assumption @cond@
-generateElse env t cond condUnknown pThen = if cond == ftrue
+generateElse env t notMatched cond condUnknown pThen = if cond == ftrue
   then return pThen -- @pThen@ is valid under no assumptions: return it
   else do -- @pThen@ is valid under a nontrivial assumption, proceed to look for the solution for the rest of the inputs
     pCond <- inContext (\p -> Program (PIf p uHole uHole) t) $ generateCondition env cond
     
     cUnknown <- Unknown Map.empty <$> freshId "C"
     runInSolver $ addFixedUnknown (unknownName cUnknown) (Set.singleton $ fnot cond) -- Create a fixed-valuation unknown to assume @!cond@
-    pElse <- optionalInPartial t $ inContext (\p -> Program (PIf pCond pThen p) t) $ generateI (addAssumption cUnknown env) t True
+    pElse <- optionalInPartial t $ inContext (\p -> Program (PIf pCond pThen p) t) $ generateI (addAssumption cUnknown env) t notMatched
     ifM (tryEliminateBranching pElse (runInSolver $ setUnknownRecheck (unknownName cUnknown) Set.empty (Set.singleton condUnknown)))
       (return pElse)
       (return $ Program (PIf pCond pThen pElse) t)
@@ -225,65 +225,37 @@ generateCondition env fml = do
 optionalInPartial :: MonadHorn s => RType -> Explorer s RProgram -> Explorer s RProgram
 optionalInPartial t gen = ifM (asks . view $ _1 . partialSolution) (ifte gen return (return $ Program PHole t)) gen
 
-checkScrutinee env (Program p tScr) = let
-  (env', tScr') = embedContext env tScr
-  pScrutinee = Program p tScr'
-  in case tScr of
-    (ScalarT (DatatypeT scrDT _ _) _) -> let 
-      ctors = ((env ^. datatypes) Map.! scrDT) ^. constructors
-      scrutineeSymbols = symbolList pScrutinee
-      isGoodScrutinee = not (null ctors) &&                                               -- Datatype is not abstract
-                        (not $ pScrutinee `elem` (env ^. usedScrutinees)) &&              -- Hasn't been scrutinized yet
-                        (not $ head scrutineeSymbols `elem` ctors) &&                     -- Is not a value
-                        (any (not . flip Set.member (env ^. constants)) scrutineeSymbols) -- Has variables (not just constants)
-      in isGoodScrutinee
-    _ -> False
-
 -- | Generate a match term of type @t@
-generateMatch env t notFirstScrutinee = do
+generateMatch env t = do
   d <- asks . view $ _1 . matchDepth
   if d == 0
     then mzero
     else do
-      useSucc <- asks . view $ _1 . useSuccinct
-      if useSucc
-        then do
-          (Program p tScr) <- local (over _1 (\params -> set eGuessDepth (view scrutineeDepth params) params))
-                          $ inContext (\p -> Program (PMatch p []) t)
-                          $ generateE env anyDatatype (not notFirstScrutinee) notFirstScrutinee True -- Generate a scrutinee of an arbitrary type
-          if not (checkScrutinee env (Program p tScr))
-            then generateMatch env t True
-            else do
-              let (env', tScr') = embedContext env tScr
-              let pScrutinee = Program p tScr'
-              case tScr of
-                (ScalarT (DatatypeT scrDT _ _) _) -> do -- Type of the scrutinee is a datatype
-                  let ctors = ((env ^. datatypes) Map.! scrDT) ^. constructors
-                  (env'', x) <- toVar (addScrutinee pScrutinee env') pScrutinee
-                  (pCase, cond, condUnknown) <- cut $ generateFirstCase env'' x pScrutinee t (head ctors)                  -- First case generated separately in an attempt to abduce a condition for the whole match
-                  pCases <- map fst <$> mapM (cut . generateCase (addAssumption cond env'') x pScrutinee t) (tail ctors)  -- Generate a case for each of the remaining constructors under the assumption
-                  let pThen = Program (PMatch pScrutinee (pCase : pCases)) t
-                  generateElse env t cond condUnknown pThen                                                               -- Generate the else branch
+      (Program p tScr) <- local (over _1 (\params -> set eGuessDepth (view scrutineeDepth params) params))
+                      $ inContext (\p -> Program (PMatch p []) t)
+                      $ generateE env anyDatatype False False True-- Generate a scrutinee of an arbitrary type
+      let (env', tScr') = embedContext env tScr
+      let pScrutinee = Program p tScr'
 
-                _ -> mzero -- Type of the scrutinee is not a datatype: it cannot be used in a match
-        else do
-          (Program p tScr) <- local (over _1 (\params -> set eGuessDepth (view scrutineeDepth params) params))
-                          $ inContext (\p -> Program (PMatch p []) t)
-                          $ generateE env anyDatatype False False True -- Generate a scrutinee of an arbitrary type
-          let (env', tScr') = embedContext env tScr
-          let pScrutinee = Program p tScr'
-          guard (checkScrutinee env (Program p tScr))
-          case tScr of
-            (ScalarT (DatatypeT scrDT _ _) _) -> do -- Type of the scrutinee is a datatype
-              let ctors = ((env ^. datatypes) Map.! scrDT) ^. constructors
-              (env'', x) <- toVar (addScrutinee pScrutinee env') pScrutinee
-              (pCase, cond, condUnknown) <- cut $ generateFirstCase env'' x pScrutinee t (head ctors)                  -- First case generated separately in an attempt to abduce a condition for the whole match
-              pCases <- map fst <$> mapM (cut . generateCase (addAssumption cond env'') x pScrutinee t) (tail ctors)  -- Generate a case for each of the remaining constructors under the assumption
-              let pThen = Program (PMatch pScrutinee (pCase : pCases)) t
-              generateElse env t cond condUnknown pThen                                                               -- Generate the else branch
+      case tScr of
+        (ScalarT (DatatypeT scrDT _ _) _) -> do -- Type of the scrutinee is a datatype
+          let ctors = ((env ^. datatypes) Map.! scrDT) ^. constructors
 
-            _ -> mzero -- Type of the scrutinee is not a datatype: it cannot be used in a match
-        
+          let scrutineeSymbols = symbolList pScrutinee
+          let isGoodScrutinee = not (null ctors) &&                                               -- Datatype is not abstract
+                                (not $ pScrutinee `elem` (env ^. usedScrutinees)) &&              -- Hasn't been scrutinized yet
+                                (not $ head scrutineeSymbols `elem` ctors) &&                     -- Is not a value
+                                (any (not . flip Set.member (env ^. constants)) scrutineeSymbols) -- Has variables (not just constants)
+          guard isGoodScrutinee
+
+          (env'', x) <- toVar (addScrutinee pScrutinee env') pScrutinee
+          (pCase, cond, condUnknown) <- cut $ generateFirstCase env'' x pScrutinee t (head ctors)                  -- First case generated separately in an attempt to abduce a condition for the whole match
+          pCases <- map fst <$> mapM (cut . generateCase (addAssumption cond env'') x pScrutinee t) (tail ctors)  -- Generate a case for each of the remaining constructors under the assumption
+          let pThen = Program (PMatch pScrutinee (pCase : pCases)) t
+          generateElse env t False cond condUnknown pThen                                                               -- Generate the else branch
+
+        _ -> mzero -- Type of the scrutinee is not a datatype: it cannot be used in a match
+
 generateFirstCase env scrVar pScrutinee t consName = do
   case Map.lookup consName (allSymbols env) of
     Nothing -> error $ show $ text "Datatype constructor" <+> text consName <+> text "not found in the environment" <+> pretty env
@@ -350,7 +322,7 @@ caseSymbols env x (name : names) (FunctionT y tArg tRes) = do
 
 -- | Generate a possibly conditional possibly match term, depending on which conditions are abduced
 generateMaybeMatchIf :: MonadHorn s => Environment -> RType -> Bool -> Explorer s RProgram
-generateMaybeMatchIf env t isElseBranch = (generateOneBranch >>= generateOtherBranches) `mplus` (generateMatch env t False) -- might need to backtrack a successful match due to match depth limitation
+generateMaybeMatchIf env t isElseBranch = (generateOneBranch >>= generateOtherBranches) `mplus` (generateMatch env t) -- might need to backtrack a successful match due to match depth limitation
   where
     -- | Guess an E-term and abduce a condition and a match-condition for it
     generateOneBranch = do
@@ -376,9 +348,8 @@ generateMaybeMatchIf env t isElseBranch = (generateOneBranch >>= generateOtherBr
 
     -- | Proceed after solution @p0@ has been found under assumption @cond@ and match-assumption @matchCond@
     generateOtherBranches (matchConds, cond, condUnknown, p0) = do
-      -- [TODO] cut here
       pThen <- cut $ generateMatchesFor (addAssumption cond env) matchConds p0 t
-      generateElse env t cond condUnknown pThen
+      generateElse env t False cond condUnknown pThen
 
     generateMatchesFor env [] pBaseCase t = return pBaseCase
     generateMatchesFor env (matchCond : rest) pBaseCase t = do
@@ -410,14 +381,24 @@ overDepthProgram d = overDepthProgramHelper (d+1) (Program PHole (SuccinctAny, A
         then p 
         else overDepthProgramHelper (d-1) (Program (PApp (Program PHole (SuccinctAny,AnyT)) p) (SuccinctAny, AnyT))
 
-walkThrough :: MonadHorn s => Environment -> ProgramQueue -> Explorer s (Maybe (SProgram, TypingState), ProgramQueue)
+keepIdCount old new = new {
+  _typingState = (new ^. typingState) {
+    _idCount = max ((old ^. typingState) ^. idCount) ((new ^. typingState) ^. idCount)
+  }
+}
+
+walkThrough :: MonadHorn s => Environment -> ProgramQueue -> Explorer s (Maybe (SProgram, ExplorerState), ProgramQueue)
 walkThrough env pq =
   if PQ.size pq == 0
     then return (Nothing, PQ.empty)
     else do 
-      let (_,(p, pts)) = PQ.findMax pq
-      ts <- use typingState
-      typingState .= pts
+      let (score,(p, pes)) = PQ.findMax pq
+      writeLog 2 $ text "Score for" <+> pretty (toRProgram p) <+> text "is" <+> text (show score)
+      es <- get
+      put $ keepIdCount es pes
+      -- runInSolver $ updateAllConstraintsEnv env
+      -- ts <- use typingState
+      -- typingState .= pts
       let pq' = PQ.deleteMax pq
       writeLog 2 $ text "Current queue size" <+> text (show $ PQ.size pq')
       ctx <- asks . view $ _1 . context
@@ -426,89 +407,133 @@ walkThrough env pq =
           writeLog 2 $ text "Checking" <+> pretty (toRProgram p) <+> text "in" $+$ pretty (ctx (untyped PHole))
           ifte (runInSolver solveTypeConstraints) 
             (\() -> do
-              ts' <- use typingState
-              return (Just (p, ts') , pq'))
-            (typingState .= ts >> walkThrough env pq')
+              -- ts' <- use typingState
+              es' <- get
+              return (Just (p, es') , pq'))
+            -- (typingState .= ts >> walkThrough env pq')
+            (do
+              es' <- get
+              put $ keepIdCount es' es
+              walkThrough env pq')
         else do
           d <- asks . view $ _1 . eGuessDepth
           -- checking the partial program before filling holes
           writeLog 2 $ text "Checking" <+> pretty (toRProgram p) <+> text "in" $+$ pretty (ctx (untyped PHole))
           ifte (runInSolver solveTypeConstraints) 
               (\() -> do
-                ts' <- use typingState
+                -- ts' <- use typingState
+                es' <- get
                 writeLog 2 $ text "*******************Filling holes in" <+> pretty (toRProgram p)
-                let holeTy = typeOfFirstHole p
-                candidates <- uncurry (termWithType env (depth p)) holeTy
-                filteredCands <- mapM (\(prog, progTS) -> do
-                  typingState .= progTS
+                holeTy <- typeOfFirstHole p
+                candidates <- uncurry (termWithType env) holeTy
+                currSt <- get
+                put $ keepIdCount currSt es'
+                filteredCands <- mapM (\(prog, progES) -> do
+                  -- typingState .= progTS
+                  currSt <- get
+                  put $ keepIdCount currSt progES
                   p' <- fillFirstHole env p prog
-                  fts <- use typingState
-                  typingState .= ts' >> if depth p' <= d then return (Just (p', fts)) else return Nothing
-                  ) candidates
-                walkThrough env $ foldr (\prog@(p,_) accQ -> if hasHole p then PQ.insertBehind 0 prog accQ else PQ.insertBehind 1 prog accQ) pq' $ map fromJust $ filter isJust filteredCands
+                  -- fts <- use typingState
+                  fes <- get
+                  -- typingState .= ts' >> if depth p' <= d then return (Just (p', fes)) else return Nothing
+                  put (keepIdCount fes es') >> if depth p' <= d then return (Just (p', fes)) else return Nothing
+                  ) candidates --if hasHole p then PQ.insertBehind  prog accQ else PQ.insertBehind 1 prog accQ
+                walkThrough env $ foldl (\accQ prog@(p,_) -> PQ.insertBehind (termScore env p) prog accQ) pq' $ map fromJust $ filter isJust filteredCands
                 )
-              (typingState .= ts >> walkThrough env pq')
+              -- (typingState .= ts >> walkThrough env pq')
+              (do
+                currSt <- get
+                put $ keepIdCount currSt es
+                walkThrough env pq')
           
   where
-    typeOfFirstHole :: SProgram -> (SuccinctType, RType)
     typeOfFirstHole (Program p (sty,rty)) = case p of
-      PHole -> (sty, rty)
+      PHole -> do
+        tass <- use (typingState . typeAssignment)
+        let rty' = typeSubstitute tass rty
+        let styp = toSuccinctType (shape rty')
+        let subst = Set.foldr (\t acc -> Map.insert t SuccinctAny acc) Map.empty (extractSuccinctTyVars styp `Set.difference` Set.fromList (env ^. boundTypeVars))
+        let succinctTy = outOfSuccinctAll $ succinctTypeSubstitute subst styp
+        return (succinctTy, rty')
       PApp fun arg -> if hasHole fun then typeOfFirstHole fun else typeOfFirstHole arg
       _ -> error "we are not handling none-application now"
 
-termWithType :: MonadHorn s => Environment -> Int -> SuccinctType -> RType -> Explorer s [(SProgram, TypingState)]
-termWithType env d sty rty = do
-  writeLog 2 $ text "Looking for succinct type" <+> text (succinct2str sty)
-  let ids = Set.toList $ Set.unions $ HashMap.elems $ findDstNodesInGraph env sty
-  useCounts <- use symbolUseCount
-  let sortedIds = if isSuccinctFunction sty
-                  then sortBy (mappedCompare (\(SuccinctEdge x _ _) -> (Set.member x (env ^. constants), (Map.findWithDefault 0 x useCounts)))) ids
-                  else sortBy (mappedCompare (\(SuccinctEdge x _ _) -> (not $ Set.member x (env ^. constants), (Map.findWithDefault 0 x useCounts)))) ids    
-  ts <- use typingState
-  mapM (\edge -> do
-    let id = edge ^. symbolId
-    case lookupSymbol id (-1) env of
-      Nothing -> error ("symbol " ++ id ++ "not in the scope")
-      Just sch -> do
-        let pms = edge ^. params
-        t <- symbolType env id sch -- instantiate the type with fresh names
-        
-        symbolUseCount %= Map.insertWith (+) id 1
-        if length pms == 0
-          then do
-            writeLog 2 $ text "Trying" <+> text id
-            let p = Program (PSymbol id) (sty, t)
-            -- fRty <- runInSolver $ finalizeType rty
-            (addConstraint $ Subtype env t rty False "") -- Add subtyping check, unless it's a function type and incremental checking is diasbled
-            when (arity rty > 0) (addConstraint $ Subtype env t rty True "") -- Add consistency constraint for function types
-            ts' <- use typingState
-            typingState .= ts -- restore typing state to that before we execute the map
-            return (p, ts')
-          else do
-            d' <- asks . view $ _1 . eGuessDepth
-            tFun <- buildFunctionType pms rty
-            let p = Program (PSymbol id) ((SuccinctFunction pms sty), t)
-            writeLog 2 $ text "Trying" <+> text id
-            -- fFun <- runInSolver $ finalizeType tFun
-            (addConstraint $ Subtype env t tFun False "") -- Add subtyping check, unless it's a function type and incremental checking is diasbled
-            when (arity tFun > 0) (addConstraint $ Subtype env t tFun True "") -- Add consistency constraint for function types
-            let p' = buildApp pms (Program (PSymbol id) ((SuccinctFunction pms sty),t))
-            ts' <- use typingState
-            typingState .= ts -- restore typing state to that before we execute the map
-            return (p', ts')
-    ) $ filter (\(SuccinctEdge id _ _) -> id /= "__goal__") sortedIds
+termWithType :: MonadHorn s => Environment -> SuccinctType -> RType -> Explorer s [(SProgram, ExplorerState)]
+termWithType env sty rty = do
+  if isFunctionType rty
+    then do -- Higher-order argument: its value is not required for the function type, return a placeholder and enqueue an auxiliary goal
+      d <- asks . view $ _1 . auxDepth 
+      if d <= 0
+        then do
+          writeLog 2 (text "Cannot synthesize higher-order argument: no auxiliary functions allowed")
+          return []
+        else do
+          arg <- enqueueGoal env rty (untyped PHole) (d - 1)
+          -- ts <- use typingState
+          es <- get
+          return [(toSProgram arg, es)]
+    else do
+      writeLog 2 $ text "Looking for succinct type" <+> text (succinct2str sty)
+      let ids = Set.toList $ Set.unions $ HashMap.elems $ findDstNodesInGraph env sty
+      useCounts <- use symbolUseCount
+      let sortedIds = if isSuccinctFunction sty
+                      then sortBy (mappedCompare (\(SuccinctEdge x _ _) -> (Set.member x (env ^. constants), (Map.findWithDefault 0 x useCounts)))) ids
+                      else sortBy (mappedCompare (\(SuccinctEdge x _ _) -> (not $ Set.member x (env ^. constants), (Map.findWithDefault 0 x useCounts)))) ids    
+      -- ts <- use typingState
+      es <- get
+      mapM (\edge -> do
+        let id = edge ^. symbolId
+        case lookupSymbol id (-1) env of
+          Nothing -> error ("symbol " ++ id ++ "not in the scope")
+          Just sch -> do
+            let pc = edge ^. params
+            t <- symbolType env id sch -- instantiate the type with fresh names
+            
+            symbolUseCount %= Map.insertWith (+) id 1
+            if pc == 0
+              then do
+                writeLog 2 $ text "Trying" <+> text id
+                let p = Program (PSymbol id) (sty, t)
+                -- fRty <- runInSolver $ finalizeType rty
+                (addConstraint $ Subtype env t rty False "") -- Add subtyping check, unless it's a function type and incremental checking is diasbled
+                when (arity rty > 0) (addConstraint $ Subtype env t rty True "") -- Add consistency constraint for function types
+                -- ts' <- use typingState
+                es' <- get
+                -- typingState .= ts -- restore typing state to that after we execute the map
+                put $ keepIdCount es' es
+                -- return (p, ts')
+                return (p, es')
+              else do
+                d' <- asks . view $ _1 . eGuessDepth
+                tFun <- buildFunctionType pc rty
+                let succinctTy = outOfSuccinctAll (toSuccinctType (shape t))
+                let p = Program (PSymbol id) (succinctTy, t)
+                writeLog 2 $ text "Trying" <+> text id
+                -- fFun <- runInSolver $ finalizeType tFun
+                (addConstraint $ Subtype env t tFun False "") -- Add subtyping check, unless it's a function type and incremental checking is diasbled
+                when (arity tFun > 0) (addConstraint $ Subtype env t tFun True "") -- Add consistency constraint for function types
+                let p' = buildApp pc (Program (PSymbol id) (succinctTy,t))
+                -- ts' <- use typingState
+                es' <- get
+                -- typingState .= ts -- restore typing state to that before we execute the map
+                put $ keepIdCount es' es
+                -- return (p', ts')
+                return (p', es')
+        ) $ filter (\(SuccinctEdge id _ _) -> id /= "__goal__") sortedIds
   where
-    buildApp [] p = p
-    buildApp params@(arg:args) p@(Program _ (styp,rtyp)) = case styp of
-      SuccinctFunction argSet retTy -> let
+    buildApp 0 p = p
+    buildApp paramCnt p@(Program _ (styp,rtyp)) = case styp of
+      SuccinctFunction _ argSet retTy -> let
         FunctionT x tArg tRet = rtyp
-        in buildApp args (Program (PApp p (Program PHole (arg, tArg))) ((if length args == 0 then retTy else SuccinctFunction args retTy), tRet))
+        arg = outOfSuccinctAll $ toSuccinctType (shape tArg)
+        args = if paramCnt > Set.size argSet || paramCnt == 1 then Set.delete arg argSet else argSet
+        in buildApp (paramCnt - 1) (Program (PApp p (Program PHole (arg, tArg))) ((if paramCnt == 1 then retTy else SuccinctFunction (paramCnt-1) args retTy), tRet))
       _ -> p -- buildApp args (Program (PApp p (Program PHole arg)) (styp, rtyp))
 
-    buildFunctionType [] typ = return typ
-    buildFunctionType (arg:args) typ = do
+    buildFunctionType 0 typ = return typ
+    buildFunctionType paramCnt typ = do
       x <- freshId "X"
-      buildFunctionType args (FunctionT x AnyT typ)
+      buildFunctionType (paramCnt - 1) (FunctionT x AnyT typ)
 
 fillFirstHole :: MonadHorn s => Environment -> SProgram -> SProgram -> Explorer s SProgram
 fillFirstHole env (Program p (sty, rty)) subprogram = case p of
@@ -525,7 +550,7 @@ fillFirstHole env (Program p (sty, rty)) subprogram = case p of
       arg' <- fillFirstHole env arg subprogram
       let (_, FunctionT x tArg tRet) = typeOf fun
       let tRet' = appType env (toRProgram arg') x tRet
-      when (hasHole arg && not (hasHole arg')) (addConstraint $ Subtype env (typeOf (toRProgram arg')) tArg False "")
+      when (hasHole arg && not (hasHole arg') && not (isFunctionType tArg) && depth arg' /= 0) (addConstraint $ Subtype env (typeOf (toRProgram arg')) tArg False "")
       return $ Program (PApp fun arg') (sty, tRet')
   _ -> error "unsupported program type"
 
@@ -591,37 +616,46 @@ initProgramQueue env typ = do
   let subst = Set.foldr (\t acc -> Map.insert t SuccinctAny acc) Map.empty (extractSuccinctTyVars styp `Set.difference` Set.fromList (env ^. boundTypeVars))
   let succinctTy = outOfSuccinctAll $ succinctTypeSubstitute subst styp
   let p = Program PHole (succinctTy, typ)
-  ts <- use typingState
-  let pq = PQ.singleton 0 (p, ts)
+  -- ts <- use typingState
+  es <- get
+  let pq = PQ.singleton (termScore env p) (p, es)
   return pq
 
-generateEWithGraph :: MonadHorn s => Environment -> ProgramQueue -> RType -> Bool -> Bool -> Bool -> Explorer s RProgram
-generateEWithGraph env pq typ isThenBranch isElseBranch isMatchScrutinee = do
-  ts <- use typingState
+generateEWithGraph :: MonadHorn s => Environment -> ProgramQueue -> RType -> Bool -> Bool -> Explorer s RProgram
+generateEWithGraph env pq typ isThenBranch isElseBranch = do
+  -- ts <- use typingState
+  es <- get
   res <- walkThrough env pq
   case res of
     (Nothing, _) -> mzero
-    (Just (p, pts), newPQ) -> do
-      typingState .= pts 
+    (Just (p, pes), newPQ) -> do
+      -- typingState .= pts 
+      put $ keepIdCount es pes
       let refinedP = toRProgram p
       writeLog 2 $ text "Checking program" <+> pretty refinedP
-      p' <- if isElseBranch then checkArguments env refinedP else return refinedP
+      let p' = refinedP
+      -- p' <- if isElseBranch then checkArguments env refinedP else return refinedP
       ifte (checkE env typ p')
-        (\() -> do
-          when isThenBranch (termQueueState .= newPQ) >> return p'
-          when isMatchScrutinee (matchQueueState .= newPQ) >> return p')
-        (typingState .= ts >> generateEWithGraph env newPQ typ isThenBranch isElseBranch isMatchScrutinee)
+        (\() -> when isThenBranch (termQueueState .= newPQ) >> return p')
+        -- (typingState .= ts >> generateEWithGraph env newPQ typ isThenBranch isElseBranch)
+        (do
+          currSt <- get
+          put $ keepIdCount currSt es
+          generateEWithGraph env newPQ typ isThenBranch isElseBranch)
 
-mergeTypingState :: TypingState -> TypingState -> TypingState
-mergeTypingState ts pts = pts {
-  _typingConstraints = (ts ^. typingConstraints) ++ (pts ^. typingConstraints),
+mergeTypingState env ts pts = pts {
+  _typingConstraints = (ts ^. typingConstraints) ++ (filter (not . isCondConstraint) $ map (updateConstraintEnv env) (pts ^. typingConstraints)),
   _typeAssignment = Map.union (ts ^. typeAssignment) (pts ^. typeAssignment),
   _predAssignment = Map.union (ts ^. predAssignment) (pts ^. predAssignment),
   _qualifierMap = Map.union (ts ^. qualifierMap) (pts ^. qualifierMap),
   _candidates = ts ^. candidates,
-  _idCount = ts ^. idCount,
+  _idCount = max (ts ^. idCount) (pts ^. idCount),
   _isFinal = ts ^. isFinal
   }
+
+mergeExplorerState env es pes = es {
+  _typingState = mergeTypingState env (es ^. typingState) (pes ^. typingState)
+}
 
 -- | 'generateE' @env typ@ : explore all elimination terms of type @typ@ in environment @env@
 -- (bottom-up phase of bidirectional typechecking)
@@ -629,20 +663,15 @@ generateE :: MonadHorn s => Environment -> RType -> Bool -> Bool -> Bool -> Expl
 generateE env typ isThenBranch isElseBranch isMatchScrutinee = do
   useFilter <- asks . view $ _1 . useSuccinct
   d <- asks . view $ _1 . eGuessDepth
-  pq <- if isElseBranch && isMatchScrutinee -- generate match scrutinee and is not the previous state has been stored
+  pq <- if isElseBranch 
     then do
-      q <- use matchQueueState
-      ts <- use typingState
-      resQ <- mapM (\(k, (prog, pts)) -> return $ Just (k, (prog, mergeTypingState ts pts))) (PQ.toList q)
+      q <- use termQueueState
+      -- ts <- use typingState
+      es <- get
+      resQ <- mapM (\(k, (prog, pes)) -> return $ Just (k, (prog, mergeExplorerState env es pes))) (PQ.toList q)
       return $ PQ.fromList $ map fromJust $ filter isJust resQ
-    else if isElseBranch
-      then do
-        q <- use termQueueState
-        ts <- use typingState
-        resQ <- mapM (\(k, (prog, pts)) -> return $ Just (k, (prog, mergeTypingState ts pts))) (PQ.toList q)
-        return $ PQ.fromList $ map fromJust $ filter isJust resQ
-      else initProgramQueue env typ
-  prog@(Program pTerm pTyp) <- if useFilter then generateEWithGraph env pq typ isThenBranch isElseBranch isMatchScrutinee else generateEUpTo env typ d
+    else initProgramQueue env typ
+  prog@(Program pTerm pTyp) <- if useFilter && (not isMatchScrutinee) then generateEWithGraph env pq typ isThenBranch isElseBranch else generateEUpTo env typ d
   -- (Program pTerm pTyp) <- generateEUpTo env typ d
   runInSolver $ isFinal .= True >> solveTypeConstraints >> isFinal .= False  -- Final type checking pass that eliminates all free type variables
   newGoals <- uses auxGoals (map gName)                                      -- Remember unsolved auxiliary goals
@@ -899,7 +928,9 @@ throwError e = do
   mzero
   
 -- | Impose typing constraint @c@ on the programs
-addConstraint c = typingState %= addTypingConstraint c
+addConstraint c = do
+  writeLog 3 $ text "Adding constraint" <+> pretty c
+  typingState %= addTypingConstraint c
 
 -- | Embed a type-constraint checker computation @f@ in the explorer; on type error, record the error and backtrack
 runInSolver :: MonadHorn s => TCSolver s a -> Explorer s a
@@ -1090,7 +1121,7 @@ refineSuccinctDatatype name sty env = case sty of
     in if Map.member name consMap
       then SuccinctDatatype outerId ids tys (Map.singleton (fromJust (Map.lookup name consMap)) name) measures
       else SuccinctDatatype outerId ids tys cons measures
-  SuccinctFunction params ret -> SuccinctFunction params (refineSuccinctDatatype name ret env)
+  SuccinctFunction paramCnt params ret -> SuccinctFunction paramCnt params (refineSuccinctDatatype name ret env)
   ty' -> ty'
 
 -- addDestructors :: Id -> Set SuccinctType -> Environment -> Environment
@@ -1134,19 +1165,19 @@ addPolyEdge name (SuccinctAll idSet ty) env targets =
   if isAllBound 
     then addEdge name ty env 
     else case ty of 
-      SuccinctFunction pty rty -> let 
+      SuccinctFunction paramCnt pty rty -> let 
         fold_fun sty accEnv = let
           (unified, substitutions) = unifySuccinct rty sty (accEnv ^. boundTypeVars)
-          pty' = Set.fromList $ map (\substitution -> map (succinctTypeSubstitute substitution) pty) substitutions -- list of possible ptys
+          pty' = Set.fromList $ map (\substitution -> Set.map (succinctTypeSubstitute substitution) pty) substitutions -- list of possible ptys
           in if unified 
             then Set.foldr (\ptySet acc -> let
               tyVars = foldr (\t set  -> set `Set.union` ((extractSuccinctTyVars t) `Set.difference` Set.fromList (accEnv ^. boundTypeVars))) Set.empty ptySet
               in if Set.size tyVars > 0
               then let 
                 subst = Set.foldr (\tv macc -> Map.insert tv SuccinctAny macc) Map.empty tyVars
-                ptySet' = map (succinctTypeSubstitute subst) ptySet
-                in addEdge name (SuccinctFunction ptySet' sty) acc
-              else addEdge name (SuccinctFunction ptySet sty) acc
+                ptySet' = Set.map (succinctTypeSubstitute subst) ptySet
+                in addEdge name (SuccinctFunction paramCnt ptySet' sty) acc
+              else addEdge name (SuccinctFunction paramCnt ptySet sty) acc
             ) accEnv pty'
             else accEnv
         in Set.foldr fold_fun env targets
@@ -1162,10 +1193,10 @@ addPolyEdge name (SuccinctAll idSet ty) env targets =
                   subst = Set.foldr (\tv macc -> Map.insert tv SuccinctAny macc) Map.empty tyVars
                   substedTy = succinctTypeSubstitute subst ty'
                   revEnv = (succinctGraphRev %~ HashMap.insertWith Set.union (SuccinctInhabited substedTy) (Set.singleton sty)) acc
-                  in (succinctGraph %~ HashMap.insertWith mergeMapOfSet sty (HashMap.singleton (SuccinctInhabited substedTy) (Set.singleton (SuccinctEdge {_symbolId = name, _params = [], _weight = HashMap.empty})))) revEnv
+                  in (succinctGraph %~ HashMap.insertWith mergeMapOfSet sty (HashMap.singleton (SuccinctInhabited substedTy) (Set.singleton (SuccinctEdge {_symbolId = name, _params = 0, _weight = HashMap.empty})))) revEnv
                 else let
                   revEnv = (succinctGraphRev %~ HashMap.insertWith Set.union (SuccinctInhabited ty') (Set.singleton sty)) acc
-                  in (succinctGraph %~ HashMap.insertWith mergeMapOfSet sty (HashMap.singleton (SuccinctInhabited ty') (Set.singleton (SuccinctEdge {_symbolId = name, _params = [], _weight = HashMap.empty})))) revEnv
+                  in (succinctGraph %~ HashMap.insertWith mergeMapOfSet sty (HashMap.singleton (SuccinctInhabited ty') (Set.singleton (SuccinctEdge {_symbolId = name, _params = 0, _weight = HashMap.empty})))) revEnv
             ) accEnv tys 
             else accEnv
         in Set.foldr fold_fun env targets
@@ -1173,32 +1204,31 @@ addPolyEdge name (SuccinctAll idSet ty) env targets =
     isAllBound = Set.foldr (\id acc -> (isBound env id) && acc) True idSet
 
 addEdge :: Id -> SuccinctType -> Environment -> Environment
-addEdge name (SuccinctFunction args retTy) env = 
+addEdge name (SuccinctFunction paramCnt argSet retTy) env = 
   let
-    argSet = Set.fromList args
     argTy = if Set.size argSet == 1 then Set.findMin argSet else SuccinctComposite argSet
     addedRevEnv = (succinctGraphRev %~ HashMap.insertWith Set.union argTy (Set.singleton retTy)) env
-    addedRetEnv = (succinctGraph %~ HashMap.insertWith mergeMapOfSet retTy (HashMap.singleton argTy (Set.singleton (SuccinctEdge {_symbolId = name, _params = args, _weight = HashMap.empty})))) addedRevEnv
+    addedRetEnv = (succinctGraph %~ HashMap.insertWith mergeMapOfSet retTy (HashMap.singleton argTy (Set.singleton (SuccinctEdge {_symbolId = name, _params = paramCnt, _weight = HashMap.empty})))) addedRevEnv
   in if Set.size argSet == 1
     then addedRetEnv
     else Set.foldr (\elem acc -> let revEnv = (succinctGraphRev %~ HashMap.insertWith Set.union elem (Set.singleton argTy)) acc
-      in (succinctGraph %~ HashMap.insertWith mergeMapOfSet argTy (HashMap.singleton elem (Set.singleton (SuccinctEdge {_symbolId = "", _params = [], _weight = HashMap.empty})))) revEnv) addedRetEnv argSet
+      in (succinctGraph %~ HashMap.insertWith mergeMapOfSet argTy (HashMap.singleton elem (Set.singleton (SuccinctEdge {_symbolId = "", _params = 0, _weight = HashMap.empty})))) revEnv) addedRetEnv argSet
 addEdge name typ@(SuccinctAll idSet ty) env = 
   let 
     polyEnv = addPolyEdge name typ env $ Set.filter isSuccinctConcrete (allSuccinctNodes env)
   in case ty of
-    SuccinctFunction pty rty -> if Set.null ((extractSuccinctTyVars rty) `Set.difference` Set.fromList (env ^. boundTypeVars))
+    SuccinctFunction paramCnt pty rty -> if Set.null ((extractSuccinctTyVars rty) `Set.difference` Set.fromList (env ^. boundTypeVars))
       then let
         tyVars = foldr (\t set -> set `Set.union` ((extractSuccinctTyVars t) `Set.difference` Set.fromList (env ^. boundTypeVars))) Set.empty pty
         subst = Set.foldr (\tv macc -> Map.insert tv SuccinctAny macc) Map.empty tyVars
-        substedTys = map (succinctTypeSubstitute subst) pty
-        in addEdge name (SuccinctFunction substedTys rty) env
+        substedTys = Set.map (succinctTypeSubstitute subst) pty
+        in addEdge name (SuccinctFunction paramCnt substedTys rty) env
       else polyEnv
     _ -> polyEnv
 addEdge name typ env = 
   let
     inhabitedEnvRev = (succinctGraphRev %~ HashMap.insertWith Set.union (SuccinctInhabited typ) (Set.singleton typ)) env
-    inhabitedEnv = (succinctGraph %~ HashMap.insertWith mergeMapOfSet typ (HashMap.singleton (SuccinctInhabited typ) (Set.singleton (SuccinctEdge {_symbolId = name, _params = [], _weight = HashMap.empty})))) inhabitedEnvRev
+    inhabitedEnv = (succinctGraph %~ HashMap.insertWith mergeMapOfSet typ (HashMap.singleton (SuccinctInhabited typ) (Set.singleton (SuccinctEdge {_symbolId = name, _params = 0, _weight = HashMap.empty})))) inhabitedEnvRev
     in inhabitedEnv
 
 isReachable :: Environment -> SuccinctType -> Bool
@@ -1269,6 +1299,26 @@ findDstNodesInGraph env typ = case typ of
 
 pruneGraphByReachability g reachableSet = HashMap.foldrWithKey (\k v acc -> if Set.member k reachableSet then HashMap.insert k (HashMap.filterWithKey (\k' s -> Set.member k' reachableSet) v) acc else acc) HashMap.empty g
 
+termScore env prog@(Program p (sty, rty)) =
+  (if holes == 0 
+    then 99999 
+    else 1.0 / (fromIntegral holes) +
+      1.0 / (fromIntegral $ greatestHoleType 0 prog) + 
+      1.0 / (fromIntegral wholes)) + 
+      100.0 / (fromIntegral size) + 
+      2 * (fromIntegral $ Set.size vars) + 
+      (fromIntegral $ Set.size consts)
+  where
+    holes = countHole prog
+    size = termSize prog
+    wholes = Set.foldr (\t accw -> accw + sizeof t) 0 $ holeTypes prog
+    consts = Set.filter (\name -> isConstant name env && Map.member name (symbolsOfArity 0 env)) (symbolsOf prog)
+    vars = (symbolsOf prog) `Set.difference` consts
+    greatestHoleType maxSize (Program p (sty, rty)) = case p of
+      PApp fun arg -> max (greatestHoleType maxSize fun) (greatestHoleType maxSize arg)
+      PHole -> max maxSize (sizeof sty)
+      _ -> maxSize
+
 allSuccinctNodes :: Environment -> Set SuccinctType
 allSuccinctNodes env = Set.fromList $ (HashMap.keys (env ^. succinctGraph)) ++ (HashMap.foldr (\m acc -> acc ++ (HashMap.keys m)) [] (env ^. succinctGraph))
 
@@ -1293,5 +1343,5 @@ showGraphViz env =
   (concatMap showEdge $ edges env) ++
   "}\n"
   where showEdge (from, t, to) = "\"" ++ (succinct2str from) ++ "\"" ++ " -> " ++ "\"" ++(succinct2str to) ++"\"" ++
-                                 " [label = \"" ++ (Set.foldr (\(SuccinctEdge s params _) str -> str++","++s++"["++(foldr (\p acc->(succinct2str p)++","++acc) "" params)++"]") "" t) ++ "\"];\n"
+                                 " [label = \"" ++ (Set.foldr (\(SuccinctEdge s params _) str -> str++","++s) "" t) ++ "\"];\n"
         showNode v = "\"" ++(succinct2str v) ++ "\"" ++"\n"

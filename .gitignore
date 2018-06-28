@@ -20,3 +20,5 @@ cabal.project.local
 .HTF/
 *.png
 *.dig
+*.log
+*.graph
