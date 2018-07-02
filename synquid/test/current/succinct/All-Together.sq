@@ -223,7 +223,7 @@ measure sumLen :: ListOfLists a -> {Int | _v >= 0} where
 concat :: xss: ListOfLists a -> { List a | len _v == sumLen xss }
 delete :: x: a -> xs: List a -> {List a | elems _v == elems xs - [x]}
 drop :: n: Nat -> xs: {List a | len _v >= n} -> {List a | len _v == len xs - n}
-elem :: x: a -> xs: List a -> {Bool | _v == (x in elems xs)}
+-- elem :: x: a -> xs: List a -> {Bool | _v == (x in elems xs)}
 -- elemIndex :: <p :: Int -> a -> Bool> . x: a -> xs: {List a <p> | x in elems _v} -> {Int | p _v x}
 -- appendFold :: xs: List a -> ys: List a -> {List a | len _v == len xs + len ys}
 -- length :: xs: List a -> {Int | _v == len xs}

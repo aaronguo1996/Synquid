@@ -10,7 +10,7 @@ measure telems :: BST a -> Set a where
   Empty -> []
   Node x l r -> telems l + telems r + [x]
   
-qualifier {x <= y, x != y}
+qualifier {x < y, x != y}
 
 delete :: t: BST a -> x: a -> {BST a | telems _v == telems t - [x]}
 delete = ??

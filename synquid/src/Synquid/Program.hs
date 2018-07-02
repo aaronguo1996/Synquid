@@ -73,7 +73,7 @@ type RProgram = Program RType
 
 -- makeLenses ''SuccinctProgram
 
-type SProgram = Program (SuccinctType, RType)
+type SProgram = Program (SuccinctType, RType, RType)
 
 untyped c = Program c AnyT
 uHole = untyped PHole
@@ -499,7 +499,7 @@ unresolvedType env ident = (env ^. unresolvedConstants) Map.! ident
 unresolvedSpec goal = unresolvedType (gEnvironment goal) (gName goal)
 
 -- | analysis of program components for exploration convenience
-depth (Program p (_,t)) = case p of
+depth (Program p (_,t,_)) = case p of
   PApp fun arg -> case t of
     FunctionT _ _ _ -> max (depth fun) (depth arg)
     _ -> 1 + max (depth fun) (depth arg)
@@ -510,7 +510,7 @@ countHole (Program p _) = case p of
   PHole -> 1
   _ -> 0
 
-holeTypes (Program p (sty, rty)) = case p of
+holeTypes (Program p (sty, _, _)) = case p of
   PApp fun arg -> holeTypes fun `Set.union` holeTypes arg
   PHole -> Set.singleton sty
   _ -> Set.empty
