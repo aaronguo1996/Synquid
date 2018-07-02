@@ -261,11 +261,14 @@ generateFirstCase env scrVar pScrutinee t consName = do
     Nothing -> error $ show $ text "Datatype constructor" <+> text consName <+> text "not found in the environment" <+> pretty env
     Just consSch -> do
       consT <- instantiate env consSch True []
-      runInSolver $ matchConsType (lastType consT) (typeOf pScrutinee)
-      consT' <- runInSolver $ currentAssignment consT
+      subst <- runInSolver $ matchConsType (lastType consT) (typeOf pScrutinee)
+      -- let substedEnv = typeSubstituteEnv subst env
+      -- consT' <- runInSolver $ currentAssignment consT
+      let consT' = typeSubstitute subst consT
       binders <- replicateM (arity consT') (freshVar env "x")
       (syms, ass) <- caseSymbols env scrVar binders consT'
-      let env' = foldr (uncurry addVariable) (addAssumption ass env) syms
+      let addedEnv = foldr (uncurry addVariable) (addAssumption ass env) syms
+      let env' = typeSubstituteEnv subst addedEnv
       useSucc <- asks . view $ _1 . buildGraph
       caseEnv <- if useSucc then foldM (\e (name, ty) -> addSuccinctSymbol name (Monotype ty) e) env' syms else return env'
 
@@ -290,8 +293,9 @@ generateCase env scrVar pScrutinee t consName = do
     Nothing -> error $ show $ text "Datatype constructor" <+> text consName <+> text "not found in the environment" <+> pretty env
     Just consSch -> do
       consT <- instantiate env consSch True []
-      runInSolver $ matchConsType (lastType consT) (typeOf pScrutinee)
-      consT' <- runInSolver $ currentAssignment consT
+      subst <- runInSolver $ matchConsType (lastType consT) (typeOf pScrutinee)
+      -- consT' <- runInSolver $ currentAssignment consT
+      let consT' = typeSubstitute subst consT
       binders <- replicateM (arity consT') (freshVar env "x")
       (syms, ass) <- caseSymbols env scrVar binders consT'      
       unfoldSyms <- asks . view $ _1 . unfoldLocals
@@ -299,7 +303,8 @@ generateCase env scrVar pScrutinee t consName = do
       cUnknown <- Unknown Map.empty <$> freshId "M"
       runInSolver $ addFixedUnknown (unknownName cUnknown) (Set.singleton ass) -- Create a fixed-valuation unknown to assume @ass@      
       
-      let env' = (if unfoldSyms then unfoldAllVariables else id) $ foldr (uncurry addVariable) (addAssumption cUnknown env) syms
+      let addedEnv = (if unfoldSyms then unfoldAllVariables else id) $ foldr (uncurry addVariable) (addAssumption cUnknown env) syms
+      let env' = typeSubstituteEnv subst addedEnv
       useSucc <- asks . view $ _1 . buildGraph
       caseEnv <- if useSucc then foldM (\e (name, ty) -> addSuccinctSymbol name (Monotype ty) e) env' syms else return env'
       pCaseExpr <- optionalInPartial t $ local (over (_1 . matchDepth) (-1 +))
@@ -406,7 +411,7 @@ walkThrough env pq =
         then do
           writeLog 2 $ text "Checking" <+> pretty (toRProgram p) <+> text "in" $+$ pretty (ctx (untyped PHole))
           ifte (runInSolver solveTypeConstraints) 
-            (\() -> do
+            (\_ -> do
               -- ts' <- use typingState
               es' <- get
               return (Just (p, es') , pq'))
@@ -421,13 +426,13 @@ walkThrough env pq =
           writeLog 2 $ text "Checking" <+> pretty (toRProgram p) <+> text "in" $+$ pretty (ctx (untyped PHole))
           -- check the last filled parameter fits the hole
           ifte (runInSolver solveTypeConstraints) 
-              (\() -> do
+              (\_ -> do
                 -- checking the partial program
                 case constraints of
                   c:cs -> do
                     mapM_ addConstraint constraints
                     ifte (runInSolver solveTypeConstraints)
-                      (\()-> do
+                      (\_ -> do
                         -- ts' <- use typingState
                         es' <- get
                         writeLog 2 $ text "*******************Filling holes in" <+> pretty (toRProgram p)
@@ -668,7 +673,7 @@ generateEWithGraph env pq typ isThenBranch isElseBranch = do
       let p' = refinedP
       -- p' <- if isElseBranch then checkArguments env refinedP else return refinedP
       ifte (checkE env typ p')
-        (\() -> when isThenBranch (termQueueState .= newPQ) >> return p')
+        (\_ -> when isThenBranch (termQueueState .= newPQ) >> return p')
         -- (typingState .= ts >> generateEWithGraph env newPQ typ isThenBranch isElseBranch)
         (do
           currSt <- get
@@ -705,6 +710,7 @@ generateE env typ isThenBranch isElseBranch isMatchScrutinee = do
     else initProgramQueue env typ
   prog@(Program pTerm pTyp) <- if useFilter && (not isMatchScrutinee) then generateEWithGraph env pq typ isThenBranch isElseBranch else generateEUpTo env typ d
   -- (Program pTerm pTyp) <- generateEUpTo env typ d
+  -- [TODO] solve type constraints here, what to do?
   runInSolver $ isFinal .= True >> solveTypeConstraints >> isFinal .= False  -- Final type checking pass that eliminates all free type variables
   newGoals <- uses auxGoals (map gName)                                      -- Remember unsolved auxiliary goals
   generateAuxGoals                                                           -- Solve auxiliary goals
@@ -729,9 +735,9 @@ generateEAt env typ d = do
   useMem <- asks . view $ _1 . useMemoization
   if not useMem || d == 0
     then do -- Do not use memoization
-      p <- enumerateAt env typ d
-      checkE env typ p
-      return p
+      prog@(Program p t) <- enumerateAt env typ d
+      subst <- checkE env typ prog
+      return $ Program p $ typeSubstitute subst t
     else do -- Try to fetch from memoization store
       startState <- get
       let tass = startState ^. typingState . typeAssignment
@@ -744,7 +750,7 @@ generateEAt env typ d = do
           msum $ map applyMemoized results
         Nothing -> do -- Nothing found: enumerate and memoize
           writeLog 3 (text "Nothing found for:" <+> pretty memoKey)
-          p <- enumerateAt env typ d
+          p@(Program p' typ') <- enumerateAt env typ d
 
           memo <- getMemo
           finalState <- get
@@ -753,8 +759,8 @@ generateEAt env typ d = do
 
           putMemo memo'
 
-          checkE env typ p
-          return p
+          subst <- checkE env typ p
+          return $ Program p' $ typeSubstitute subst typ'
   where
     applyMemoized (p, finalState) = do
       put finalState
@@ -764,7 +770,7 @@ generateEAt env typ d = do
 -- | Perform a gradual check that @p@ has type @typ@ in @env@:
 -- if @p@ is a scalar, perform a full subtyping check;
 -- if @p@ is a (partially applied) function, check as much as possible with unknown arguments
-checkE :: MonadHorn s => Environment -> RType -> RProgram -> Explorer s ()
+checkE :: MonadHorn s => Environment -> RType -> RProgram -> Explorer s TypeSubstitution
 checkE env typ p@(Program pTerm pTyp) = do
   ctx <- asks . view $ _1 . context
   writeLog 2 $ text "Checking" <+> pretty p <+> text "::" <+> pretty typ <+> text "in" $+$ pretty (ctx (untyped PHole))
@@ -779,8 +785,9 @@ checkE env typ p@(Program pTerm pTyp) = do
   fTyp <- runInSolver $ finalizeType typ
   pos <- asks . view $ _1 . sourcePos
   typingState . errorContext .= (pos, text "when checking" </> pretty p </> text "::" </> pretty fTyp </> text "in" $+$ pretty (ctx p))
-  runInSolver solveTypeConstraints
+  subst <- runInSolver solveTypeConstraints
   typingState . errorContext .= (noPos, empty)
+  return subst
     -- where      
       -- unknownId :: Formula -> Maybe Id
       -- unknownId (Unknown _ i) = Just i

@@ -125,10 +125,10 @@ initTypingState env = do
 addTypingConstraint c = over typingConstraints (nub . (c :))
 
 -- | Solve @typingConstraints@: either strengthen the current candidates and return shapeless type constraints or fail
-solveTypeConstraints :: MonadHorn s => TCSolver s ()
+solveTypeConstraints :: MonadHorn s => TCSolver s TypeSubstitution
 solveTypeConstraints = do
-  simplifyAllConstraints
-  
+  subst <- simplifyAllConstraints
+  typeSubstituteConstraints subst
   scs <- use simpleConstraints
   writeLog 3 (text "Simple Constraints" $+$ (vsep $ map pretty scs))  
   
@@ -141,6 +141,8 @@ solveTypeConstraints = do
     
   hornClauses .= []
   consistencyChecks .= []
+
+  return subst
   
 {- Repair-specific interface -}
 
@@ -181,19 +183,25 @@ getViolatingLabels = do
       
 -- | Decompose and unify typing constraints; 
 -- return shapeless type constraints: constraints involving only free type variables, which impose no restrictions yet, but might in the future
-simplifyAllConstraints :: MonadHorn s => TCSolver s () 
+simplifyAllConstraints :: MonadHorn s => TCSolver s TypeSubstitution
 simplifyAllConstraints = do
   tcs <- use typingConstraints
   writeLog 3 (text "Typing Constraints" $+$ (vsep $ map pretty tcs))
   typingConstraints .= []
   tass <- use typeAssignment
-  mapM_ simplifyConstraint tcs
+  substs <- foldM (\accSubst tc -> do
+    let tc' = typeSubstituteConstraint accSubst tc
+    subst <- simplifyConstraint tc'
+    return $ Map.union accSubst subst
+    ) Map.empty tcs
     
   -- If type assignment has changed, we might be able to process more shapeless constraints:  
   tass' <- use typeAssignment
   writeLog 3 (text "Type assignment" $+$ vMapDoc text pretty tass')
   
-  when (Map.size tass' > Map.size tass) simplifyAllConstraints
+  substs' <- if (Map.size tass' > Map.size tass) then simplifyAllConstraints else return substs
+
+  return substs'
   
 -- | Assign unknowns to all free predicate variables  
 processAllPredicates :: MonadHorn s => TCSolver s ()
@@ -263,20 +271,21 @@ checkTypeConsistency = do
   candidates .= cands'
 
 -- | Simplify @c@ into a set of simple and shapeless constraints, possibly extended the current type assignment or predicate assignment
-simplifyConstraint :: MonadHorn s => Constraint -> TCSolver s ()
+simplifyConstraint :: MonadHorn s => Constraint -> TCSolver s TypeSubstitution
 simplifyConstraint c = do
   tass <- use typeAssignment
   pass <- use predAssignment
-  simplifyConstraint' tass pass c
+  subst <- simplifyConstraint' tass pass c
+  return subst
 
 -- Any type: drop
-simplifyConstraint' _ _ (Subtype _ _ AnyT _ _) = return ()
-simplifyConstraint' _ _ c@(Subtype _ AnyT _ _ _) = return ()
-simplifyConstraint' _ _ c@(WellFormed _ AnyT) = return ()
+simplifyConstraint' _ _ (Subtype _ _ AnyT _ _) = return Map.empty
+simplifyConstraint' _ _ c@(Subtype _ AnyT _ _ _) = return Map.empty
+simplifyConstraint' _ _ c@(WellFormed _ AnyT) = return Map.empty
 -- Any datatype: drop only if lhs is a datatype
-simplifyConstraint' _ _ (Subtype _ (ScalarT (DatatypeT _ _ _) _) t _ _) | t == anyDatatype = return ()
+simplifyConstraint' _ _ (Subtype _ (ScalarT (DatatypeT _ _ _) _) t _ _) | t == anyDatatype = return Map.empty
 -- Well-formedness of a known predicate drop  
-simplifyConstraint' _ pass c@(WellFormedPredicate _ _ p) | p `Map.member` pass = return ()
+simplifyConstraint' _ pass c@(WellFormedPredicate _ _ p) | p `Map.member` pass = return Map.empty
   
 -- Type variable with known assignment: substitute
 simplifyConstraint' tass _ (Subtype env tv@(ScalarT (TypeVarT _ a) _) t consistent label) | a `Map.member` tass
@@ -292,12 +301,16 @@ simplifyConstraint' _ _ c@(Subtype env (ScalarT (TypeVarT _ a) _) (ScalarT (Type
       then error $ show $ text "simplifyConstraint: equal type variables on both sides"
       else ifM (use isFinal) 
             (do -- This is a final pass: assign an arbitrary type to one of the variables
-              addTypeAssignment a intAll
-              simplifyConstraint c) 
-            (modify $ addTypingConstraint c)
+              -- addTypeAssignment a intAll
+              -- typeSubstituteConstraints a intAll
+              let subst = Map.singleton a intAll
+              let c' = typeSubstituteConstraint subst c
+              subst' <- simplifyConstraint c'
+              return $ Map.union subst subst') 
+            (modify (addTypingConstraint c) >> return Map.empty)
 simplifyConstraint' _ _ c@(WellFormed env (ScalarT (TypeVarT _ a) _)) | not (isBound env a) 
-  = modify $ addTypingConstraint c
-simplifyConstraint' _ _ c@(WellFormedPredicate _ _ _) = modify $ addTypingConstraint c
+  = modify (addTypingConstraint c) >> return Map.empty
+simplifyConstraint' _ _ c@(WellFormedPredicate _ _ _) = modify (addTypingConstraint c) >> return Map.empty
 
 -- Let types: extend environment (has to be done before trying to extend the type assignment)
 simplifyConstraint' _ _ (Subtype env (LetT x tDef tBody) t consistent label)
@@ -306,53 +319,69 @@ simplifyConstraint' _ _ (Subtype env t (LetT x tDef tBody) consistent label)
   = simplifyConstraint (Subtype (addVariable x tDef env) t tBody consistent label) -- ToDo: make x unique? 
   
 -- Unknown free variable and a type: extend type assignment
-simplifyConstraint' _ _ c@(Subtype env (ScalarT (TypeVarT _ a) _) t _ _) | not (isBound env a) 
-  = unify env a t >> simplifyConstraint c
-simplifyConstraint' _ _ c@(Subtype env t (ScalarT (TypeVarT _ a) _) _ _) | not (isBound env a) 
-  = unify env a t >> simplifyConstraint c
+simplifyConstraint' _ _ c@(Subtype env (ScalarT (TypeVarT _ a) _) t _ _) | not (isBound env a) = do
+  writeLog 3 $ text "CALL UNIFY FROM" <+> pretty c
+  (a, t') <- unify env a t
+  let subst = Map.singleton a t'
+  -- typeSubstituteConstraints a t'
+  subst' <- simplifyConstraint $ typeSubstituteConstraint subst c
+  return $ Map.union subst subst'
+simplifyConstraint' _ _ c@(Subtype env t (ScalarT (TypeVarT _ a) _) _ _) | not (isBound env a)  = do
+  writeLog 3 $ text "CALL UNIFY FROM" <+> pretty c
+  (a, t') <- unify env a t
+  let subst = Map.singleton a t'
+  -- typeSubstituteConstraints a t'
+  subst' <- simplifyConstraint $ typeSubstituteConstraint subst c
+  return $ Map.union subst subst'
 
 -- Compound types: decompose
 simplifyConstraint' _ _ (Subtype env (ScalarT (DatatypeT name (tArg:tArgs) pArgs) fml) (ScalarT (DatatypeT name' (tArg':tArgs') pArgs') fml') consistent label)
   = do
-      simplifyConstraint (Subtype env tArg tArg' consistent label)
-      simplifyConstraint (Subtype env (ScalarT (DatatypeT name tArgs pArgs) fml) (ScalarT (DatatypeT name' tArgs' pArgs') fml') consistent label)
+      subst1 <- simplifyConstraint (Subtype env tArg tArg' consistent label)
+      subst2 <- simplifyConstraint (Subtype env (ScalarT (DatatypeT name tArgs pArgs) fml) (ScalarT (DatatypeT name' tArgs' pArgs') fml') consistent label)
+      return $ Map.union subst1 subst2
 simplifyConstraint' _ _ (Subtype env (ScalarT (DatatypeT name [] (pArg:pArgs)) fml) (ScalarT (DatatypeT name' [] (pArg':pArgs')) fml') consistent label)
   = do
       let variances = _predVariances ((env ^. datatypes) Map.! name)
       let isContra = variances !! (length variances - length pArgs - 1) -- Is pArg contravariant?
-      if isContra
+      subst1 <- if isContra
         then simplifyConstraint (Subtype env (int $ pArg') (int $ pArg) consistent label)
         else simplifyConstraint (Subtype env (int $ pArg) (int $ pArg') consistent label)
-      simplifyConstraint (Subtype env (ScalarT (DatatypeT name [] pArgs) fml) (ScalarT (DatatypeT name' [] pArgs') fml') consistent label)      
+      subst2 <- simplifyConstraint (Subtype env (ScalarT (DatatypeT name [] pArgs) fml) (ScalarT (DatatypeT name' [] pArgs') fml') consistent label)      
+      return $ Map.union subst1 subst2
 simplifyConstraint' _ _ (Subtype env (FunctionT x tArg1 tRes1) (FunctionT y tArg2 tRes2) False label)
   = do
-      simplifyConstraint (Subtype env tArg2 tArg1 False label)
-      if isScalarType tArg1
+      subst1 <- simplifyConstraint (Subtype env tArg2 tArg1 False label)
+      subst2 <- if isScalarType tArg1
         then simplifyConstraint (Subtype (addVariable y tArg2 env) (renameVar (isBound env) x y tArg1 tRes1) tRes2 False label)
         else simplifyConstraint (Subtype env tRes1 tRes2 False label)
+      return $ Map.union subst1 subst2
 simplifyConstraint' _ _ (Subtype env (FunctionT x tArg1 tRes1) (FunctionT y tArg2 tRes2) True label)
   = if isScalarType tArg1
       then simplifyConstraint (Subtype (addVariable x tArg1 env) tRes1 tRes2 True label)
       else simplifyConstraint (Subtype env tRes1 tRes2 True label)
 simplifyConstraint' _ _ c@(WellFormed env (ScalarT (DatatypeT name tArgs _) fml))
   = do
-      mapM_ (simplifyConstraint . WellFormed env) tArgs
+      substs <- mapM (simplifyConstraint . WellFormed env) tArgs
       simpleConstraints %= (c :)
+      return $ Map.unions substs
 simplifyConstraint' _ _ (WellFormed env (FunctionT x tArg tRes))
   = do
-      simplifyConstraint (WellFormed env tArg)
-      simplifyConstraint (WellFormed (addVariable x tArg env) tRes)
+      subst1 <- simplifyConstraint (WellFormed env tArg)
+      subst2 <- simplifyConstraint (WellFormed (addVariable x tArg env) tRes)
+      return $ Map.union subst1 subst2
 simplifyConstraint' _ _ (WellFormed env (LetT x tDef tBody))
   = simplifyConstraint (WellFormed (addVariable x tDef env) tBody)
 
 -- Simple constraint: return
-simplifyConstraint' _ _ c@(Subtype _ (ScalarT baseT _) (ScalarT baseT' _) _ _) | baseT == baseT' = simpleConstraints %= (c :)
-simplifyConstraint' _ _ c@(WellFormed _ (ScalarT baseT _)) = simpleConstraints %= (c :)
-simplifyConstraint' _ _ c@(WellFormedCond _ _) = simpleConstraints %= (c :)
-simplifyConstraint' _ _ c@(WellFormedMatchCond _ _) = simpleConstraints %= (c :)
+simplifyConstraint' _ _ c@(Subtype _ (ScalarT baseT _) (ScalarT baseT' _) _ _) | baseT == baseT' = simpleConstraints %= (c :) >> return Map.empty
+simplifyConstraint' _ _ c@(WellFormed _ (ScalarT baseT _)) = simpleConstraints %= (c :) >> return Map.empty
+simplifyConstraint' _ _ c@(WellFormedCond _ _) = simpleConstraints %= (c :) >> return Map.empty
+simplifyConstraint' _ _ c@(WellFormedMatchCond _ _) = simpleConstraints %= (c :) >> return Map.empty
 -- Otherwise (shape mismatch): fail
-simplifyConstraint' _ _ (Subtype _ t t' _ _) = 
+simplifyConstraint' _ _ (Subtype _ t t' _ _) = do
   throwError $ text  "Cannot match shape" <+> squotes (pretty $ shape t) $+$ text "with shape" <+> squotes (pretty $ shape t')
+  return Map.empty
 
 -- | Unify type variable @a@ with type @t@ or fail if @a@ occurs in @t@
 unify env a t = if a `Set.member` typeVarsOf t
@@ -360,7 +389,10 @@ unify env a t = if a `Set.member` typeVarsOf t
   else do
     t' <- fresh env t
     writeLog 3 (text "UNIFY" <+> text a <+> text "WITH" <+> pretty t <+> text "PRODUCING" <+> pretty t')
-    addTypeAssignment a t'
+    -- addTypeAssignment a t'
+    -- [TODO] return the type assignment or return a new environment for use
+    -- typeSubstituteConstraints a t'
+    return (a, t')
     
 -- Predicate well-formedness: shapeless or simple depending on type variables  
 processPredicate c@(WellFormedPredicate env argSorts p) = do
@@ -659,8 +691,14 @@ instantiateConsAxioms env mVal fml = let inst = instantiateConsAxioms env mVal i
 matchConsType formal@(ScalarT (DatatypeT d vars pVars) _) actual@(ScalarT (DatatypeT d' args pArgs) _) | d == d' 
   = do
       writeLog 3 $ text "Matching constructor type" $+$ pretty formal $+$ text "with scrutinee" $+$ pretty actual
-      zipWithM_ (\(ScalarT (TypeVarT _ a) (BoolLit True)) t -> addTypeAssignment a t) vars args
+      subst <- foldM (\accSubst ((ScalarT (TypeVarT _ a) (BoolLit True)),t) -> do
+        let subst' = Map.insert a t accSubst
+        typeSubstituteConstraints subst'
+        -- addTypeAssignment a t
+        return subst'
+        ) (Map.empty) (zip vars args) --addTypeAssignment a t) vars args
       zipWithM_ (\(Pred BoolS p _) fml -> addPredAssignment p fml) pVars pArgs
+      return subst
 matchConsType t t' = error $ show $ text "matchConsType: cannot match" <+> pretty t <+> text "against" <+> pretty t'
     
 currentAssignment :: Monad s => RType -> TCSolver s RType
@@ -714,3 +752,19 @@ updateAllConstraintsEnv :: MonadHorn s => Environment -> TCSolver s ()
 updateAllConstraintsEnv env = do
   tcs <- use typingConstraints
   typingConstraints .= map (updateConstraintEnv env) tcs
+
+typeSubstituteConstraints :: MonadHorn s => TypeSubstitution -> TCSolver s ()
+typeSubstituteConstraints subst = do
+  -- tcs <- use typingConstraints
+  -- scs <- use simpleConstraints
+  -- typingConstraints .= map (typeSubstituteConstraint (Map.singleton id typ)) tcs
+  simpleConstraints %= map (typeSubstituteConstraint subst)
+
+-- | when there is a new type assignment, substitute it in all the constraints
+typeSubstituteConstraint :: TypeSubstitution -> Constraint -> Constraint
+typeSubstituteConstraint tass (Subtype env typl typr flag id) = Subtype env (typeSubstitute tass typl) (typeSubstitute tass typr) flag id
+typeSubstituteConstraint tass (WellFormed env typ) = WellFormed env (typeSubstitute tass typ)
+typeSubstituteConstraint tass constraint = constraint
+
+-- predSubstituteConstraint ::  Substitution -> Constraint -> Constraint
+-- predSubstituteConstraint pass 
