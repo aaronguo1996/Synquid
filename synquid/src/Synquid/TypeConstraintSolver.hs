@@ -34,7 +34,9 @@ module Synquid.TypeConstraintSolver (
   finalizeProgram,
   initEnv,
   allScalars,
-  condQualsGen
+  condQualsGen,
+  updateConstraintEnv,
+  isCondConstraint
 ) where
 
 import Synquid.Logic
@@ -554,7 +556,7 @@ freshId prefix = do
   i <- uses idCount (Map.findWithDefault 0 prefix)
   idCount %= Map.insert prefix (i + 1)
   return $ prefix ++ show i
-  
+
 freshVar :: Monad s => Environment -> String -> TCSolver s String 
 freshVar env prefix = do
   x <- freshId prefix
@@ -698,3 +700,17 @@ writeLog level msg = do
   maxLevel <- asks _tcSolverLogLevel
   if level <= maxLevel then traceShow (plain msg) $ return () else return ()
   
+updateConstraintEnv :: Environment -> Constraint -> Constraint
+updateConstraintEnv env (Subtype _ typl typr flag id) = Subtype env typl typr flag id
+updateConstraintEnv env (WellFormed _ typ) = WellFormed env typ
+updateConstraintEnv env (WellFormedCond _ fml) = WellFormedCond env fml
+updateConstraintEnv env (WellFormedMatchCond _ fml) = WellFormedMatchCond env fml
+updateConstraintEnv env (WellFormedPredicate _ sorts id) = WellFormedPredicate env sorts id
+
+isCondConstraint (WellFormedCond _ _) = True
+isCondConstraint _ = False
+
+updateAllConstraintsEnv :: MonadHorn s => Environment -> TCSolver s ()
+updateAllConstraintsEnv env = do
+  tcs <- use typingConstraints
+  typingConstraints .= map (updateConstraintEnv env) tcs
