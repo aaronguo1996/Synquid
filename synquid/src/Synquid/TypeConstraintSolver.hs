@@ -407,27 +407,31 @@ processConstraint c@(Subtype env (ScalarT baseTL l) (ScalarT baseTR r) False lab
       then return ()
       else do
         pass <- use predAssignment
-        if Set.null $ (predsOf l `Set.union` predsOf r) Set.\\ (Map.keysSet $ allPredicates env)
+        let subst = substitutePredicate pass
+        let l' = subst l
+        let r' = subst r
+        let c' = Subtype env (ScalarT baseTL l') (ScalarT baseTR r') False label
+        if Set.null $ (predsOf l' `Set.union` predsOf r') Set.\\ (Map.keysSet $ allPredicates env)
             then case baseTL of -- Subtyping of datatypes: try splitting into individual constraints between measures
                   DatatypeT dtName _ _ -> do
                     let measures = Map.keysSet $ allMeasuresOf dtName env
                     let isAbstract = null $ ((env ^. datatypes) Map.! dtName) ^. constructors
-                    let vals = filter (\v -> varName v == valueVarName) . Set.toList . varsOf $ r
-                    let rConjuncts = conjunctsOf r
+                    let vals = filter (\v -> varName v == valueVarName) . Set.toList . varsOf $ r'
+                    let rConjuncts = conjunctsOf r'
                     doSplit <- asks _tcSolverSplitMeasures
-                    if not doSplit || isAbstract || null vals || (not . Set.null . unknownsOf) (l |&| r) -- TODO: unknowns can be split if we know their potential valuations
-                      then simpleConstraints %= (c :) -- Constraint has unknowns (or RHS doesn't contain _v)
+                    if not doSplit || isAbstract || null vals || (not . Set.null . unknownsOf) (l' |&| r') -- TODO: unknowns can be split if we know their potential valuations
+                      then simpleConstraints %= (c' :) -- Constraint has unknowns (or RHS doesn't contain _v)
                       else case splitByPredicate measures (head vals) (Set.toList rConjuncts) of
-                            Nothing -> simpleConstraints %= (c :) -- RHS cannot be split, add whole thing
+                            Nothing -> simpleConstraints %= (c' :) -- RHS cannot be split, add whole thing
                             Just mr -> if rConjuncts `Set.isSubsetOf` (Set.unions $ Map.elems mr)
                                         then do
-                                          let lConjuncts = conjunctsOf $ instantiateCons (head vals) l
+                                          let lConjuncts = conjunctsOf $ instantiateCons (head vals) l'
                                           case splitByPredicate measures (head vals) (Set.toList lConjuncts) of -- Every conjunct of RHS is about some `m _v` (where m in measures)
                                               Nothing -> simpleConstraints %= (c :) -- LHS cannot be split, add whole thing for now
                                               Just ml -> mapM_ (addSplitConstraint ml) (toDisjointGroups mr)
-                                        else simpleConstraints %= (c :) -- Some conjuncts of RHS are no covered (that is, do not contains _v), add whole thing                       
-                  _ -> simpleConstraints %= (c :)
-          else modify $ addTypingConstraint c -- Constraint contains free predicate: add back and wait until more type variables get unified, so predicate variables can be instantiated
+                                        else simpleConstraints %= (c' :) -- Some conjuncts of RHS are no covered (that is, do not contains _v), add whole thing                       
+                  _ -> simpleConstraints %= (c' :)
+          else modify $ addTypingConstraint c' -- Constraint contains free predicate: add back and wait until more type variables get unified, so predicate variables can be instantiated
   where
     instantiateCons val fml@(Binary Eq v (Cons _ _ _)) | v == val = conjunction $ instantiateConsAxioms env (Just val) fml
     instantiateCons _ fml = fml
@@ -443,9 +447,12 @@ processConstraint c@(Subtype env (ScalarT baseTL l) (ScalarT baseTR r) False lab
 processConstraint (Subtype env (ScalarT baseTL l) (ScalarT baseTR r) True label) | baseTL == baseTR
   = do
       pass <- use predAssignment
-      if l == ftrue || r == ftrue
+      let subst = substitutePredicate pass
+      let l' = subst l
+      let r' = subst r
+      if l' == ftrue || r' == ftrue
         then return ()
-        else simpleConstraints %= (Subtype env (ScalarT baseTL l) (ScalarT baseTR r) True label :)
+        else simpleConstraints %= (Subtype env (ScalarT baseTL l') (ScalarT baseTR r') True label :)
 processConstraint (WellFormed env t@(ScalarT baseT fml)) 
   = case fml of
       Unknown _ u -> do
@@ -733,9 +740,9 @@ predSubstituteConstraints pass = do
 typeSubstituteConstraint :: TypeSubstitution -> Constraint -> Constraint
 typeSubstituteConstraint tass (Subtype env typl typr flag id) = Subtype (typeSubstituteEnv tass env) (typeSubstitute tass typl) (typeSubstitute tass typr) flag id
 typeSubstituteConstraint tass (WellFormed env typ) = WellFormed (typeSubstituteEnv tass env) (typeSubstitute tass typ)
-typeSubstituteConstraint tass (WellFormedCond env fml) = WellFormedCond (typeSubstituteEnv tass env) fml
-typeSubstituteConstraint tass (WellFormedMatchCond env fml) = WellFormedMatchCond (typeSubstituteEnv tass env) fml
-typeSubstituteConstraint tass (WellFormedPredicate env sorts id) = WellFormedPredicate (typeSubstituteEnv tass env) sorts id
+typeSubstituteConstraint tass (WellFormedCond env fml) = WellFormedCond (typeSubstituteEnv tass env) (sortSubstituteFml (asSortSubst tass) fml)
+typeSubstituteConstraint tass (WellFormedMatchCond env fml) = WellFormedMatchCond (typeSubstituteEnv tass env) (sortSubstituteFml (asSortSubst tass) fml)
+typeSubstituteConstraint tass (WellFormedPredicate env sorts id) = WellFormedPredicate (typeSubstituteEnv tass env) (map (sortSubstitute (asSortSubst tass)) sorts) id
 
 predSubstituteConstraint ::  Substitution -> Constraint -> Constraint
 predSubstituteConstraint pass (Subtype env typl typr flag id) = Subtype env (typeSubstitutePred pass typl) (typeSubstitutePred pass typr) flag id
