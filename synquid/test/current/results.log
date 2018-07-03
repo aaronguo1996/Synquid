@@ -111,7 +111,14 @@ toNat = \xs .
   map f0 xs
 
 product :: xs:List a -> ys:List b -> {List Pair a b|len _v == len xs * len ys}
-synquid: lookupQuals: missing qualifiers for unknown U11
+product = \xs . \ys . 
+    match xs with
+      Nil -> Nil
+      Cons x3 x4 -> 
+        let f0 = \x12 . Pair x3 x12 in
+        append (map f0 ys) (product x4
+                              ys)
+
 extractMin :: xs:{List a|len _v > 0} -> {MinPair a|elems xs == [min _v] + elems (rest _v) && len xs == 1 + len (rest _v)}
 extractMin = \xs . 
   match xs with
@@ -125,4 +132,149 @@ extractMin = \xs .
               if x14 <= x3
                 then MinPair x14 (Cons x3 x15)
                 else MinPair x3 (Cons x14 x15)
+
+member :: x:a -> xs:List a -> {Bool|_v == (x in elems xs)}
+member = \x . \xs . 
+    match xs with
+      Nil -> false
+      Cons x3 x4 -> 
+        if x3 == x
+          then true
+          else member x x4
+
+coincidence :: xs:List a -> ys:List a -> {List a|elems _v == elems xs * elems ys}
+coincidence = \xs . \ys . 
+    match xs with
+      Nil -> xs
+      Cons x3 x4 -> 
+        if member x3 ys
+          then Cons x3 (coincidence x4 ys)
+          else coincidence x4 ys
+
+foldr :: <p :: List (a) -> b -> Bool> . f:(xs:List a -> x:a -> acc:{b|p xs _v} -> {b|p ((Cons x xs)) _v}) -> seed:{b|p (Nil) _v} -> ys:List a -> {b|p ys _v}
+foldr = \f . \seed . \ys . 
+      match ys with
+        Nil -> seed
+        Cons x3 x4 -> foldr (\x6 . \x7 .
+                            \x8 . x8) seed x4
+
+length :: xs:List a -> {Int|_v == len xs}
+length = \xs . foldr (\x2 .
+                   \x3 . \x4 . x4) zero xs
+
+append :: xs:List a -> ys:List a -> {List a|len _v == len xs + len ys}
+append = \xs . \ys . foldr
+                       (\x2 . \x3 . \x4 . x2) xs ys
+
+ith :: <p :: Int -> a -> Bool> . xs:List a <p> -> i:{Int|0 <= _v && _v < len xs} -> {a|p i _v}
+ith = \xs . \i . 
+    match xs with
+      Nil -> error
+      Cons x3 x4 -> 
+        if 0 == i
+          then x3
+          else ith x4 zero
+
+elemIndex :: <p :: Int -> a -> Bool> . x:a -> xs:{List a <p>|x in elems _v} -> {Int|p _v x}
+elemIndex = \x . \xs . 
+    match xs with
+      Nil -> error
+      Cons x3 x4 -> 
+        if x3 == x
+          then zero
+          else elemIndex x x4
+
+snoc :: <p :: a -> a -> Bool> . x:a -> xs:List {a|p _v x} <p> -> {List a <p>|len _v == len xs + 1 && elems _v == elems xs + [x]}
+snoc = \x . \xs . Cons x xs
+
+reverse :: <p :: a -> a -> Bool> . xs:List a <p> -> {List a <p _1 _0>|len _v == len xs && elems _v == elems xs}
+reverse = \xs . 
+  match xs with
+    Nil -> Nil
+    Cons x3 x4 -> Cons x3 x4
+
+insert :: x:a -> xs:UList a -> {UList a|elems _v == elems xs + [x]}
+insert = \x . \xs . Cons x xs
+
+delete :: x:a -> xs:UList a -> {UList a|elems _v == elems xs - [x]}
+delete = \x . \xs . 
+    match xs with
+      Nil -> xs
+      Cons x3 x4 -> 
+        if x3 == x
+          then x4
+          else Cons x3 (delete x x4)
+
+range :: size:Nat -> lo:Int -> {UList {Int|lo <= _v && _v <= lo + size}|len _v == size}
+range = \size . \lo . 
+    if size <= 0
+      then Nil
+      else Cons lo (range (dec size)
+                      lo)
+
+elem :: x:a -> xs:List a -> {Bool|_v == (x in elems xs)}
+elem = \x . \xs . 
+    match xs with
+      Nil -> false
+      Cons x3 x4 -> 
+        if x3 == x
+          then true
+          else elem x x4
+
+nub' :: xs:List a -> acc:UList a -> {UList a|elems _v == elems acc + elems xs}
+nub' = \xs . \acc . 
+    match xs with
+      Nil -> acc
+      Cons x3 x4 -> 
+        if elem x3 acc
+          then nub' x4 acc
+          else 
+            match acc with
+              Nil -> Cons x3 xs
+              Cons x21 x22 -> Cons x3 (nub' x4
+                                         acc)
+
+nub :: xs:List a -> {UList a|elems _v == elems xs}
+nub = \xs . 
+  match xs with
+    Nil -> Nil
+    Cons x3 x4 -> Cons x3 xs
+
+compress :: xs:List a -> {CList a|elems _v == elems xs}
+compress = \xs . 
+  match xs with
+    Nil -> Nil
+    Cons x3 x4 -> Cons x3 x4
+
+insert :: x:a -> xs:IList a -> {IList a|ielems _v == ielems xs + [x]}
+insert = \x . \xs . 
+    match xs with
+      INil -> ICons x INil
+      ICons x5 x6 -> 
+        if x5 <= x
+          then ICons x5 (insert x x6)
+          else ICons x (ICons x5 x6)
+
+insertSort :: xs:List a -> {IList a|ielems _v == elems xs}
+insertSort = \xs . 
+  match xs with
+    Nil -> INil
+    Cons x3 x4 -> insert x3
+                    (insertSort x4)
+
+sort :: xs:List a -> {IncList a|elems _v == elems xs && len _v == len xs}
+sort = \xs . foldr (\x2 . \x3 .
+                   \x4 . x2) xs xs
+
+split :: xs:List a -> {Pair {List a|abs (len xs - len _v * 2) <= 1} List a|len xs == len (fst _v) + len (snd _v) && elems xs == elems (fst _v) + elems (snd _v)}
+split = \xs . 
+  match xs with
+    Nil -> Pair xs xs
+    Cons x5 x6 -> 
+      match x6 with
+        Nil -> Pair x6 xs
+        Cons x11 x12 -> 
+          match split x12 with
+            Pair x16 x17 -> Pair (Cons x11
+                                    x16) (Cons x5 x17)
 

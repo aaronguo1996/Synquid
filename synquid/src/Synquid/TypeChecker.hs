@@ -43,7 +43,7 @@ reconstructTopLevel (Goal funName env (Monotype typ@(FunctionT _ _ _)) impl dept
   where
     reconstructFix = do
       let typ' = renameAsImpl (isBound env) impl typ
-      recCalls <- runInSolver (currentAssignment typ') >>= recursiveCalls
+      recCalls <- recursiveCalls typ'
       polymorphic <- asks . view $ _1 . polyRecursion
       predPolymorphic <- asks . view $ _1 . predPolyRecursion
       let tvs = env ^. boundTypeVars
@@ -208,8 +208,8 @@ reconstructI' env t@(ScalarT _ _) impl = case impl of
 
 reconstructCase env scrVar pScrutinee t (Case consName args iBody) consT = cut $ do  
   runInSolver $ matchConsType (lastType consT) (typeOf pScrutinee)
-  consT' <- runInSolver $ currentAssignment consT
-  (syms, ass) <- caseSymbols env scrVar args consT'
+  -- consT' <- runInSolver $ currentAssignment consT
+  (syms, ass) <- caseSymbols env scrVar args consT
   let env' = foldr (uncurry addVariable) (addAssumption ass env) syms
   useSucc <- asks . view $ _1 . buildGraph
   caseEnv <- if useSucc then foldM (\e (name,ty)-> addSuccinctSymbol name (Monotype ty) e) env' syms else return env'
@@ -224,8 +224,8 @@ reconstructETopLevel :: MonadHorn s => Environment -> RType -> UProgram -> Explo
 reconstructETopLevel env t impl = do
   (Program pTerm pTyp) <- reconstructE env t impl
   generateAuxGoals
-  pTyp' <- runInSolver $ currentAssignment pTyp
-  return $ Program pTerm pTyp'
+  -- pTyp' <- runInSolver $ currentAssignment pTyp
+  return $ Program pTerm pTyp
 
 reconstructE :: MonadHorn s => Environment -> RType -> UProgram -> Explorer s RProgram
 reconstructE env t (Program p AnyT) = reconstructE' env t p
@@ -235,7 +235,8 @@ reconstructE env t (Program p t') = do
 
 reconstructE' env typ PHole = do
   d <- asks . view $ _1 . eGuessDepth
-  generateEUpTo env typ d
+  (p, _) <- generateEUpTo env typ d
+  return p
 reconstructE' env typ (PSymbol name) = do
   case lookupSymbol name (arity typ) env of
     Nothing -> throwErrorWithDescription $ text "Not in scope:" </> text name
@@ -285,8 +286,8 @@ reconstructE' env typ impl = do
 -- return resolved @t'@, otherwise fail
 checkAnnotation :: MonadHorn s => Environment -> RType -> RType -> BareProgram RType -> Explorer s RType  
 checkAnnotation env t t' p = do
-  tass <- use (typingState . typeAssignment)
-  case resolveRefinedType (typeSubstituteEnv tass env) t' of
+  -- tass <- use (typingState . typeAssignment)
+  case resolveRefinedType env t' of
     Left err -> throwError err
     Right t'' -> do
       ctx <- asks . view $ _1 . context
@@ -300,8 +301,8 @@ checkAnnotation env t t' p = do
       runInSolver solveTypeConstraints
       typingState . errorContext .= (noPos, empty)
       
-      tass' <- use (typingState . typeAssignment)
-      return $ intersection (isBound env) t'' (typeSubstitute tass' t)
+      -- tass' <- use (typingState . typeAssignment)
+      return $ intersection (isBound env) t'' t
           
 -- | 'etaExpand' @t@ @f@: for a symbol @f@ of a function type @t@, the term @\X0 . ... \XN . f X0 ... XN@ where @f@ is fully applied
 etaExpand t f = do    
