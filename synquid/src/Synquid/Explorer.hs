@@ -89,7 +89,6 @@ data ExplorerState = ExplorerState {
   _symbolUseCount :: Map Id Int,                   -- ^ Number of times each symbol has been used in the program so far
   -- temporary storage of the queue state
   _termQueueState :: ProgramQueue                  -- ^ Candidate term queue, only used when we use succinct type graph for generateE
-  -- _matchQueueState :: ProgramQueue                 -- ^.Candidate match scrutinee queue, only used when we use succinct type graph for generateE
 } deriving (Eq, Ord)
 
 makeLenses ''ExplorerState
@@ -482,7 +481,7 @@ walkThrough env pq =
       PHole -> do
         tass <- use (typingState . typeAssignment)
         let rty' = typeSubstitute tass rty
-        let styp = toSuccinctType (shape rty')
+        let styp = toSuccinctType env (rty')
         let subst = Set.foldr (\t acc -> Map.insert t SuccinctAny acc) Map.empty (extractSuccinctTyVars styp `Set.difference` Set.fromList (env ^. boundTypeVars))
         let succinctTy = outOfSuccinctAll $ succinctTypeSubstitute subst styp
         return (succinctTy, rty', typ)
@@ -501,7 +500,7 @@ termWithType env sty rty typ = do
         else do
           arg <- enqueueGoal env rty (untyped PHole) (d - 1)
           es <- get
-          return [(toSProgram arg, es)]
+          return [(toSProgram env arg, es)]
     else do
       writeLog 2 $ text "Looking for succinct type" <+> text (succinct2str sty)
       let ids = Set.toList $ Set.unions $ HashMap.elems $ findDstNodesInGraph env sty
@@ -532,7 +531,7 @@ termWithType env sty rty typ = do
               else do
                 d' <- asks . view $ _1 . eGuessDepth
                 tFun <- buildFunctionType pc rty
-                let succinctTy = outOfSuccinctAll (toSuccinctType (shape t))
+                let succinctTy = outOfSuccinctAll (toSuccinctType env (t))
                 let p = Program (PSymbol id) (succinctTy, t, tFun)
                 writeLog 2 $ text "Trying" <+> text id
                 addConstraint $ Subtype env t tFun False "" -- Add subtyping check, unless it's a function type and incremental checking is diasbled
@@ -548,7 +547,7 @@ termWithType env sty rty typ = do
       SuccinctFunction _ argSet retTy -> let
         FunctionT x tArg tRet = rtyp
         FunctionT x' tArg' tRet' = typ
-        arg = outOfSuccinctAll $ toSuccinctType (shape tArg)
+        arg = outOfSuccinctAll $ toSuccinctType env (tArg)
         args = if paramCnt > Set.size argSet || paramCnt == 1 then Set.delete arg argSet else argSet
         in buildApp (paramCnt - 1) (Program (PApp p (Program PHole (arg, tArg, tArg'))) ((if paramCnt == 1 then retTy else SuccinctFunction (paramCnt-1) args retTy), tRet, tRet'))
       _ -> p -- buildApp args (Program (PApp p (Program PHole arg)) (styp, rtyp))
@@ -592,11 +591,11 @@ toRProgram (Program p (_, rty, _)) = case p of
   PSymbol id -> Program (PSymbol id) rty
   PHole -> Program PHole rty
 
-toSProgram :: RProgram -> SProgram
-toSProgram (Program p typ) = case p of
-  PApp fun arg -> Program (PApp (toSProgram fun) (toSProgram arg)) (outOfSuccinctAll (toSuccinctType (shape typ)),typ, typ)
-  PSymbol id -> Program (PSymbol id) (outOfSuccinctAll (toSuccinctType (shape typ)), typ, typ)
-  PHole -> Program PHole (outOfSuccinctAll (toSuccinctType (shape typ)), typ, typ)
+toSProgram :: Environment -> RProgram -> SProgram
+toSProgram env (Program p typ) = case p of
+  PApp fun arg -> Program (PApp (toSProgram env fun) (toSProgram env arg)) (outOfSuccinctAll (toSuccinctType env (typ)),typ, typ)
+  PSymbol id -> Program (PSymbol id) (outOfSuccinctAll (toSuccinctType env (typ)), typ, typ)
+  PHole -> Program PHole (outOfSuccinctAll (toSuccinctType env (typ)), typ, typ)
 
 checkArguments :: MonadHorn s => Environment -> RProgram -> Explorer s RProgram
 checkArguments env (Program p typ) = case p of
@@ -644,7 +643,7 @@ initProgramQueue env typ = do
   tass <- use (typingState . typeAssignment)
   let typ' = typeSubstitute tass typ
   writeLog 2 $ text "Looking for type" <+> pretty typ'
-  let styp = toSuccinctType (shape typ')
+  let styp = toSuccinctType env (typ')
   let subst = Set.foldr (\t acc -> Map.insert t SuccinctAny acc) Map.empty (extractSuccinctTyVars styp `Set.difference` Set.fromList (env ^. boundTypeVars))
   let succinctTy = outOfSuccinctAll $ succinctTypeSubstitute subst styp
   let p = Program PHole (succinctTy, typ, AnyT)
@@ -847,7 +846,7 @@ enumerateAt env typ 0 = do
     styp' = do 
       tass <- use (typingState . typeAssignment)
       let typ' = typeSubstitute tass typ
-      let styp = toSuccinctType (shape (if arity typ' == 0 then typ' else lastType typ'))
+      let styp = toSuccinctType env ((if arity typ' == 0 then typ' else lastType typ'))
       let subst = Set.foldr (\t acc -> Map.insert t SuccinctAny acc) Map.empty (extractSuccinctTyVars styp `Set.difference` Set.fromList (env ^. boundTypeVars))
       return $ outOfSuccinctAll $ succinctTypeSubstitute subst styp
     reachableSet = do
@@ -1103,6 +1102,43 @@ writeLog level msg = do
   if level <= maxLevel then traceShow (plain msg) $ return () else return ()
 
 -- Succinct type operations
+baseToSuccinctType :: Environment -> BaseType Formula -> SuccinctType
+baseToSuccinctType env typ@(DatatypeT id ts _) = if "_" == id 
+  then SuccinctAny --SuccinctAll (Set.singleton "_") (SuccinctScalar (TypeVarT Map.empty "_"))
+  else SuccinctDatatype (id, length ts) resIds resTys Map.empty usedMeasures
+  where
+    fmls = extractBaseRefinements typ
+    measureNames = Map.keysSet $ allMeasuresOf id env
+    usedMeasures = Set.fromList $ concatMap (fmlMeasure measureNames) (Set.toList fmls)
+    mergeDt t (accIds, accTys) = case outOfSuccinctAll (toSuccinctType env t) of
+      SuccinctDatatype id' ids tys _ _ -> (Set.insert id' (ids `Set.union` accIds), tys `Set.union` accTys)
+      ty                         -> (accIds, Set.singleton ty `Set.union` accTys)
+    (resIds, resTys) = foldr mergeDt (Set.empty, Set.empty) ts
+baseToSuccinctType _ t = SuccinctScalar t
+
+toSuccinctType :: Environment -> RType -> SuccinctType
+toSuccinctType env t@(ScalarT bt _) = let 
+  vars = extractSTyVars t 
+  ty = case baseToSuccinctType env bt of
+    SuccinctDatatype (id, l) ids tys cons measures -> let
+      fmls = extractRefinements t
+      measureNames = Map.keysSet $ allMeasuresOf id env
+      usedMeasures = Set.fromList $ concatMap (fmlMeasure measureNames) (Set.toList fmls)
+      in SuccinctDatatype (id,l) ids tys cons (measures `Set.union` usedMeasures)
+    sbt -> sbt
+  in if Set.size vars == 0 then ty else simplifySuccinctType $ SuccinctAll vars ty
+toSuccinctType env t@(FunctionT _ param ret) = let
+  vars = extractSTyVars t
+  ty = case outOfSuccinctAll (toSuccinctType env ret) of
+    SuccinctFunction paramCnt paramSet retTy -> SuccinctFunction (paramCnt+1) (Set.insert (toSuccinctType env param) paramSet) retTy
+    ty'                                      -> SuccinctFunction 1 (Set.singleton (toSuccinctType env param)) ty'
+  in if Set.size vars == 0 then ty else simplifySuccinctType $ SuccinctAll vars ty
+toSuccinctType env t@(LetT id varty bodyty) = let
+  vars = extractSTyVars t
+  ty = SuccinctLet id (toSuccinctType env varty) (toSuccinctType env bodyty)
+  in if Set.size vars == 0 then ty else simplifySuccinctType $ SuccinctAll vars ty
+toSuccinctType _ AnyT = SuccinctAny
+
 addEdgeForSymbol :: Id -> SuccinctType -> Environment -> Environment
 addEdgeForSymbol name succinctTy env = let
   envWithSelf = addEdge name succinctTy env
@@ -1132,7 +1168,7 @@ addSuccinctSymbol :: MonadHorn s => Id -> RSchema -> Environment -> Explorer s E
 addSuccinctSymbol name t env = do
   newt <- instantiateWithoutConstraint env (t) True []
   tass <- use (typingState . typeAssignment)
-  let succinctTy = getSuccinctTy (shape (typeSubstitute tass newt))
+  let succinctTy = getSuccinctTy ((typeSubstitute tass newt))
   writeLog 2 $ text "ADD" <+> text name <+> text ":" <+> text (succinct2str succinctTy)
   case newt of 
     (LetT id tDef tBody) -> do
@@ -1140,10 +1176,11 @@ addSuccinctSymbol name t env = do
       addSuccinctSymbol name (Monotype tBody) env'
     _ -> return $ addEdgeForSymbol name succinctTy env
   where
-    getSuccinctTy tt = case toSuccinctType tt of
+    getSuccinctTy tt = case toSuccinctType env tt of
       SuccinctAll vars ty -> SuccinctAll vars (refineSuccinctDatatype name ty env)
       ty -> refineSuccinctDatatype name ty env
 
+-- | add constructor and measure infos for a datatype
 refineSuccinctDatatype :: Id -> SuccinctType -> Environment -> SuccinctType
 refineSuccinctDatatype name sty env = case sty of
   SuccinctDatatype outerId ids tys cons measures -> let

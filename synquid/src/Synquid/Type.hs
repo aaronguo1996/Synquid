@@ -28,6 +28,13 @@ data TypeSkeleton r =
   AnyT
   deriving (Eq, Ord)
 
+extractBaseRefinements (DatatypeT _ typs fmls) = (Set.unions $ map extractRefinements typs) `Set.union` Set.fromList fmls
+extractBaseRefinements _ = Set.empty
+extractRefinements (ScalarT baseTyp fml) = Set.insert fml (extractBaseRefinements baseTyp)
+extractRefinements (FunctionT _ tArg tRet) = extractRefinements tArg `Set.union` extractRefinements tRet
+extractRefinements (LetT _ tDef t) = extractRefinements tDef `Set.union` extractRefinements t
+extractRefinements _ = Set.empty
+
 contextual x tDef (FunctionT y tArg tRes) = FunctionT y (contextual x tDef tArg) (contextual x tDef tRes)
 contextual _ _ AnyT = AnyT
 contextual x tDef t = LetT x tDef t

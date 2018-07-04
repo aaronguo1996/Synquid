@@ -399,6 +399,20 @@ splitByPredicate preds arg fmls = foldM (\m fml -> checkFml fml m fml) Map.empty
       Ite c t e -> foldM (checkFml whole) m [c, t, e]
       Cons _ _ args -> foldM (checkFml whole) m args
       _ -> return m
+
+fmlMeasure :: Set Id -> Formula -> [Id]
+fmlMeasure measures fml = case fml of
+  Pred _ name args ->
+    if name `Set.member` measures
+      then name : (concatMap (fmlMeasure measures) args)
+      else concatMap (fmlMeasure measures) args
+  SetLit _ args -> concatMap (fmlMeasure measures) args
+  SetComp _ f -> fmlMeasure measures f
+  Unary _ f -> fmlMeasure measures f
+  Binary _ l r -> (fmlMeasure measures l) ++ (fmlMeasure measures r)
+  Ite c t e -> (fmlMeasure measures c) ++ (fmlMeasure measures t) ++ (fmlMeasure measures e)
+  Cons _ _ args -> concatMap (fmlMeasure measures) args
+  _ -> []
       
 -- | Eliminate set comprehensions from a Boolean formula      
 eliminateComp :: Formula -> Formula
