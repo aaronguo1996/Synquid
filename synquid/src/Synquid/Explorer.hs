@@ -500,7 +500,9 @@ termWithType env sty rty typ = do
           Just sch -> do
             let pc = edge ^. params
             t <- symbolType env id sch -- instantiate the type with fresh names
-            
+            case Map.lookup id (env ^. shapeConstraints) of
+              Nothing -> return ()
+              Just sc -> addConstraint $ Subtype env (refineBot env $ shape t) (refineTop env sc) False ""
             symbolUseCount %= Map.insertWith (+) id 1
             if pc == 0
               then do

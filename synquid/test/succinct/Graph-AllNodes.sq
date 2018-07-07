@@ -1,0 +1,54 @@
+type Node = Int
+
+data Edge a where
+  Edge :: src: Node -> dst: Node -> option: a -> Edge a
+
+measure nodes :: Edge a -> Set Int where
+  Edge src dst o -> [src] + [dst]
+
+data List a where
+  Nil :: List a
+  Cons :: x: a -> xs: List a -> List a
+  
+termination measure len :: List a -> {Int | _v >= 0} where
+  Nil -> 0
+  Cons x xs -> 1 + len xs  
+
+measure elems :: List a -> Set a where
+  Nil -> []
+  Cons x xs -> [x] + elems xs
+
+data Edges a where
+  NoEdge :: Edges a
+  MoreEdge :: e: Edge a -> es: Edges a -> Edges a
+
+measure nodeSet :: Edges a -> Set Int where
+  NoEdge -> []
+  MoreEdge e es -> nodes e + nodeSet es
+
+measure edgeNum :: Edges a -> {Int | _v >= 0} where
+  NoEdge -> 0
+  MoreEdge e es -> 1 + edgeNum es
+
+data UnweightedGraph a where
+  Graph :: edges: Edges a -> UnweightedGraph a
+
+measure vertices :: UnweightedGraph a -> Set Int where
+  Graph edges -> nodeSet edges
+
+termination measure size :: UnweightedGraph a -> {Int | _v >= 0} where
+  Graph edges -> edgeNum edges
+
+nodesOf :: graph: UnweightedGraph a -> {List Int | elems _v == vertices graph}
+nodesOf = ??
+
+{- 
+\graph .
+  match graph with
+    Graph edges ->
+      match edges with
+        NoEdge -> Nil
+        MoreEdge e es -> 
+          match e with
+            Edge src dst o -> Cons src (Cons dst (dfs (Graph es)))
+-}
