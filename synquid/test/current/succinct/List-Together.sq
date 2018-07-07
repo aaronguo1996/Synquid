@@ -65,29 +65,21 @@ measure min :: MinPair a -> a where
 measure rest :: MinPair a -> List a where
   MinPair x l -> l
 
--- append :: xs: List a -> ys: List a -> {List a | len _v == len xs + len ys && elems _v == elems xs + elems ys}
--- concat :: xss: ListOfLists a -> { List a | len _v == sumLen xss }
--- delete :: x: a -> xs: List a -> {List a | elems _v == elems xs - [x]}
--- drop :: n: Nat -> xs: {List a | len _v >= n} -> {List a | len _v == len xs - n}
--- elem :: x: a -> xs: List a -> {Bool | _v == (x in elems xs)}
--- map :: f: (a -> b) -> xs: List a -> {List b | len _v == len xs}
--- replicate :: n: Nat -> x: a -> {List a | len _v == n}
--- stutter :: xs: List a -> {List a | len _v == 2 * len xs}
--- take :: n: Nat -> xs: {List a | len _v >= n} -> {List a | len _v == n}
--- toNat :: xs: List Int -> {List Nat | len _v == len xs}
--- zipWith :: f: (a -> b -> c) -> xs: List a -> ys: {List b | len _v == len xs} -> {List c | len _v == len xs}
--- selectSort :: xs: List a -> {IList a | ielems _v == elems xs}
--- extractMin :: xs: {List a | len _v > 0} -> {MinPair a | elems xs == [min _v] + elems (rest _v) && len xs == 1 + len (rest _v)}
--- quickSort :: xs: List a -> {IList a | ilen _v == len xs && ielems _v == elems xs }
--- insert :: x: a -> xs: IList a -> {IList a | ielems _v == ielems xs + [x]}
--- insertSort :: xs: List a -> {IList a | ielems _v == elems xs}
--- merge :: xs: IList a -> ys: IList a -> {IList a | ilen _v == ilen xs + ilen ys && ielems _v == ielems xs + ielems ys}
--- merge = ??
-dec :: x:Int -> {Int | _v == x-1}
-inc :: x:Int -> {Int | _v == x+1}
-qualifier {x<=y,x!=y}
-enumFromTo :: x:Nat -> y:Nat -> {List Nat | len _v == (y-x+1)}
-{-- 
-enumFromTo = \x y -> if x >= y then Cons x Nil else Cons x (enumFromTo (inc x) y)
---}
-enumFromTo = ??               
+append :: xs: List a -> ys: List a -> {List a | len _v == len xs + len ys && elems _v == elems xs + elems ys}
+concat :: xss: ListOfLists a -> { List a | len _v == sumLen xss }
+delete :: x: a -> xs: List a -> {List a | elems _v == elems xs - [x]}
+drop :: n: Nat -> xs: {List a | len _v >= n} -> {List a | len _v == len xs - n}
+elem :: x: a -> xs: List a -> {Bool | _v == (x in elems xs)}
+map :: f: (a -> b) -> xs: List a -> {List b | len _v == len xs}
+replicate :: n: Nat -> x: a -> {List a | len _v == n}
+stutter :: xs: List a -> {List a | len _v == 2 * len xs}
+take :: n: Nat -> xs: {List a | len _v >= n} -> {List a | len _v == n}
+toNat :: xs: List Int -> {List Nat | len _v == len xs}
+zipWith :: f: (a -> b -> c) -> xs: List a -> ys: {List b | len _v == len xs} -> {List c | len _v == len xs}
+selectSort :: xs: List a -> {IList a | ielems _v == elems xs}
+extractMin :: xs: {List a | len _v > 0} -> {MinPair a | elems xs == [min _v] + elems (rest _v) && len xs == 1 + len (rest _v)}
+quickSort :: xs: List a -> {IList a | ilen _v == len xs && ielems _v == elems xs }
+insert :: x: a -> xs: IList a -> {IList a | ielems _v == ielems xs + [x]}
+insertSort :: xs: List a -> {IList a | ielems _v == elems xs}
+merge :: xs: IList a -> ys: IList a -> {IList a | ilen _v == ilen xs + ilen ys && ielems _v == ielems xs + ielems ys}
+merge = ??

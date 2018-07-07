@@ -1,0 +1,95 @@
+{- definitions for Text -}
+data ByteArray where
+  BEmpty :: ByteArray
+  Bytes :: c: Char -> ba: ByteArray -> ByteArray
+
+termination measure blen :: ByteArray -> {Int | _v >= 0} where
+  BEmpty -> 0
+  Bytes c ba -> 1 + blen ba
+
+type Nat = {Int | _v >= 0}
+
+data Array where
+  Array :: aBA: ByteArray -> alen: Nat -> Array
+
+measure aarr :: Array -> ByteArray where
+  Array aBA alen -> aBA
+
+measure alen :: Array -> {Int | _v >= 0} where
+  Array aBA l -> l
+
+data Text where
+  Text :: bArr: ByteArray -> offset: Int -> length: Int -> Text
+
+termination measure tlength :: Text -> {Int | _v >= 0} where
+  Text arr o l -> blen arr
+
+measure tarr :: Text -> ByteArray where
+  Text arr o l -> arr
+
+measure toff :: Text -> Int where
+  Text arr o l -> o
+
+measure tlen :: Text -> Int where
+  Text arr o l -> l
+
+data Char
+
+false :: {Bool | _v == False}
+true :: {Bool | _v == True}
+
+-- | components to add
+inc :: x: Int -> {Int | _v == x+1 }
+dec :: x: Int -> {Int | _v == x-1 }
+zero :: {Int | _v == 0}
+textSingleton :: c: Char -> {Text | tlength _v == 1}
+textCons :: t: Text -> c: Char -> {Text | tlength t + 1 == tlength _v && tlen _v == tlen t + 1}
+textAppend :: t1: Text -> t2: Text -> {Text | tlength _v == tlength t1 + tlength t2}
+-- textNull :: t: Text -> {Bool | _v == (tlength t == 0)}
+-- textIsSingleton :: t: Text -> {Bool | _v == (tlength t == 1)}
+textLength :: t: Text -> {Nat | _v == tlength t}
+-- textCompLength :: t: Text -> len: Nat -> {Bool | _v == (tlength t == len)}
+-- textJustifyLeft :: k: Nat -> c: Char -> t: {Text | tlength _v <= k} -> {Text | tlength _v == k}
+
+data List a where
+  Nil :: List a
+  Cons :: x: a -> xs: List a -> List a
+  
+termination measure len :: List a -> {Int | _v >= 0} where
+  Nil -> 0
+  Cons x xs -> 1 + len xs  
+
+measure elems :: List a -> Set a where
+  Nil -> []
+  Cons x xs -> [x] + elems xs
+
+data Info where
+  Info :: streetAddr: Int -> zipcode: Int -> local: Bool -> Info
+    
+data Address where
+  Address :: info: Info -> priv: Bool -> Address
+  
+measure isPriv :: Address -> Bool where
+  Address info priv -> priv  
+  
+getPriv :: a:Address -> {Bool | _v == isPriv a}
+
+data AddressBook where
+  AddressBook :: business: List {Address | !(isPriv _v)} -> personal: List {Address | isPriv _v} -> AddressBook  
+  
+measure addressBookSize :: AddressBook -> {Int | _v >= 0} where
+  AddressBook bs ps -> len bs + len ps
+  
+mkAddressBook :: adds: List Address -> {AddressBook | addressBookSize _v == len adds}
+delete :: x: a -> xs: List a -> {List a | elems _v == elems xs - [x]}
+drop :: n: Nat -> xs: {List a | len _v >= n} -> {List a | len _v == len xs - n}
+appendFold :: xs: List a -> ys: List a -> {List a | len _v == len xs + len ys}
+length :: xs: List a -> {Int | _v == len xs}
+coincidence :: xs: List a -> ys: List a -> {List a | elems _v == elems xs * elems ys}
+map :: f: (a -> b) -> xs: List a -> {List b | len _v == len xs}
+
+textAppend = ??
+-- textReplicate :: n: Nat -> c: Char -> {Text | tlength _v == n}
+-- textReplicate = ??
+textTake :: n: Nat -> t: {Text | tlength _v >= n} -> {Text | tlength _v == n}
+textTake = ??

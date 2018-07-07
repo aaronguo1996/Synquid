@@ -1,0 +1,40 @@
+data Pair a b where
+  Pair :: x: a -> y: b -> Pair a b
+
+measure fst :: Pair a b -> a where
+  Pair x y -> x
+  
+measure snd :: Pair a b -> b where
+  Pair x y -> y
+
+data List a where
+  Nil :: List a
+  Cons :: x: a -> xs: List a -> List a
+  
+termination measure len :: List a -> {Int | _v >= 0} where
+  Nil -> 0
+  Cons x xs -> 1 + len xs  
+
+measure elems :: List a -> Set a where
+  Nil -> []
+  Cons x xs -> [x] + elems xs
+
+type Nat = {Int | _v >= 0}
+
+{- Useless components -}
+replicate :: n: Nat -> x: a -> {List a | len _v == n}
+partition :: xs: List a -> p: a -> {Pair (List {a | _v <= p}) (List {a | _v > p}) | len (fst _v) + len (snd _v) == len xs && elems (fst _v) + elems (snd _v) == elems xs }
+drop :: xs: List a -> n: Nat -> {List a | len _v == len xs - n}
+delete :: xs: List a -> x: a -> {List a | elems _v == elems xs - [x]}
+take :: xs: List a -> n: Nat -> {List a | len _v == n}
+
+{- Useful components -}
+zip :: xs: List a -> ys: {List b | len _v == len xs} -> {List (Pair (a) (b)) | len _v == len xs}
+
+{- Synthesis goal -}
+zip5 :: xs: List a -> ys: {List b | len _v == len xs} 
+        -> zs: {List c | len _v == len xs} 
+        -> ts: {List d | len _v == len xs} 
+        -> rs: {List e | len _v == len xs} 
+        -> {List (Pair (Pair (Pair (Pair a b) c) d) e) | len _v == len xs}
+zip5 = ??

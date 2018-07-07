@@ -211,6 +211,9 @@ processAllConstraints = do
   tcs <- use simpleConstraints
   simpleConstraints .= []
   mapM_ processConstraint tcs
+
+  scs <- use simpleConstraints
+  writeLog 3 (text "After process simple constraints" $+$  (vsep $ map pretty scs))
     
 -- | Convert simple subtyping constraints into horn clauses
 generateAllHornClauses :: MonadHorn s => TCSolver s ()

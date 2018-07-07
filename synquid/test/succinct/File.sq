@@ -1,0 +1,57 @@
+data List a where
+  Nil :: List a
+  Cons :: x: a -> xs: List a -> List a
+
+termination measure len :: List a -> {Int | _v >= 0} where
+  Nil -> 0
+  Cons x xs -> 1 + len xs
+
+measure elems :: List a -> Set a where
+  Nil -> []
+  Cons x xs -> [x] + elems xs
+
+data IOMode where
+  ReadMode :: IOMode
+  WriteMode :: IOMode
+  AppendMode :: IOMode
+  ReadWriteMode :: IOMode
+
+measure isWritable :: IOMode -> Bool where
+  ReadMode -> False
+  WriteMode -> True
+  AppendMode -> True
+  ReadWriteMode -> True
+
+measure isReadable :: IOMode -> Bool where
+  ReadMode -> True
+  WriteMode -> False
+  AppendMode -> False
+  ReadWriteMode -> False
+
+data String
+
+data FileHandler where
+  FileHandler :: name: String -> mode: IOMode -> FileHandler
+
+measure canWrite :: FileHandler -> Bool where
+  FileHandler name mode -> isWritable mode
+
+measure canRead :: FileHandler -> Bool where
+  FileHandler name mode -> isReadable mode
+
+data File a where
+  File :: name: String -> content: List a -> File a
+
+termination measure size :: File a -> {Int | _v >= 0} where
+  File name content -> len content
+
+measure contentOf :: File a -> List a where
+  File name content -> content
+
+open :: name: String -> mode: IOMode -> FileHandler
+read :: handler: {FileHandler | canRead _v } -> List a
+add :: content: List a -> newLine: a -> {List a | elems _v == elems content + [newLine]}
+write :: handler: {FileHandler | canWrite _v } -> content: List a -> {File a | elems (contentOf _v) == elems content }
+
+addToFile :: filename: String -> content: List a -> {FileHandler a | elems (contentOf _v) == elems content}
+addToFile = ??

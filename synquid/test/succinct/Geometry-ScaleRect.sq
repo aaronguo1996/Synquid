@@ -1,0 +1,16 @@
+data Rectangle where
+  Rectangle :: width: Int -> height: Int -> Rectangle
+
+termination measure area :: Rectangle -> Int where
+  Rectangle w h -> w * h
+
+measure widthOf :: Rectangle -> Int where
+  Rectangle w h -> w
+
+measure heightOf :: Rectangle -> Int where
+  Rectangle w h -> h
+
+inc :: x: Int -> {Int | _v == x + 1}
+
+scale :: s: Int -> rect: Rectangle -> {Rectangle | widthOf _v == 1 + widthOf rect && heightOf _v == 1 + heightOf rect}
+scale = ??

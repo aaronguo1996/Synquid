@@ -109,7 +109,11 @@ reconstructTopLevel (Goal funName env (Monotype typ@(FunctionT _ _ _)) impl dept
                               metric (Var argSort valueVarName) |>=| IntLit 0  |&| metric (Var argSort valueVarName) |<=| metric (Var argSort argName))
     terminationRefinement _ _ = Nothing
 
-reconstructTopLevel (Goal _ env (Monotype t) impl depth _) = local (set (_1 . auxDepth) depth) $ reconstructI env t impl
+reconstructTopLevel (Goal _ env (Monotype t) impl depth _) = do
+  useSucc <- asks . view $ _1 . buildGraph
+  envGoal <- if useSucc then addSuccinctSymbol "__goal__" (Monotype t) env else return env
+  envAll <- if useSucc then foldM (\e (f, t) -> addSuccinctSymbol f t e) envGoal (Map.toList (allSymbols envGoal)) else return envGoal
+  local (set (_1 . auxDepth) depth) $ reconstructI envAll t impl
 
 -- | 'reconstructI' @env t impl@ :: reconstruct unknown types and terms in a judgment @env@ |- @impl@ :: @t@ where @impl@ is a (possibly) introduction term
 -- (top-down phase of bidirectional reconstruction)

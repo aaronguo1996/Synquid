@@ -1,0 +1,45 @@
+qualifier {x <= y, x != y}
+
+-- zero :: {Int | _v == 0}
+-- one :: {Int | _v == 1}
+-- two :: {Int | _v == 2}
+-- three :: {Int | _v == 3}
+data Num where
+  -- Zero :: Num
+  -- One :: Num
+  -- Two :: Num
+  IntNode :: n: Int -> Num
+  Plus :: l: Num -> r: Num -> Num
+  Minus :: l: Num -> r: Num -> Num
+  Product :: l: Num -> r: Num -> Num
+  
+termination measure size :: Num -> {Int | _v >= 0} where
+  -- Zero -> 1
+  -- One -> 1
+  -- Two -> 1
+  IntNode n -> 1
+  Plus l r -> 1 + size l + size r + 1
+  Minus l r -> 1 + size l + size r + 1
+  Product l r -> 1 + size l + size r + 1
+
+measure result :: Num -> Int where
+  -- Zero -> 0
+  -- One -> 1
+  -- Two -> 2
+  IntNode n -> n
+  Plus l r -> result l + result r
+  Minus l r -> result l - result r
+  Product l r -> result l * result r
+
+measure ints :: Num -> Set Int where
+  IntNode n -> [n]
+  Plus l r -> ints l + ints r
+  Minus l r -> ints l + ints r
+  Product l r -> ints l + ints r
+
+puzzle :: a: {Num | result _v == 1 && ints _v == [1]} -> 
+          b: {Num | result _v == 5 && ints _v == [5]} -> 
+          c: {Num | result _v == 3 && ints _v == [3]} -> 
+          d: {Num | result _v == 4 && ints _v == [4]} -> 
+          {Num | result _v == 24 && ints _v == [1,5,3,4]}
+puzzle = ??

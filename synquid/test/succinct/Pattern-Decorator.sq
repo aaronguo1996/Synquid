@@ -1,0 +1,25 @@
+data Maybe a where
+  Nothing :: Maybe a
+  Just a :: a -> Maybe a
+
+data Window a where
+  BasicWindow :: width: Int -> height: Int -> Window a
+  DecroWindow :: width: Int -> height: Int -> decoration: a -> Window a
+
+measure widthOf :: Window a -> Int where
+  BasicWindow w h -> w
+  DecroWindow w h d -> w
+
+measure heightOf :: Window a -> Int where
+  BasicWindow w h -> h
+  DecroWindow w h d -> h
+
+measure decro :: Window a -> a where
+  BasicWindow w h -> 
+
+type Nat = {Int | _v >= 0}
+
+setColor :: color: Nat -> win: Window Nat -> {Window | colorOf _v == color && widthOf _v == widthOf win && heightOf _v == heightOf win }
+setShape :: shape: Nat -> win: Window Nat -> {Window | shapeOf _v == shape && widthOf _v == widthOf win && heightOf _v == heightOf win}
+setColorAndShape :: color: Nat -> shape: Nat -> win: Window -> {Window | colorOf _v == color && shapeOf _v == shape && widthOf _v == widthOf win && heightOf _v == heightOf win}
+setColorAndShape = ??

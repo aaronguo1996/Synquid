@@ -119,7 +119,11 @@ BENCHMARKS = {
     ('RBT-Insert',          ['-a 2', '-m 1']),
           ],
   'succinct' : [
-    ('List-Together',       ['-f=AllArguments'])
+    ('List-Zip',        ['-a 6']),
+    ('List-Zip3',       ['-a 6']),
+    ('List-Zip4',       ['-a 6']),
+    ('List-Zip5',       ['-a 6']),
+    ('List-Zip6',       ['-a 6'])
   ]
 }
 
@@ -286,7 +290,7 @@ if __name__ == '__main__':
 
     if not fail and a.synt:
         # Run synthesis benchmarks in 'current' directory
-        os.chdir('current')
+        # os.chdir('current')
         if os.path.isfile(LOGFILE_NAME):
             os.remove(LOGFILE_NAME)
 

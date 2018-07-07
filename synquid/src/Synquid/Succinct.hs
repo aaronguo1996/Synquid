@@ -119,9 +119,10 @@ unifySuccinct comp target boundedTys = case (comp, target) of
     else (True, [Map.singleton id target])
   (SuccinctScalar t1, SuccinctScalar t2) -> (t1 == t2, [Map.empty])
   (SuccinctDatatype id1 idSet1 tySet1 consMap1 measures1, SuccinctDatatype id2 idSet2 tySet2 consMap2 measures2) -> 
-    if Set.size idSet1 > 2 || Set.size idSet2 > 2
-      then (False, [Map.empty]) -- [TODO] return anyT here
-      else if idSet1 `Set.isSubsetOf` idSet2
+    -- if Set.size idSet1 > 5 || Set.size idSet2 > 5
+    --   then (False, [Map.empty]) -- [TODO] return anyT here
+      -- else if idSet1 `Set.isSubsetOf` idSet2
+      if idSet1 `Set.isSubsetOf` idSet2
         then 
           let 
             isTyVar ty = case ty of 
@@ -146,7 +147,10 @@ unifySuccinct comp target boundedTys = case (comp, target) of
                       freeVt = tySet1 `Set.difference` bound1
                       optCons = idSet2 `Set.intersection` idSet1
                       optTy = tySet1 `Set.intersection` tySet2
-                    in (True, allCombos consDiff tyDiff freeVt optCons optTy (Map.union consMap1 consMap2) id2 measures2)
+                      anyFreeMap = Set.foldr (\(SuccinctScalar (TypeVarT _ t)) accMap -> Map.insert t SuccinctAny accMap) Map.empty freeVt
+                    in if Set.size freeVt > 3
+                      then (True, [anyFreeMap])
+                      else (True, allCombos consDiff tyDiff freeVt optCons optTy (Map.union consMap1 consMap2) id2 measures2)
                   else (False, [Map.empty])
               else (False, [Map.empty])
         else (False, [Map.empty])
@@ -183,12 +187,16 @@ unifySuccinct comp target boundedTys = case (comp, target) of
               combine x y = map (\(a,b) -> a `Set.union` b) (zip x y)
               finalTys = [combine x y | x <- mustTys, y <- optAssign optTys]
               finalCons = [combine x y | x <- mustCons, y <- optAssign optCons]
-              assign vars x y = case (vars, x, y) of
+              assign vars x y includeOut = case (vars, x, y) of
                 ((SuccinctScalar (TypeVarT _ id)):vs, xx:xs, yy:ys) -> if Set.null xx 
                   then if Set.size yy > 0
-                    then Map.insert id (Set.findMin yy) (assign vs xs ys)
+                    then Map.insert id (Set.findMin yy) (assign vs xs ys includeOut) -- [TODO] the include out also need to be permutated
                     else Map.empty
-                  else Set.foldr (\out acc -> Map.insert id (SuccinctDatatype out (Set.delete out xx) yy consMaps measures) acc) (assign vs xs ys) xx
+                  else Set.foldr (\out acc -> 
+                    let (_, outPlace) = out in 
+                      if outPlace > 0 || (outPlace == 0 && length xx == 0)
+                        then Map.insert id (if includeOut then (SuccinctDatatype out xx yy consMaps Set.empty) else (SuccinctDatatype out (Set.delete out xx) yy consMaps Set.empty)) acc
+                        else acc) (assign vs xs ys includeOut) xx
                 _ -> Map.empty
               isValid x y = if Set.null x
                 then Set.size y == 1
@@ -196,7 +204,9 @@ unifySuccinct comp target boundedTys = case (comp, target) of
                          len = (Set.size y) + (Set.foldr (\(_,n) acc ->if n==0 then acc+1 else acc) 0 x)
                     -- in (cnt > 1 && len >= 1) || (cnt == 0 && (len == 0 || len == 1)) || (cnt == 1 && len == 1)
                      in (cnt > 1 && len >= 1) || (cnt == 0 && (len == 0 || len == 1)) || (cnt == 1 && len == 1)
-              resultMap = [assign (Set.toList freeVars) c t | c <- finalCons, t <- finalTys,
+              resultMap = [assign (Set.toList freeVars) c t True | c <- finalCons, t <- finalTys,
+                                                              (foldr (\(x,y) acc -> acc && (isValid x y)) True (zip c t))]
+                        ++ [assign (Set.toList freeVars) c t False | c <- finalCons, t <- finalTys,
                                                               (foldr (\(x,y) acc -> acc && (isValid x y)) True (zip c t))]
           in resultMap
 

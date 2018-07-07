@@ -1,0 +1,22 @@
+data List a where
+  Nil :: List a
+  Cons :: x: a -> xs: List a -> List a
+
+termination measure len :: List a -> {Int | _v >= 0} where
+  Nil -> 0
+  Cons x xs -> 1 + len xs
+
+measure elems :: List a -> Set a where
+  Nil -> []
+  Cons x xs -> [x] + elems xs
+
+data NestedList a where
+  Elem :: x: a -> NestedList a
+  Elems :: List (NestedList a) -> NestedList a
+
+measure sumLen :: NestedList a -> {Int | _v >= 0} where
+  Elem -> 1
+  Elems list -> sumLen
+
+flatten :: xs: NestedList a -> { List a | elems _v == nelems xs}
+flatten = ??
