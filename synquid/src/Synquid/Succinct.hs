@@ -148,7 +148,7 @@ unifySuccinct comp target boundedTys = case (comp, target) of
                       optCons = idSet2 `Set.intersection` idSet1
                       optTy = tySet1 `Set.intersection` tySet2
                       anyFreeMap = Set.foldr (\(SuccinctScalar (TypeVarT _ t)) accMap -> Map.insert t SuccinctAny accMap) Map.empty freeVt
-                    in if Set.size freeVt > 3
+                    in if Set.size freeVt > 3 || Set.size bound2 > 5
                       then (True, [anyFreeMap])
                       else (True, allCombos consDiff tyDiff freeVt optCons optTy (Map.union consMap1 consMap2) id2 measures2)
                   else (False, [Map.empty])
@@ -204,9 +204,9 @@ unifySuccinct comp target boundedTys = case (comp, target) of
                          len = (Set.size y) + (Set.foldr (\(_,n) acc ->if n==0 then acc+1 else acc) 0 x)
                     -- in (cnt > 1 && len >= 1) || (cnt == 0 && (len == 0 || len == 1)) || (cnt == 1 && len == 1)
                      in (cnt > 1 && len >= 1) || (cnt == 0 && (len == 0 || len == 1)) || (cnt == 1 && len == 1)
-              resultMap = [assign (Set.toList freeVars) c t True | c <- finalCons, t <- finalTys,
+              resultMap = [assign (Set.toList freeVars) c t False | c <- finalCons, t <- finalTys,
                                                               (foldr (\(x,y) acc -> acc && (isValid x y)) True (zip c t))]
-                        ++ [assign (Set.toList freeVars) c t False | c <- finalCons, t <- finalTys,
+                        ++ [assign (Set.toList freeVars) c t True | c <- finalCons, t <- finalTys,
                                                               (foldr (\(x,y) acc -> acc && (isValid x y)) True (zip c t))]
           in resultMap
 

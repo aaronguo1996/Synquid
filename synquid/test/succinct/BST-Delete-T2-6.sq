@@ -1,0 +1,111 @@
+{- Useless components (totally unrelated) -}
+type Nat = {Int | _v >= 0}
+
+data List a where
+  Nil :: List a
+  Cons :: x: a -> xs: List a -> List a
+  
+termination measure len :: List a -> {Int | _v >= 0} where
+  Nil -> 0
+  Cons x xs -> 1 + len xs  
+
+measure elems :: List a -> Set a where
+  Nil -> []
+  Cons x xs -> [x] + elems xs
+
+data ListOfLists a where
+  Nil2 :: ListOfLists a
+  Cons2 :: x: List a -> xs: ListOfLists a -> ListOfLists a
+  
+termination measure len2 :: ListOfLists a -> {Int | _v >= 0} where
+  Nil2 -> 0
+  Cons2 x xs -> 1 + len2 xs
+  
+measure sumLen :: ListOfLists a -> {Int | _v >= 0} where
+  Nil2 -> 0
+  Cons2 x xs -> sumLen xs + len x
+
+data Info where
+  Info :: streetAddr: Int -> zipcode: Int -> local: Bool -> Info
+    
+data Address where
+  Address :: info: Info -> priv: Bool -> Address
+  
+measure isPriv :: Address -> Bool where
+  Address info priv -> priv
+
+data AddressBook where
+  AddressBook :: business: List {Address | !(isPriv _v)} -> personal: List {Address | isPriv _v} -> AddressBook
+
+data IList a where
+    INil :: IList a
+    ICons :: x: a -> xs: IList {a | x <= _v} -> IList a
+  
+termination measure ilen :: IList a -> {Int | _v >= 0} where
+  INil -> 0
+  ICons x xs -> 1 + ilen xs  
+
+measure ielems :: IList a -> Set a where
+  INil -> []
+  ICons x xs -> [x] + ielems xs
+
+data MinPair a where
+  MinPair :: x: a -> l: List {a | x <= _v}  -> MinPair a
+  
+measure min :: MinPair a -> a where
+  MinPair x l -> x
+  
+measure rest :: MinPair a -> List a where
+  MinPair x l -> l
+
+data Pair a b where
+  Pair :: x: a -> y: b -> Pair a b
+
+data Char
+
+data PList a <p :: a -> a -> Bool> where
+  PNil :: PList a <p>
+  PCons :: x: a -> xs: PList {a | p x _v} <p> -> PList a <p>
+  
+termination measure plen :: PList a -> {Int | _v >= 0} where
+  PNil -> 0
+  PCons x xs -> 1 + plen xs  
+
+measure pelems :: PList a -> Set a where
+  PNil -> []
+  PCons x xs -> [x] + pelems xs
+
+type UList a = PList a <{_0 != _1}>
+
+append :: xs: List a -> ys: List a -> {List a | len _v == len xs + len ys && elems _v == elems xs + elems ys}
+concat :: xss: ListOfLists a -> { List a | len _v == sumLen xss }
+deleteList :: x: a -> xs: List a -> {List a | elems _v == elems xs - [x]}
+drop :: n: Nat -> xs: {List a | len _v >= n} -> {List a | len _v == len xs - n}
+elem :: x: a -> xs: List a -> {Bool | _v == (x in elems xs)}
+map :: f: (a -> b) -> xs: List a -> {List b | len _v == len xs}
+replicate :: n: Nat -> x: a -> {List a | len _v == n}
+inc :: x: Int -> {Int | _v == x+1 }
+dec :: x: Int -> {Int | _v == x-1 }
+
+{- Useless components (related but unreachable) -}
+-- build BST with number of nodes `x` from list `xs`
+toBST :: xs: List a -> s: Nat -> {BST a | elems xs == telems _v && size _v == s}
+
+{- Useful components -}
+data BST a where
+  Empty :: BST a
+  Node  :: x: a -> l: BST {a | _v < x} -> r: BST {a | x < _v} -> BST a
+                          
+termination measure size :: BST a -> {Int | _v >= 0} where
+  Empty -> 0
+  Node x l r -> size l + size r + 1
+  
+measure telems :: BST a -> Set a where
+  Empty -> []
+  Node x l r -> telems l + telems r + [x]
+
+qualifier {x < y, x != y}
+
+{- Synthesis goal -}
+delete :: t: BST a -> x: a -> {BST a | telems _v == telems t - [x]}
+delete = ??

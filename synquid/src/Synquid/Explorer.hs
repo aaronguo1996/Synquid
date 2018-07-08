@@ -507,7 +507,8 @@ termWithType env sty rty typ = do
             if pc == 0
               then do
                 writeLog 2 $ text "Trying" <+> text id
-                let p = Program (PSymbol id) (sty, t, typ)
+                let succinctTy = outOfSuccinctAll (toSuccinctType env (t))
+                let p = Program (PSymbol id) (succinctTy, t, typ)
                 addConstraint $ Subtype env t rty False "" -- Add subtyping check, unless it's a function type and incremental checking is diasbled
                 when (arity rty > 0) (addConstraint $ Subtype env t rty True "") -- Add consistency constraint for function types
                 es' <- get

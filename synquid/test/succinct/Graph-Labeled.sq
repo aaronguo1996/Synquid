@@ -1,0 +1,50 @@
+data Node
+type Nat = {Int | _v >= 0}
+data Double
+data Char
+data Edge a where
+  Edge :: src: Node -> dst: Node -> option: a -> Edge a
+
+data List a where
+  Nil :: List a
+  Cons :: x: a -> xs: List a -> List a
+  
+termination measure len :: List a -> {Int | _v >= 0} where
+  Nil -> 0
+  Cons x xs -> 1 + len xs  
+
+measure elems :: List a -> Set a where
+  Nil -> []
+  Cons x xs -> [x] + elems xs
+
+data Pair a b where
+  Pair :: x: a -> y: b -> Pair a b
+
+measure fst :: Pair a b -> a where
+  Pair x y -> x
+  
+measure snd :: Pair a b -> b where
+  Pair x y -> y
+
+type UnweightedGraph a = List (Edge a)
+-- edge with weight
+type WGraph = List (Edge Double)
+-- edge with weight and color
+type CWGraph = List (Edge (Pair Double Char))
+-- edge with weight, color and label
+type CWLGraph a = List (Edge (Pair (Pair Double Char) a))
+
+{- Useless components -}
+replicate :: n: Nat -> x: a -> {List a | len _v == n}
+partition :: xs: List a -> p: a -> {Pair (List {a | _v <= p}) (List {a | _v > p}) | len (fst _v) + len (snd _v) == len xs && elems (fst _v) + elems (snd _v) == elems xs }
+drop :: xs: List a -> n: Nat -> {List a | len _v == len xs - n}
+delete :: xs: List a -> x: a -> {List a | elems _v == elems xs - [x]}
+take :: xs: List a -> n: Nat -> {List a | len _v == n}
+
+{- Synthesis goal -}
+assignCWL :: graph: UnweightedGraph a -> 
+            weights: {List Double | len _v == len graph} -> 
+            colors: {List Char | len _v == len graph} -> 
+            labels: {List b | len _v == len graph} -> 
+            {CWLGraph b | len colors == len _v }
+assignCWL = ??

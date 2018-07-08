@@ -50,5 +50,5 @@ nodesOf = ??
         NoEdge -> Nil
         MoreEdge e es -> 
           match e with
-            Edge src dst o -> Cons src (Cons dst (dfs (Graph es)))
+            Edge src dst o -> Cons src (Cons dst (nodesOf (Graph es)))
 -}

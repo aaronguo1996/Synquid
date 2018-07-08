@@ -36,6 +36,6 @@ zip6 :: xs: List a -> ys: {List b | len _v == len xs}
         -> zs: {List c | len _v == len xs} 
         -> ts: {List d | len _v == len xs} 
         -> rs: {List e | len _v == len xs} 
-        -> ms: {List f | len _v == len xs} 
-        -> {List (Pair (Pair (Pair (Pair (Pair a b) c) d) e) f) | len _v == len xs}
+        -> ms: {List a | len _v == len xs} 
+        -> {List (Pair (Pair (Pair (Pair (Pair a b) c) d) e) a) | len _v == len xs}
 zip6 = ??

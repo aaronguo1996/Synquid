@@ -1,6 +1,6 @@
 type Nat = {Int | _v >= 0}
-plus :: x: Nat -> y: Nat -> {Nat | _v == x + y}
-minus :: x: Nat -> y: Nat -> {Nat | _v == x - y}
+plus :: x: Int -> y: Int -> {Int | _v == x + y}
+minus :: x: Int -> y: Int -> {Int | _v == x - y}
 -- plus20 :: x: Nat -> {Nat | _v == x + 20}
 plus2 :: x: Nat -> {Nat | _v == x + 2}
 plusminus :: n:Nat -> {Nat | _v == n+8}

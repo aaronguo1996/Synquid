@@ -1,0 +1,110 @@
+{- Useless components (totally unrelated) -}
+type Nat = {Int | _v >= 0}
+
+data List a where
+  Nil :: List a
+  Cons :: x: a -> xs: List a -> List a
+  
+termination measure len :: List a -> {Int | _v >= 0} where
+  Nil -> 0
+  Cons x xs -> 1 + len xs  
+
+measure elems :: List a -> Set a where
+  Nil -> []
+  Cons x xs -> [x] + elems xs
+
+data ListOfLists a where
+  Nil2 :: ListOfLists a
+  Cons2 :: x: List a -> xs: ListOfLists a -> ListOfLists a
+  
+termination measure len2 :: ListOfLists a -> {Int | _v >= 0} where
+  Nil2 -> 0
+  Cons2 x xs -> 1 + len2 xs
+  
+measure sumLen :: ListOfLists a -> {Int | _v >= 0} where
+  Nil2 -> 0
+  Cons2 x xs -> sumLen xs + len x
+
+data Info where
+  Info :: streetAddr: Int -> zipcode: Int -> local: Bool -> Info
+    
+data Address where
+  Address :: info: Info -> priv: Bool -> Address
+  
+measure isPriv :: Address -> Bool where
+  Address info priv -> priv
+
+data AddressBook where
+  AddressBook :: business: List {Address | !(isPriv _v)} -> personal: List {Address | isPriv _v} -> AddressBook
+
+data IList a where
+    INil :: IList a
+    ICons :: x: a -> xs: IList {a | x <= _v} -> IList a
+  
+termination measure ilen :: IList a -> {Int | _v >= 0} where
+  INil -> 0
+  ICons x xs -> 1 + ilen xs  
+
+measure ielems :: IList a -> Set a where
+  INil -> []
+  ICons x xs -> [x] + ielems xs
+
+data MinPair a where
+  MinPair :: x: a -> l: List {a | x <= _v}  -> MinPair a
+  
+measure min :: MinPair a -> a where
+  MinPair x l -> x
+  
+measure rest :: MinPair a -> List a where
+  MinPair x l -> l
+
+data Text where
+  Text :: c: Char -> Text
+
+measure tlength :: Text -> {Int | _v >= 0} where
+  Text c -> 10 -- stub measure
+
+data Char
+
+append :: xs: List a -> ys: List a -> {List a | len _v == len xs + len ys && elems _v == elems xs + elems ys}
+concat :: xss: ListOfLists a -> { List a | len _v == sumLen xss }
+deleteList :: x: a -> xs: List a -> {List a | elems _v == elems xs - [x]}
+drop :: n: Nat -> xs: {List a | len _v >= n} -> {List a | len _v == len xs - n}
+elem :: x: a -> xs: List a -> {Bool | _v == (x in elems xs)}
+map :: f: (a -> b) -> xs: List a -> {List b | len _v == len xs}
+replicate :: n: Nat -> x: a -> {List a | len _v == n}
+stutter :: xs: List a -> {List a | len _v == 2 * len xs}
+take :: n: Nat -> xs: {List a | len _v >= n} -> {List a | len _v == n}
+toNat :: xs: List Int -> {List Nat | len _v == len xs}
+zipWith :: f: (a -> b -> c) -> xs: List a -> ys: {List b | len _v == len xs} -> {List c | len _v == len xs}
+selectSort :: xs: List a -> {IList a | ielems _v == elems xs}
+extractMin :: xs: {List a | len _v > 0} -> {MinPair a | elems xs == [min _v] + elems (rest _v) && len xs == 1 + len (rest _v)}
+quickSort :: xs: List a -> {IList a | ilen _v == len xs && ielems _v == elems xs }
+insert :: x: a -> xs: IList a -> {IList a | ielems _v == ielems xs + [x]}
+insertSort :: xs: List a -> {IList a | ielems _v == elems xs}
+merge :: xs: IList a -> ys: IList a -> {IList a | ilen _v == ilen xs + ilen ys && ielems _v == ielems xs + ielems ys}
+inc :: x: Int -> {Int | _v == x+1 }
+dec :: x: Int -> {Int | _v == x-1 }
+
+{- Useless components (related but unreachable) -}
+-- get BST at most depth `d`
+pruneByDepth :: t: BST a -> d: Nat -> {BST a | size _v <= size t}
+
+{- Useful components -}
+data BST a where
+  Empty :: BST a
+  Node  :: x: a -> l: BST {a | _v < x} -> r: BST {a | x < _v} -> BST a
+                          
+termination measure size :: BST a -> {Int | _v >= 0} where
+  Empty -> 0
+  Node x l r -> size l + size r + 1
+  
+measure telems :: BST a -> Set a where
+  Empty -> []
+  Node x l r -> telems l + telems r + [x]
+
+qualifier {x < y, x != y}
+
+{- Synthesis goal -}
+delete :: t: BST a -> x: a -> {BST a | telems _v == telems t - [x]}
+delete = ??

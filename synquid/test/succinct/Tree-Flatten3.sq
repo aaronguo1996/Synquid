@@ -1,0 +1,28 @@
+data List a where
+  Nil :: List a
+  Cons :: x: a -> xs: List a -> List a
+  
+termination measure len :: List a -> {Int | _v >= 0} where
+  Nil -> 0
+  Cons x xs -> 1 + len xs  
+  
+data Tree a where
+  Empty :: Tree a
+  Node :: x: a -> l: Tree a -> r: Tree a -> Tree a
+  
+termination measure size :: Tree a -> {Int | _v >= 0} where
+  Empty -> 0
+  Node x l r -> size l + size r + 1 
+
+data TriTree a where
+  TriEmpty :: TriTree a
+  TriNode :: x: a -> l: TriTree a -> m: TriTree a -> r: TriTree a -> TriTree a
+  
+termination measure size3 :: TriTree a -> {Int | _v >= 0} where
+  TriEmpty -> 0
+  TriNode x l m r -> size3 l + size3 r + size3 m + 1 
+
+append :: xs: List a -> ys: List a -> {List a | len _v == len xs + len ys}  
+  
+flatten3 :: t: TriTree a -> {List a | len _v == size3 t}
+flatten3 = ??

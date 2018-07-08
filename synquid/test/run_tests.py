@@ -120,10 +120,24 @@ BENCHMARKS = {
           ],
   'succinct' : [
     ('List-Zip',        ['-a 6']),
-    ('List-Zip3',       ['-a 6']),
-    ('List-Zip4',       ['-a 6']),
-    ('List-Zip5',       ['-a 6']),
-    ('List-Zip6',       ['-a 6'])
+    ('List-Zip3',       ['-a 6', '-m 0']),
+    ('List-Zip4',       ['-a 6', '-m 0']),
+    ('List-Zip5',       ['-a 6', '-m 0']),
+    ('List-Zip6',       ['-a 6', '-m 0']),
+    ('Graph-Weighted',  ['-m 3']),
+    ('Graph-Colored',   ['-m 4']),
+    ('Graph-Labeled',   ['-a 4', '-m 5']),
+    ('BST-Delete-T2',   []),
+    ('BST-Delete-T2-1', []),
+    ('BST-Delete-T2-2', []),
+    ('BST-Delete-T2-3', []),
+    ('BST-Delete-T2-4', []),
+    ('BST-Delete-T2-5', []),
+    ('BST-Delete-T2-6', []),
+    ('BST-Delete-T2-7', []),
+    ('BST-Delete-T2-8', []),
+    ('BST-Delete-T2-9', []),
+    ('BST-Delete-T3',   [])
   ]
 }
 
@@ -177,7 +191,8 @@ def run_benchmark(name, opts, path='.'):
     with open(LOGFILE_NAME, 'a+') as logfile:
       start = time.time()
       logfile.seek(0, os.SEEK_END)
-      return_code = call([TIMEOUT_COMMAND, TIMEOUT, 'stack', 'exec', '--', synquid_path] + COMMON_OPTS + opts + [os.path.join (path, name + '.sq')], stdout=logfile, stderr=logfile)
+      #return_code = call([TIMEOUT_COMMAND, TIMEOUT, 'stack', 'exec', '--', synquid_path] + COMMON_OPTS + opts + [os.path.join (path, name + '.sq')], stdout=logfile, stderr=logfile)
+      return_code = call(['stack', 'exec', '--', synquid_path] + COMMON_OPTS + opts + [os.path.join (path, name + '.sq')], stdout=logfile, stderr=logfile)
       end = time.time()
 
       t = end - start
