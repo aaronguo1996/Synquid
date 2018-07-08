@@ -12,7 +12,7 @@ from colorama import init, Fore, Back, Style
 # Parameters
 SYNQUID_PATH_LINUX = 'synquid'
 SYNQUID_PATH_WINDOWS = 'Synquid.exe'
-BENCH_PATH = '.'
+BENCH_PATH = './current'
 LOGFILE_NAME = 'results.log'
 ORACLE_NAME = 'oracle'
 OUTFILE_NAME = 'results.csv'
@@ -20,7 +20,7 @@ COMMON_OPTS = []
 TIMEOUT_COMMAND = 'timeout'
 TIMEOUT= '120'
 
-SECTIONS = ['.', 'sygus', 'rbt', 'AVL','succinct']
+SECTIONS = ['.', 'sygus', 'rbt', 'AVL']
 
 BENCHMARKS = {
   '.' : [
@@ -205,7 +205,7 @@ def run_benchmark(name, opts, path='.'):
           results [name] = SynthesisResult(name, t)
 
 
-def run_test(name, path='.'):
+def run_test(name, path='./current'):
     print (name)
 
     with open(LOGFILE_NAME, 'a+') as logfile:
@@ -305,7 +305,7 @@ if __name__ == '__main__':
 
     if not fail and a.synt:
         # Run synthesis benchmarks in 'current' directory
-        # os.chdir('current')
+        os.chdir('current')
         if os.path.isfile(LOGFILE_NAME):
             os.remove(LOGFILE_NAME)
 

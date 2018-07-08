@@ -18,7 +18,7 @@ import Control.Lens as Lens
 data SuccinctType = 
   SuccinctScalar (BaseType Formula) |
   SuccinctFunction Int (Set SuccinctType) SuccinctType | -- # of params -> param set -> return type
-  SuccinctDatatype (Id, Int) (Set (Id, Int)) (Set SuccinctType) (Map Id Id) (Set Id) | -- Outmost datatype, Datatype names, included types, datatype constructors, datatype measures
+  SuccinctDatatype (Id, Int) (Set (Id, Int)) (Set SuccinctType) (Map Id Id) (Set Id) | -- Outmost datatype, Datatype names, included types, datatype constructors, (datatype measures, vars in refinements)
   SuccinctAll (Set Id) SuccinctType | -- type variables, type
   SuccinctComposite (Set SuccinctType) | -- composite type nodes for the function parameters
   SuccinctLet Id SuccinctType SuccinctType | -- actually, this can be removed, [TODO] safely check this type
@@ -274,6 +274,15 @@ hasSuccinctAny (SuccinctAny) = True
 hasSuccinctAny (SuccinctDatatype _ _ tys _ _) = hasSuccinctAny (SuccinctComposite tys)
 hasSuccinctAny _ = False
 
+-- is the first type has stronger than the second one
+isStrongerThan measures (SuccinctDatatype id1 ids1 tys1 cons1 measures1) (SuccinctDatatype id2 ids2 tys2 cons2 measures2) = 
+  (measures2 `Set.intersection` measures) `Set.isSubsetOf` (measures1 `Set.intersection` measures)
+isStrongerThan _ SuccinctAny sty2 = True
+isStrongerThan _ sty1 sty2 = sty1 == sty2
+
+measuresOf (SuccinctDatatype _ _ _ _ measures) = measures
+measuresOf _ = Set.empty
+
 -- | function for debug
 printGraph :: HashMap SuccinctType (HashMap SuccinctType (Set Id)) -> String
 printGraph graph = HashMap.foldrWithKey printMap "" graph
@@ -324,7 +333,7 @@ succinct2str sty = case sty of
                         ,"}->"
                         ,(succinct2str retTy)
                         ]
-    SuccinctDatatype (id,_) names tys cons measures   -> concat
+    SuccinctDatatype (id,_) names tys cons measures  -> concat
                         ["{"
                         , id
                         ," | "

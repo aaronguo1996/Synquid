@@ -402,10 +402,10 @@ splitByPredicate preds arg fmls = foldM (\m fml -> checkFml fml m fml) Map.empty
 
 fmlMeasure :: Set Id -> Formula -> Set Id
 fmlMeasure measures fml = case fml of
-  Pred _ name args ->
-    if name `Set.member` measures
-      then Set.insert name (Set.unions $ map (fmlMeasure measures) args)
-      else Set.unions $ map (fmlMeasure measures) args
+  Pred _ name args -> Set.empty
+    -- if name `Set.member` measures
+    --   then Set.insert name (Set.unions $ map (fmlMeasure measures) args)
+    --   else Set.unions $ map (fmlMeasure measures) args
   SetLit _ args -> Set.unions $ map (fmlMeasure measures) args
   SetComp _ f -> fmlMeasure measures f
   Unary _ f -> fmlMeasure measures f
@@ -414,8 +414,8 @@ fmlMeasure measures fml = case fml of
   Cons _ id args -> measures
   _ -> Set.empty
 
-fmlVars :: Formula -> Set Id
-fmlVars fml = Set.map (\(Var s name) -> name) $ varsOf fml
+fmlVars :: Set Id -> Formula -> Set Id
+fmlVars envVars fml = Set.map (\(Var s name) -> name) (varsOf fml) `Set.intersection` envVars `Set.difference` Set.singleton valueVarName
 
 -- | Eliminate set comprehensions from a Boolean formula      
 eliminateComp :: Formula -> Formula

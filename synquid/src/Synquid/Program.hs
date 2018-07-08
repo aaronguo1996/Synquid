@@ -200,6 +200,8 @@ instance Ord (SuccinctEdge) where
 
 makeLenses ''SuccinctEdge
 
+getEdgeId (SuccinctEdge id _ _) = id
+
 -- | Typing environment
 data Environment = Environment {
   -- | Variable part:
