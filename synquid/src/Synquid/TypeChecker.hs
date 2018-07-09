@@ -33,7 +33,7 @@ reconstruct eParams tParams goal = do
   where
     go = do
       pMain <- reconstructTopLevel goal { gDepth = _auxDepth eParams }     -- Reconstruct the program
-      p <- flip insertAuxSolutions pMain <$> use solvedAuxGoals            -- Insert solutions for auxiliary goals stored in @solvedAuxGoals@
+      p <- flip insertAuxSolutions pMain <$> use (_1 . solvedAuxGoals)            -- Insert solutions for auxiliary goals stored in @solvedAuxGoals@
       runInSolver $ finalizeProgram p                                      -- Substitute all type/predicates variables and unknowns
     
 reconstructTopLevel :: MonadHorn s => Goal -> Explorer s RProgram
@@ -126,7 +126,7 @@ reconstructI env t (Program p t') = do
 reconstructI' env t PErr = generateError env
 reconstructI' env t PHole = generateError env `mplus` generateI env t False
 reconstructI' env t (PLet x iDef@(Program (PFun _ _) _) iBody) = do -- lambda-let: remember and type-check on use
-  lambdaLets %= Map.insert x (env, iDef)
+  _1 . lambdaLets %= Map.insert x (env, iDef)
   let ctx = \p -> Program (PLet x uHole p) t
   pBody <- inContext ctx $ reconstructI env t iBody
   return $ ctx pBody
@@ -248,7 +248,7 @@ reconstructE' env typ (PSymbol name) = do
     Just sch -> do
       t <- symbolType env name sch
       let p = Program (PSymbol name) t
-      symbolUseCount %= Map.insertWith (+) name 1
+      _1 . symbolUseCount %= Map.insertWith (+) name 1
       case Map.lookup name (env ^. shapeConstraints) of
         Nothing -> return ()
         Just sc -> addConstraint $ Subtype env (refineBot env $ shape t) (refineTop env sc) False ""
@@ -273,13 +273,13 @@ reconstructE' env typ (PApp iFun iArg) = do
   where
     generateHOArg env d tArg iArg = case content iArg of
       PSymbol f -> do
-        lets <- use lambdaLets
+        lets <- use $ _1. lambdaLets
         case Map.lookup f lets of
           Nothing -> do -- This is a function from the environment, with a known type: add its eta-expansion as an aux goal
                       impl <- etaExpand tArg f
                       _ <- enqueueGoal env tArg impl d
                       return ()
-          Just (env', def) -> auxGoals %= ((Goal f env' (Monotype tArg) def d noPos) :) -- This is a locally defined function: add an aux goal with its body
+          Just (env', def) -> _1 . auxGoals %= ((Goal f env' (Monotype tArg) def d noPos) :) -- This is a locally defined function: add an aux goal with its body
         return iArg
       _ -> enqueueGoal env tArg iArg d -- HO argument is an abstraction: enqueue a fresh goal              
       
@@ -291,7 +291,7 @@ reconstructE' env typ impl = do
 -- return resolved @t'@, otherwise fail
 checkAnnotation :: MonadHorn s => Environment -> RType -> RType -> BareProgram RType -> Explorer s RType  
 checkAnnotation env t t' p = do
-  tass <- use (typingState . typeAssignment)
+  tass <- use $ _1 . (typingState . typeAssignment)
   case resolveRefinedType (typeSubstituteEnv tass env) t' of
     Left err -> throwError err
     Right t'' -> do
@@ -302,11 +302,11 @@ checkAnnotation env t t' p = do
       fT <- runInSolver $ finalizeType t
       fT'' <- runInSolver $ finalizeType t''
       pos <- asks . view $ _1 . sourcePos
-      typingState . errorContext .= (pos, text "when checking consistency of type annotation" </> pretty fT'' </> text "with" </> pretty fT </> text "in" $+$ pretty (ctx (Program p t'')))
+      _1 . typingState . errorContext .= (pos, text "when checking consistency of type annotation" </> pretty fT'' </> text "with" </> pretty fT </> text "in" $+$ pretty (ctx (Program p t'')))
       runInSolver solveTypeConstraints
-      typingState . errorContext .= (noPos, empty)
+      _1 . typingState . errorContext .= (noPos, empty)
       
-      tass' <- use (typingState . typeAssignment)
+      tass' <- use $ _1 . (typingState . typeAssignment)
       return $ intersection (isBound env) t'' (typeSubstitute tass' t)
           
 -- | 'etaExpand' @t@ @f@: for a symbol @f@ of a function type @t@, the term @\X0 . ... \XN . f X0 ... XN@ where @f@ is fully applied

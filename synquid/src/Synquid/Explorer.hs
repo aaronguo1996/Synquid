@@ -76,8 +76,8 @@ data ExplorerParams = ExplorerParams {
 
 makeLenses ''ExplorerParams
 
+
 type Requirements = Map Id [RType]
-type ProgramQueue = MaxPQueue Double (SProgram, ExplorerState, [Constraint])
 
 -- | State of program exploration
 data ExplorerState = ExplorerState {
@@ -86,13 +86,22 @@ data ExplorerState = ExplorerState {
   _solvedAuxGoals :: Map Id RProgram,              -- ^ Synthesized auxiliary goals, to be inserted into the main program
   _lambdaLets :: Map Id (Environment, UProgram),   -- ^ Local bindings to be checked upon use (in type checking mode)
   _requiredTypes :: Requirements,                  -- ^ All types that a variable is required to comply to (in repair mode)
-  _symbolUseCount :: Map Id Int,                   -- ^ Number of times each symbol has been used in the program so far
+  _symbolUseCount :: Map Id Int                    -- ^ Number of times each symbol has been used in the program so far
   -- temporary storage of the queue state
-  _termQueueState :: ProgramQueue                  -- ^ Candidate term queue, only used when we use succinct type graph for generateE
+  -- _termQueueState :: ProgramQueue                  -- ^ Candidate term queue, only used when we use succinct type graph for generateE
   -- _triedTerms :: Set SProgram                      -- ^ Used terms to avoid duplicate term checking for several match cases
 } deriving (Eq, Ord)
 
 makeLenses ''ExplorerState
+
+data BfsState = BfsState {
+  _parentState :: Maybe BfsState,
+  _incrementalState :: ExplorerState
+} deriving (Eq, Ord)
+
+makeLenses ''BfsState
+
+type ProgramQueue = MaxPQueue Double (SProgram, BfsState, [Constraint])
 
 -- | Key in the memoization store
 data MemoKey = MemoKey {
@@ -123,29 +132,13 @@ data PersistentState = PersistentState {
 makeLenses ''PersistentState
 
 -- | Computations that explore program space, parametrized by the the horn solver @s@
-type Explorer s = StateT ExplorerState (
+type Explorer s = StateT (ExplorerState, ProgramQueue) (
                     ReaderT (ExplorerParams, TypingParams, Reconstructor s) (
                     LogicT (StateT PersistentState s)))
              
 -- | This type encapsulates the 'reconstructTopLevel' function of the type checker,
 -- which the explorer calls for auxiliary goals             
 data Reconstructor s = Reconstructor (Goal -> Explorer s RProgram) (Environment -> RType -> UProgram -> Explorer s RProgram)
-
--- | empty typing state, just for initialization
-emptyTypingState = TypingState {
-  _typingConstraints = [],
-  _typeAssignment = Map.empty,
-  _predAssignment = Map.empty,
-  _qualifierMap = Map.empty,
-  _candidates = [],
-  _initEnv = emptyEnv,
-  _idCount = Map.empty,
-  _isFinal = False,
-  _simpleConstraints = [],
-  _hornClauses = [],
-  _consistencyChecks = [],
-  _errorContext = (noPos, empty)
-}
 
 -- | 'runExplorer' @eParams tParams initTS go@ : execute exploration @go@ with explorer parameters @eParams@, typing parameters @tParams@ in typing state @initTS@
 runExplorer :: MonadHorn s => ExplorerParams -> TypingParams -> Reconstructor s -> TypingState -> Explorer s a -> s (Either ErrorMessage a)
@@ -155,7 +148,7 @@ runExplorer eParams tParams topLevel initTS go = do
     [] -> return $ Left $ head errs
     res:_ -> return $ Right res
   where
-    initExplorerState = ExplorerState initTS [] Map.empty Map.empty Map.empty Map.empty PQ.empty
+    initExplorerState = (ExplorerState initTS [] Map.empty Map.empty Map.empty Map.empty, PQ.empty)
 
 -- | 'generateI' @env t@ : explore all terms that have refined type @t@ in environment @env@
 -- (top-down phase of bidirectional typechecking)
@@ -395,8 +388,9 @@ walkThrough env pq =
     else do 
       let (score,(p, pes, constraints)) = PQ.findMax pq
       writeLog 2 $ text "Score for" <+> pretty (toRProgram p) <+> text "is" <+> text (show score)
-      es <- get
-      put $ keepIdCount es pes
+      (es, tq) <- get
+      let accState = accumulateState env pes
+      put (keepIdCount es accState, tq)
       -- tts <- use triedTerms
       let pq' = PQ.deleteMax pq
       writeLog 2 $ text "Current queue size" <+> text (show $ PQ.size pq')
@@ -404,11 +398,9 @@ walkThrough env pq =
       if not (hasHole p)
         then do
           writeLog 2 $ text "Checking" <+> pretty (toRProgram p) <+> text "in" $+$ pretty (ctx (untyped PHole))
-          -- if p `Set.member` tts
-            -- then do es' <- get; put $ keepIdCount es' es; walkThrough env pq'
           ifte (runInSolver solveTypeConstraints) 
-              (\() -> do es' <- get; return (Just (p, es') , pq'))
-              (do es' <- get; put $ keepIdCount es' es; walkThrough env pq')
+              (\() -> do (es',_) <- get; return (Just (p, es') , pq'))
+              (do (es',tq) <- get; put (keepIdCount es' es, tq); walkThrough env pq')
         else do
           d <- asks . view $ _1 . eGuessDepth
           -- checking the partial program before filling holes
@@ -421,48 +413,56 @@ walkThrough env pq =
                     mapM_ addConstraint constraints
                     ifte (runInSolver solveTypeConstraints)
                       (\()-> do
-                        es' <- get
+                        (es',tq) <- get
                         writeLog 2 $ text "*******************Filling holes in" <+> pretty (toRProgram p)
-                        holeTy <- typeOfFirstHole p
+                        holeTy@(_, rty, _) <- typeOfFirstHole p
                         candidates <- uncurry3 (termWithType env) holeTy
-                        currSt <- get
-                        put $ keepIdCount currSt es'
+                        (currSt,_) <- get
+                        put (keepIdCount currSt es', tq)
                         filteredCands <- mapM (\(prog, progES) -> do
-                          currSt <- get
-                          put $ keepIdCount currSt progES
+                          (currSt,tq) <- get
+                          put (keepIdCount currSt progES, tq)
                           (p', constraints') <- fillFirstHole env p prog
-                          fes <- get
-                          put (keepIdCount fes es') >> if depth p' <= d then return (Just (p', fes, constraints')) else return Nothing
+                          when (isFunctionType rty) (mapM_ addConstraint constraints')
+                          (fes, tq) <- get
+                          put (keepIdCount fes es', tq)
+                          if depth p' <= d 
+                            then return (Just (p', BfsState { 
+                              _parentState = Just pes, 
+                              _incrementalState = diffExplorerState accState fes
+                              }, if isFunctionType rty then [] else constraints')) 
+                            else return Nothing
                           ) candidates --if hasHole p then PQ.insertBehind  prog accQ else PQ.insertBehind 1 prog accQ
                         walkThrough env $ foldl (\accQ prog@(p,_,_) -> PQ.insertBehind (termScore env p) prog accQ) pq' $ map fromJust $ filter isJust filteredCands
                       )
-                      (do currSt <- get; put $ keepIdCount currSt es; walkThrough env pq')
+                      (do (currSt, tq) <- get; put (keepIdCount currSt es, tq); walkThrough env pq')
                   [] -> do
-                    es' <- get
+                    (es', tq) <- get
                     writeLog 2 $ text "*******************Filling holes in" <+> pretty (toRProgram p)
                     holeTy <- typeOfFirstHole p
                     candidates <- uncurry3 (termWithType env) holeTy
-                    currSt <- get
-                    put $ keepIdCount currSt es'
+                    (currSt, _) <- get
+                    put (keepIdCount currSt es', tq)
                     filteredCands <- mapM (\(prog, progES) -> do
                       -- typingState .= progTS
-                      currSt <- get
-                      put $ keepIdCount currSt progES
+                      (currSt,_) <- get
+                      put (keepIdCount currSt progES, tq)
                       (p', constraints') <- fillFirstHole env p prog
                       -- fts <- use typingState
-                      fes <- get
+                      (fes,_) <- get
                       -- typingState .= ts' >> if depth p' <= d then return (Just (p', fes)) else return Nothing
-                      put (keepIdCount fes es') >> if depth p' <= d then return (Just (p', fes, constraints')) else return Nothing
+                      put (keepIdCount fes es', tq)
+                      if depth p' <= d then return (Just (p', BfsState { _parentState = Just pes, _incrementalState = diffExplorerState accState fes}, constraints')) else return Nothing
                       ) candidates --if hasHole p then PQ.insertBehind  prog accQ else PQ.insertBehind 1 prog accQ
                     walkThrough env $ foldl (\accQ prog@(p,_,_) -> PQ.insertBehind (termScore env p) prog accQ) pq' $ map fromJust $ filter isJust filteredCands
               )
               -- (typingState .= ts >> walkThrough env pq')
-              (do currSt <- get; put $ keepIdCount currSt es; walkThrough env pq')
+              (do (currSt,tq) <- get; put (keepIdCount currSt es, tq); walkThrough env pq')
           
   where
     typeOfFirstHole (Program p (sty,rty,typ)) = case p of
       PHole -> do
-        tass <- use (typingState . typeAssignment)
+        tass <- use $ _1 . (typingState . typeAssignment)
         let rty' = typeSubstitute tass rty
         let styp = toSuccinctType env (rty')
         let subst = Set.foldr (\t acc -> Map.insert t SuccinctAny acc) Map.empty (extractSuccinctTyVars styp `Set.difference` Set.fromList (env ^. boundTypeVars))
@@ -482,17 +482,17 @@ termWithType env sty rty typ = do
           return []
         else do
           arg <- enqueueGoal env rty (untyped PHole) (d - 1)
-          es <- get
+          (es,_) <- get
           return [(toSProgram env arg, es)]
     else do
       writeLog 2 $ text "Looking for succinct type" <+> text (succinct2str sty)
       let ids = Set.toList $ Set.unions $ HashMap.elems $ findDstNodesInGraph env sty
-      useCounts <- use symbolUseCount
+      useCounts <- use $ _1 . symbolUseCount
       let sortedIds = if isSuccinctFunction sty
                       then sortBy (mappedCompare (\(SuccinctEdge x _ _) -> (Set.member x (env ^. constants), (Map.findWithDefault 0 x useCounts)))) ids
                       else sortBy (mappedCompare (\(SuccinctEdge x _ _) -> (not $ Set.member x (env ^. constants), (Map.findWithDefault 0 x useCounts)))) ids    
 
-      es <- get
+      (es, tq) <- get
       mapM (\edge -> do
         let id = edge ^. symbolId
         case lookupSymbol id (-1) env of
@@ -503,7 +503,7 @@ termWithType env sty rty typ = do
             case Map.lookup id (env ^. shapeConstraints) of
               Nothing -> return ()
               Just sc -> addConstraint $ Subtype env (refineBot env $ shape t) (refineTop env sc) False ""
-            symbolUseCount %= Map.insertWith (+) id 1
+            _1 . symbolUseCount %= Map.insertWith (+) id 1
             if pc == 0
               then do
                 writeLog 2 $ text "Trying" <+> text id
@@ -511,8 +511,8 @@ termWithType env sty rty typ = do
                 let p = Program (PSymbol id) (succinctTy, t, typ)
                 addConstraint $ Subtype env t rty False "" -- Add subtyping check, unless it's a function type and incremental checking is diasbled
                 when (arity rty > 0) (addConstraint $ Subtype env t rty True "") -- Add consistency constraint for function types
-                es' <- get
-                put $ keepIdCount es' es
+                (es',_) <- get
+                put (keepIdCount es' es, tq)
                 return (p, es')
               else do
                 d' <- asks . view $ _1 . eGuessDepth
@@ -523,8 +523,8 @@ termWithType env sty rty typ = do
                 addConstraint $ Subtype env t tFun False "" -- Add subtyping check, unless it's a function type and incremental checking is diasbled
                 when (arity tFun > 0) (addConstraint $ Subtype env t tFun True "") -- Add consistency constraint for function types
                 let p' = buildApp pc (Program (PSymbol id) (succinctTy,t, tFun))
-                es' <- get
-                put $ keepIdCount es' es
+                (es',_) <- get
+                put (keepIdCount es' es, tq)
                 return (p', es')
         ) $ filter (\(SuccinctEdge id _ _) -> id /= "__goal__" && id /= "") sortedIds
   where
@@ -626,7 +626,7 @@ checkArguments env (Program p typ) = case p of
 
 initProgramQueue :: MonadHorn s => Environment -> RType -> Explorer s ProgramQueue
 initProgramQueue env typ = do
-  tass <- use (typingState . typeAssignment)
+  tass <- use $ _1 . (typingState . typeAssignment)
   let typ' = typeSubstitute tass typ
   writeLog 2 $ text "Looking for type" <+> pretty typ'
   let styp = toSuccinctType env (typ')
@@ -634,46 +634,75 @@ initProgramQueue env typ = do
   let succinctTy = outOfSuccinctAll $ succinctTypeSubstitute subst styp
   let p = Program PHole (succinctTy, typ, AnyT)
   -- ts <- use typingState
-  es <- get
-  let pq = PQ.singleton (termScore env p) (p, es, [])
+  (es,_) <- get
+  let initState = BfsState {
+    _parentState = Nothing,
+    _incrementalState = es
+  }
+  let pq = PQ.singleton (termScore env p) (p, initState, [])
   return pq
 
 generateEWithGraph :: MonadHorn s => Environment -> ProgramQueue -> RType -> Bool -> Bool -> Explorer s RProgram
 generateEWithGraph env pq typ isThenBranch isElseBranch = do
   -- ts <- use typingState
-  es <- get
+  (es, tq) <- get
   res <- walkThrough env pq
   case res of
     (Nothing, _) -> mzero
     (Just (p, pes), newPQ) -> do
       -- typingState .= pts 
-      put $ keepIdCount es pes
+      put (keepIdCount es pes, tq)
       let refinedP = toRProgram p
       writeLog 2 $ text "Checking program" <+> pretty refinedP
       let p' = refinedP
       -- p' <- if isElseBranch then checkArguments env refinedP else return refinedP
       ifte (checkE env typ p')
-        (\() -> when isThenBranch (termQueueState .= newPQ) >> return p')
+        (\() -> when isThenBranch (do (currSt, _) <- get;put (currSt, newPQ)) >> return p')
         -- (typingState .= ts >> generateEWithGraph env newPQ typ isThenBranch isElseBranch)
         (do
           -- triedTerms %= Set.insert p
-          currSt <- get
-          put $ keepIdCount currSt es
+          (currSt, tq) <- get
+          put (keepIdCount currSt es, tq)
           generateEWithGraph env newPQ typ isThenBranch isElseBranch)
 
 mergeTypingState env ts pts = pts {
-  _typingConstraints = (ts ^. typingConstraints) ++ (filter (not . isCondConstraint) $ map (updateConstraintEnv env) (pts ^. typingConstraints)),
+  -- _typingConstraints = (pts ^. typingConstraints),
   _typeAssignment = Map.union (ts ^. typeAssignment) (pts ^. typeAssignment),
   _predAssignment = Map.union (ts ^. predAssignment) (pts ^. predAssignment),
   _qualifierMap = Map.union (ts ^. qualifierMap) (pts ^. qualifierMap),
-  _candidates = ts ^. candidates,
+  _candidates = pts ^. candidates,
   _idCount = Map.unionWith max (ts ^. idCount) (pts ^. idCount),
-  _isFinal = ts ^. isFinal
+  _isFinal = pts ^. isFinal
   }
 
-mergeExplorerState env es pes = es {
-  _typingState = mergeTypingState env (es ^. typingState) (pes ^. typingState)
+conditionConstraints env ts pts = pts {
+  _typingConstraints = nub $ (map (updateConstraintEnv env) (ts ^. typingConstraints)) ++ (map (updateConstraintEnv env) (pts ^. typingConstraints))
 }
+
+diffTypingState ts pts = pts {
+  --_typingConstraints = (pts ^. typingConstraints) \\ (ts ^. typingConstraints),
+  _typeAssignment = Map.difference (pts ^. typeAssignment) (ts ^. typeAssignment),
+  _predAssignment = Map.difference (pts ^. predAssignment) (ts ^. predAssignment),
+  _qualifierMap = Map.difference (pts ^. qualifierMap) (ts ^. qualifierMap),
+  _candidates = pts ^. candidates,
+  _idCount = Map.unionWith max (ts ^. idCount) (pts ^. idCount)
+}
+
+mergeExplorerState env es pes = es {
+  _typingState = mergeTypingState env (es ^. typingState) (pes ^. typingState),
+  _auxGoals = (es ^. auxGoals) ++ (pes ^. auxGoals),
+  _solvedAuxGoals = Map.union (es ^. solvedAuxGoals) (pes ^. solvedAuxGoals)
+}
+
+diffExplorerState es pes = pes {
+  _typingState = diffTypingState (es ^. typingState) (pes ^. typingState),
+  _auxGoals = (pes ^. auxGoals) \\ (es ^. auxGoals),
+  _solvedAuxGoals =  Map.difference (pes ^. solvedAuxGoals) (es ^. solvedAuxGoals)
+}
+
+accumulateState env state = case state ^. parentState of
+  Nothing -> state ^. incrementalState
+  Just s -> mergeExplorerState env (accumulateState env s) (state ^. incrementalState)
 
 -- | 'generateE' @env typ@ : explore all elimination terms of type @typ@ in environment @env@
 -- (bottom-up phase of bidirectional typechecking)
@@ -683,23 +712,25 @@ generateE env typ isThenBranch isElseBranch isMatchScrutinee = do
   d <- asks . view $ _1 . eGuessDepth
   pq <- if isElseBranch 
     then do
-      q <- use termQueueState
-      -- ts <- use typingState
-      es <- get
-      resQ <- mapM (\(k, (prog, pes, c)) -> return $ Just (k, (prog, mergeExplorerState env es pes, c))) (PQ.toList q)
-      return $ PQ.fromList $ map fromJust $ filter isJust resQ
+      (es, q) <- get
+      -- return q
+      return $ PQ.map (\(prog, pes, c) -> let 
+        newEs = mergeExplorerState env (pes ^. incrementalState) es
+        finalEs = newEs {_typingState = conditionConstraints env (pes ^. incrementalState ^. typingState) (newEs ^. typingState)}
+        in (prog, pes {_incrementalState = finalEs}, c)) q
+      -- return $ PQ.fromList $ map fromJust $ filter isJust q
     else initProgramQueue env typ
   prog@(Program pTerm pTyp) <- if useFilter && (not isMatchScrutinee) then generateEWithGraph env pq typ isThenBranch isElseBranch else generateEUpTo env typ d
   -- (Program pTerm pTyp) <- generateEUpTo env typ d
   runInSolver $ isFinal .= True >> solveTypeConstraints >> isFinal .= False  -- Final type checking pass that eliminates all free type variables
-  newGoals <- uses auxGoals (map gName)                                      -- Remember unsolved auxiliary goals
+  newGoals <- uses (_1 . auxGoals) (map gName)                                      -- Remember unsolved auxiliary goals
   generateAuxGoals                                                           -- Solve auxiliary goals
   pTyp' <- runInSolver $ currentAssignment pTyp                              -- Finalize the type of the synthesized term
   addLambdaLets pTyp' (Program pTerm pTyp') newGoals                         -- Check if some of the auxiliary goal solutions are large and have to be lifted into lambda-lets
   where
     addLambdaLets t body [] = return body
     addLambdaLets t body (g:gs) = do
-      pAux <- uses solvedAuxGoals (Map.! g)
+      pAux <- uses (_1 . solvedAuxGoals) (Map.! g)
       if programNodeCount pAux > 5
         then addLambdaLets t (Program (PLet g uHole body) t) gs
         else addLambdaLets t body gs
@@ -719,7 +750,7 @@ generateEAt env typ d = do
       checkE env typ p
       return p
     else do -- Try to fetch from memoization store
-      startState <- get
+      (startState, _) <- get
       let tass = startState ^. typingState . typeAssignment
       let memoKey = MemoKey (arity typ) (shape $ typeSubstitute tass (lastType typ)) startState d
       startMemo <- getMemo
@@ -733,7 +764,7 @@ generateEAt env typ d = do
           p <- enumerateAt env typ d
 
           memo <- getMemo
-          finalState <- get
+          (finalState, _) <- get
           let memo' = Map.insertWith (flip (++)) memoKey [(p, finalState)] memo
           writeLog 3 (text "Memoizing for:" <+> pretty memoKey <+> pretty p <+> text "::" <+> pretty (typeOf p))
 
@@ -743,7 +774,7 @@ generateEAt env typ d = do
           return p
   where
     applyMemoized (p, finalState) = do
-      put finalState
+      put (finalState, PQ.empty)
       checkE env typ p
       return p
 
@@ -764,9 +795,9 @@ checkE env typ p@(Program pTerm pTyp) = do
   when (consistency && arity typ > 0) (addConstraint $ Subtype env pTyp typ True "") -- Add consistency constraint for function types
   fTyp <- runInSolver $ finalizeType typ
   pos <- asks . view $ _1 . sourcePos
-  typingState . errorContext .= (pos, text "when checking" </> pretty p </> text "::" </> pretty fTyp </> text "in" $+$ pretty (ctx p))
+  _1 . typingState . errorContext .= (pos, text "when checking" </> pretty p </> text "::" </> pretty fTyp </> text "in" $+$ pretty (ctx p))
   runInSolver solveTypeConstraints
-  typingState . errorContext .= (noPos, empty)
+  _1 . typingState . errorContext .= (noPos, empty)
     -- where      
       -- unknownId :: Formula -> Maybe Id
       -- unknownId (Unknown _ i) = Just i
@@ -824,14 +855,14 @@ enumerateAt env typ 0 = do
   let symbols = Map.toList $ symbolsOfArity (arity typ) env
   let filteredSymbols = if useFilter && succinctTy /= SuccinctAny then filter (\(id,_) -> Set.member id rs) symbols else symbols
   -- let filteredSymbols = symbols
-  useCounts <- use symbolUseCount
+  useCounts <- use $ _1 . symbolUseCount
   let sortedSymbols = if arity typ == 0
                     then sortBy (mappedCompare (\(x, _) -> (Set.member x (env ^. constants), (Map.findWithDefault 0 x useCounts)))) filteredSymbols
                     else sortBy (mappedCompare (\(x, _) -> (not $ Set.member x (env ^. constants), (Map.findWithDefault 0 x useCounts)))) filteredSymbols
   msum $ map pickSymbol sortedSymbols
   where
     styp' = do 
-      tass <- use (typingState . typeAssignment)
+      tass <- use $ _1 . (typingState . typeAssignment)
       let typ' = typeSubstitute tass typ
       let styp = toSuccinctType env ((if arity typ' == 0 then typ' else lastType typ'))
       let subst = Set.foldr (\t acc -> Map.insert t SuccinctAny acc) Map.empty (extractSuccinctTyVars styp `Set.difference` Set.fromList (env ^. boundTypeVars))
@@ -844,7 +875,7 @@ enumerateAt env typ 0 = do
       t <- symbolType env name sch
       let p = Program (PSymbol name) t
       writeLog 2 $ text "Trying" <+> pretty p
-      symbolUseCount %= Map.insertWith (+) name 1      
+      _1 . symbolUseCount %= Map.insertWith (+) name 1      
       case Map.lookup name (env ^. shapeConstraints) of
         Nothing -> return ()
         Just sc -> addConstraint $ Subtype env (refineBot env $ shape t) (refineTop env sc) False ""
@@ -886,13 +917,13 @@ generateError :: MonadHorn s => Environment -> Explorer s RProgram
 generateError env = do
   ctx <- asks . view $ _1. context
   writeLog 2 $ text "Checking" <+> pretty errorProgram <+> text "in" $+$ pretty (ctx errorProgram)
-  tass <- use (typingState . typeAssignment)  
+  tass <- use $ _1 . (typingState . typeAssignment)  
   let env' = typeSubstituteEnv tass env
   addConstraint $ Subtype env (int $ conjunction $ Set.fromList $ map trivial (allScalars env')) (int ffalse) False ""
   pos <- asks . view $ _1 . sourcePos
-  typingState . errorContext .= (pos, text "when checking" </> pretty errorProgram </> text "in" $+$ pretty (ctx errorProgram))  
+  _1 . typingState . errorContext .= (pos, text "when checking" </> pretty errorProgram </> text "in" $+$ pretty (ctx errorProgram))  
   runInSolver solveTypeConstraints
-  typingState . errorContext .= (noPos, empty)
+  _1 . typingState . errorContext .= (noPos, empty)
   return errorProgram
   where
     trivial var = var |=| var
@@ -914,7 +945,7 @@ isPolyConstructor (Program (PSymbol name) t) = isTypeName name && (not . Set.nul
 
 enqueueGoal env typ impl depth = do
   g <- freshVar env "f"
-  auxGoals %= ((Goal g env (Monotype typ) impl depth noPos) :)
+  _1 . auxGoals %= ((Goal g env (Monotype typ) impl depth noPos) :)
   return $ Program (PSymbol g) typ
 
 {- Utility -}
@@ -948,18 +979,18 @@ throwError e = do
 -- | Impose typing constraint @c@ on the programs
 addConstraint c = do
   writeLog 3 $ text "Adding constraint" <+> pretty c
-  typingState %= addTypingConstraint c
+  _1 . typingState %= addTypingConstraint c
 
 -- | Embed a type-constraint checker computation @f@ in the explorer; on type error, record the error and backtrack
 runInSolver :: MonadHorn s => TCSolver s a -> Explorer s a
 runInSolver f = do
   tParams <- asks . view $ _2
-  tState <- use typingState  
+  tState <- use $ _1 . typingState  
   res <- lift . lift . lift . lift $ runTCSolver tParams tState f
   case res of
     Left err -> throwError err
     Right (res, st) -> do
-      typingState .= st
+      _1 . typingState .= st
       return res
 
 freshId :: MonadHorn s => String -> Explorer s String
@@ -974,13 +1005,13 @@ freshVar env prefix = runInSolver $ TCSolver.freshVar env prefix
 currentValuation :: MonadHorn s => Formula -> Explorer s Valuation
 currentValuation u = do
   runInSolver $ solveAllCandidates
-  cands <- use (typingState . candidates)
+  cands <- use $ _1 . (typingState . candidates)
   let candGroups = groupBy (\c1 c2 -> val c1 == val c2) $ sortBy (\c1 c2 -> setCompare (val c1) (val c2)) cands
   msum $ map pickCandidiate candGroups
   where
     val c = valuation (solution c) u
     pickCandidiate cands' = do
-      typingState . candidates .= cands'
+      _1 . typingState . candidates .= cands'
       return $ val (head cands')
 
 inContext ctx f = local (over (_1 . context) (. ctx)) f
@@ -1063,16 +1094,16 @@ cut = once
 -- | Synthesize auxiliary goals accumulated in @auxGoals@ and store the result in @solvedAuxGoals@
 generateAuxGoals :: MonadHorn s => Explorer s ()
 generateAuxGoals = do
-  goals <- use auxGoals
+  goals <- use $ _1 . auxGoals
   writeLog 3 $ text "Auxiliary goals are:" $+$ vsep (map pretty goals)
   case goals of
     [] -> return ()
     (g : gs) -> do
-        auxGoals .= gs
+        _1 . auxGoals .= gs
         writeLog 2 $ text "PICK AUXILIARY GOAL" <+> pretty g
         Reconstructor reconstructTopLevel _ <- asks . view $ _3
         p <- reconstructTopLevel g
-        solvedAuxGoals %= Map.insert (gName g) (etaContract p)
+        _1 . solvedAuxGoals %= Map.insert (gName g) (etaContract p)
         generateAuxGoals
   where
     etaContract p = case etaContract' [] (content p) of
@@ -1160,7 +1191,7 @@ addEdgeForSymbol name succinctTy env = let
 addSuccinctSymbol :: MonadHorn s => Id -> RSchema -> Environment -> Explorer s Environment
 addSuccinctSymbol name t env = do
   newt <- instantiateWithoutConstraint env (t) True []
-  tass <- use (typingState . typeAssignment)
+  tass <- use $ _1 . (typingState . typeAssignment)
   let succinctTy = getSuccinctTy ((typeSubstitute tass newt))
   writeLog 2 $ text "ADD" <+> text name <+> text ":" <+> text (succinct2str succinctTy)
   case newt of 

@@ -1,0 +1,1338 @@
+Checking error in
+error
+Adding constraint length |- {Int|0 == 0} <: {Int|False} ()
+Typing Constraints
+length |- {Int|0 == 0} <: {Int|False} ()
+Type assignment
+Simple Constraints
+length |- {Int|0 == 0} <: {Int|False} ()
+Pred assignment
+After process simple constraints
+length |- {Int|0 == 0} <: {Int|False} ()
+Constraints
+  0 == 0 ==> False
+QMap
+Candidates (1)
+  0: [] (0 1)
+Chosen candidate: 0: [] (0 1)
+Invalid Constraint: 0 == 0 ==> False
+Strengthening: 0 == 0 ==> False
+Instantiated axioms:
+All assumptions:
+0 == 0
+RHS: False
+assumption True
+mustHave 0 == 0
+qualsList []
+Optimal valuations:
+Pruned valuations:
+Diffs: (0)
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking error in
+error
+Adding constraint length, xs |- C0
+Looking for type {Int|_v == len xs}
+Trying xs
+Checking xs :: {Int|_v == len xs} in
+\xs . ??
+Adding constraint length, xs C0 |- {List a|_v == xs} <: {Int|_v == len xs} ()
+Typing Constraints
+length, xs C0 |- {List a|_v == xs} <: {Int|_v == len xs} ()
+length, xs |- C0
+TYPE ERROR: Cannot match shape 'List (a)'
+with shape 'Int'
+when checking xs ::
+{Int|_v == len xs} in
+\xs . xs
+Adding constraint length, xs |- A0
+INSTANTIATE <a> . {List a|_v == (Nil)}
+INTO {List {A0|False}|_v == (Nil)}
+Trying Nil
+Checking Nil :: {Int|_v == len xs} in
+\xs . ??
+Adding constraint length, xs C0 |- {List {A0|False}|_v == (Nil)} <: {Int|_v == len xs} ()
+Typing Constraints
+length, xs C0 |- {List {A0|False}|_v == (Nil)} <: {Int|_v == len xs} ()
+length, xs |- A0
+length, xs |- C0
+TYPE ERROR: Cannot match shape 'List (A0)'
+with shape 'Int'
+when checking Nil ::
+{Int|_v == len xs} in
+\xs . Nil
+Trying zero
+Checking zero :: {Int|_v == len xs} in
+\xs . ??
+Adding constraint length, xs C0 |- {Int|_v == zero} <: {Int|_v == len xs} ()
+Typing Constraints
+length, xs C0 |- {Int|_v == zero} <: {Int|_v == len xs} ()
+length, xs |- C0
+Type assignment
+Simple Constraints
+length, xs |- C0
+length, xs C0 |- {Int|_v == zero} <: {Int|_v == len xs} ()
+Pred assignment
+After process simple constraints
+length, xs C0 |- {Int|_v == zero} <: {Int|_v == len xs} ()
+Constraints
+  C0 && (_v == zero && (zero == 0 && len xs >= 0)) ==> _v == len xs
+QMap
+  C0 -> {}
+Candidates (1)
+  0: [C0 -> {}] (0 1)
+Chosen candidate: 0: [C0 -> {}] (0 1)
+Invalid Constraint: C0 && (_v == zero && (zero == 0 && len xs >= 0)) ==> _v == len xs
+Strengthening: C0 && (_v == zero && (zero == 0 && len xs >= 0)) ==> _v == len xs
+Instantiated axioms:
+All assumptions:
+_v == zero, zero == 0, len xs >= 0
+RHS: _v == len xs
+assumption _v == zero && (zero == 0 && len xs >= 0)
+mustHave !(_v == len xs)
+qualsList []
+Optimal valuations:
+Pruned valuations:
+Diffs: (0)
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking zero ::
+{Int|_v == len xs} in
+\xs . zero
+INSTANTIATE x:Int -> {Int|_v == x - 1}
+INTO x1:Int -> {Int|_v == x1 - 1}
+Trying dec
+Checking dec :: X0:_ -> {Int|_v == len xs} in
+\xs . ?? ??
+Adding constraint length, xs C0 |- x1:Int -> {Int|_v == x1 - 1} <: X0:_ -> {Int|_v == len xs} ()
+Adding constraint length, xs C0 |- x1:Int -> {Int|_v == x1 - 1} /\ X0:_ -> {Int|_v == len xs} ()
+Typing Constraints
+length, xs C0 |- x1:Int -> {Int|_v == x1 - 1} /\ X0:_ -> {Int|_v == len xs} ()
+length, xs C0 |- x1:Int -> {Int|_v == x1 - 1} <: X0:_ -> {Int|_v == len xs} ()
+length, xs |- C0
+Type assignment
+Simple Constraints
+length, xs |- C0
+X0, length, xs C0 |- {Int|_v == X0 - 1} <: {Int|_v == len xs} ()
+length, x1, xs C0 |- {Int|_v == x1 - 1} /\ {Int|_v == len xs} ()
+Pred assignment
+After process simple constraints
+length, x1, xs C0 |- {Int|_v == x1 - 1} /\ {Int|_v == len xs} ()
+X0, length, xs C0 |- {Int|_v == X0 - 1} <: {Int|_v == len xs} ()
+Constraints
+  False ==> _v == len xs
+QMap
+  C0 -> {}
+Checking consistency
+  C0 && (_v == x1 - 1 && (_v == len xs && len xs >= 0))
+Candidates (1)
+  0: [C0 -> {}] (1 0)
+Remaining Candidates (1)
+  0: [C0 -> {}] (1 0)
+Trying xs
+Checking xs :: Int in
+\xs . dec ??
+Adding constraint length, xs C0 |- {List a|_v == xs} <: Int ()
+Typing Constraints
+length, xs C0 |- {List a|_v == xs} <: Int ()
+TYPE ERROR: Cannot match shape 'List (a)'
+with shape 'Int'
+when checking xs :: Int in
+\xs . dec xs
+Adding constraint length, xs |- A0
+INSTANTIATE <a> . {List a|_v == (Nil)}
+INTO {List {A0|False}|_v == (Nil)}
+Trying Nil
+Checking Nil :: Int in
+\xs . dec ??
+Adding constraint length, xs C0 |- {List {A0|False}|_v == (Nil)} <: Int ()
+Typing Constraints
+length, xs C0 |- {List {A0|False}|_v == (Nil)} <: Int ()
+length, xs |- A0
+TYPE ERROR: Cannot match shape 'List (A0)'
+with shape 'Int'
+when checking Nil :: Int in
+\xs . dec Nil
+Trying zero
+Checking zero :: Int in
+\xs . dec ??
+Adding constraint length, xs C0 |- {Int|_v == zero} <: Int ()
+Typing Constraints
+length, xs C0 |- {Int|_v == zero} <: Int ()
+Type assignment
+Simple Constraints
+length, xs C0 |- {Int|_v == zero} <: Int ()
+Pred assignment
+After process simple constraints
+Constraints
+QMap
+  C0 -> {}
+Checking consistency
+Candidates (1)
+  0: [C0 -> {}] (1 0)
+Remaining Candidates (1)
+  0: [C0 -> {}] (1 0)
+Synthesized argument zero of type {Int|_v == zero}
+Checking dec
+           zero :: {Int|_v == len xs} in
+\xs . ??
+Adding constraint length, xs C0 |- {Int|_v == zero - 1} <: {Int|_v == len xs} ()
+Typing Constraints
+length, xs C0 |- {Int|_v == zero - 1} <: {Int|_v == len xs} ()
+Type assignment
+Simple Constraints
+length, xs C0 |- {Int|_v == zero - 1} <: {Int|_v == len xs} ()
+Pred assignment
+After process simple constraints
+length, xs C0 |- {Int|_v == zero - 1} <: {Int|_v == len xs} ()
+Constraints
+  C0 && (_v == zero - 1 && (zero == 0 && len xs >= 0)) ==> _v == len xs
+QMap
+  C0 -> {}
+Candidates (1)
+  0: [C0 -> {}] (1 1)
+Chosen candidate: 0: [C0 -> {}] (1 1)
+Invalid Constraint: C0 && (_v == zero - 1 && (zero == 0 && len xs >= 0)) ==> _v == len xs
+Strengthening: C0 && (_v == zero - 1 && (zero == 0 && len xs >= 0)) ==> _v == len xs
+Instantiated axioms:
+All assumptions:
+_v == zero - 1, zero == 0, len xs >= 0
+RHS: _v == len xs
+assumption _v == zero - 1 && (zero == 0 && len xs >= 0)
+mustHave !(_v == len xs)
+qualsList []
+Optimal valuations:
+Pruned valuations:
+Diffs: (0)
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking dec zero ::
+{Int|_v == len xs} in
+\xs . dec zero
+INSTANTIATE x:Int -> {Int|_v == x + 1}
+INTO x1:Int -> {Int|_v == x1 + 1}
+Trying inc
+Checking inc :: X0:_ -> {Int|_v == len xs} in
+\xs . ?? ??
+Adding constraint length, xs C0 |- x1:Int -> {Int|_v == x1 + 1} <: X0:_ -> {Int|_v == len xs} ()
+Adding constraint length, xs C0 |- x1:Int -> {Int|_v == x1 + 1} /\ X0:_ -> {Int|_v == len xs} ()
+Typing Constraints
+length, xs C0 |- x1:Int -> {Int|_v == x1 + 1} /\ X0:_ -> {Int|_v == len xs} ()
+length, xs C0 |- x1:Int -> {Int|_v == x1 + 1} <: X0:_ -> {Int|_v == len xs} ()
+length, xs |- C0
+Type assignment
+Simple Constraints
+length, xs |- C0
+X0, length, xs C0 |- {Int|_v == X0 + 1} <: {Int|_v == len xs} ()
+length, x1, xs C0 |- {Int|_v == x1 + 1} /\ {Int|_v == len xs} ()
+Pred assignment
+After process simple constraints
+length, x1, xs C0 |- {Int|_v == x1 + 1} /\ {Int|_v == len xs} ()
+X0, length, xs C0 |- {Int|_v == X0 + 1} <: {Int|_v == len xs} ()
+Constraints
+  False ==> _v == len xs
+QMap
+  C0 -> {}
+Checking consistency
+  C0 && (_v == x1 + 1 && (_v == len xs && len xs >= 0))
+Candidates (1)
+  0: [C0 -> {}] (1 0)
+Remaining Candidates (1)
+  0: [C0 -> {}] (1 0)
+Trying xs
+Checking xs :: Int in
+\xs . inc ??
+Adding constraint length, xs C0 |- {List a|_v == xs} <: Int ()
+Typing Constraints
+length, xs C0 |- {List a|_v == xs} <: Int ()
+TYPE ERROR: Cannot match shape 'List (a)'
+with shape 'Int'
+when checking xs :: Int in
+\xs . inc xs
+Adding constraint length, xs |- A0
+INSTANTIATE <a> . {List a|_v == (Nil)}
+INTO {List {A0|False}|_v == (Nil)}
+Trying Nil
+Checking Nil :: Int in
+\xs . inc ??
+Adding constraint length, xs C0 |- {List {A0|False}|_v == (Nil)} <: Int ()
+Typing Constraints
+length, xs C0 |- {List {A0|False}|_v == (Nil)} <: Int ()
+length, xs |- A0
+TYPE ERROR: Cannot match shape 'List (A0)'
+with shape 'Int'
+when checking Nil :: Int in
+\xs . inc Nil
+Trying zero
+Checking zero :: Int in
+\xs . inc ??
+Adding constraint length, xs C0 |- {Int|_v == zero} <: Int ()
+Typing Constraints
+length, xs C0 |- {Int|_v == zero} <: Int ()
+Type assignment
+Simple Constraints
+length, xs C0 |- {Int|_v == zero} <: Int ()
+Pred assignment
+After process simple constraints
+Constraints
+QMap
+  C0 -> {}
+Checking consistency
+Candidates (1)
+  0: [C0 -> {}] (1 0)
+Remaining Candidates (1)
+  0: [C0 -> {}] (1 0)
+Synthesized argument zero of type {Int|_v == zero}
+Checking inc
+           zero :: {Int|_v == len xs} in
+\xs . ??
+Adding constraint length, xs C0 |- {Int|_v == zero + 1} <: {Int|_v == len xs} ()
+Typing Constraints
+length, xs C0 |- {Int|_v == zero + 1} <: {Int|_v == len xs} ()
+Type assignment
+Simple Constraints
+length, xs C0 |- {Int|_v == zero + 1} <: {Int|_v == len xs} ()
+Pred assignment
+After process simple constraints
+length, xs C0 |- {Int|_v == zero + 1} <: {Int|_v == len xs} ()
+Constraints
+  C0 && (_v == zero + 1 && (zero == 0 && len xs >= 0)) ==> _v == len xs
+QMap
+  C0 -> {}
+Candidates (1)
+  0: [C0 -> {}] (1 1)
+Chosen candidate: 0: [C0 -> {}] (1 1)
+Invalid Constraint: C0 && (_v == zero + 1 && (zero == 0 && len xs >= 0)) ==> _v == len xs
+Strengthening: C0 && (_v == zero + 1 && (zero == 0 && len xs >= 0)) ==> _v == len xs
+Instantiated axioms:
+All assumptions:
+_v == zero + 1, zero == 0, len xs >= 0
+RHS: _v == len xs
+assumption _v == zero + 1 && (zero == 0 && len xs >= 0)
+mustHave !(_v == len xs)
+qualsList []
+Optimal valuations:
+Pruned valuations:
+Diffs: (0)
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking inc zero ::
+{Int|_v == len xs} in
+\xs . inc zero
+Adding constraint length, xs |- A0
+INSTANTIATE <a> . x0:{List a|len _v >= 0 && len _v < len xs} -> {Int|_v == len x0}
+INTO x1:{List A0|len _v >= 0 && len _v < len xs} -> {Int|_v == len x1}
+Trying length
+Adding constraint length, xs C0 |- x1:List A0 -> {Int|False} <: xs:{List {a|False}|False} -> Int ()
+Checking length :: X0:_ -> {Int|_v == len xs} in
+\xs . ?? ??
+Adding constraint length, xs C0 |- x1:{List A0|len _v >= 0 && len _v < len xs} -> {Int|_v == len x1} <: X0:_ -> {Int|_v == len xs} ()
+Adding constraint length, xs C0 |- x1:{List A0|len _v >= 0 && len _v < len xs} -> {Int|_v == len x1} /\ X0:_ -> {Int|_v == len xs} ()
+Typing Constraints
+length, xs C0 |- x1:{List A0|len _v >= 0 && len _v < len xs} -> {Int|_v == len x1} /\ X0:_ -> {Int|_v == len xs} ()
+length, xs C0 |- x1:{List A0|len _v >= 0 && len _v < len xs} -> {Int|_v == len x1} <: X0:_ -> {Int|_v == len xs} ()
+length, xs C0 |- x1:List A0 -> {Int|False} <: xs:{List {a|False}|False} -> Int ()
+length, xs |- A0
+length, xs |- C0
+UNIFY A0 WITH {a|False} PRODUCING {a|U0}
+Type assignment
+A0 -> {a|U0}
+Typing Constraints
+Type assignment
+A0 -> {a|U0}
+Simple Constraints
+length, xs |- C0
+length, xs |- {a|U0}
+length, xs C0 |- {Int|False} <: Int ()
+length, xs C0 |- {List|False} <: List ()
+length, xs C0 |- {a|False} <: {a|U0} ()
+X0, length, xs C0 |- {Int|_v == len X0} <: {Int|_v == len xs} ()
+length, x1, xs C0 |- {Int|_v == len x1} /\ {Int|_v == len xs} ()
+Pred assignment
+After process simple constraints
+length, x1, xs C0 |- {Int|_v == len x1} /\ {Int|_v == len xs} ()
+X0, length, xs C0 |- {Int|_v == len X0} <: {Int|_v == len xs} ()
+Constraints
+  False ==> _v == len xs
+QMap
+  C0 -> {}
+  U0 -> {}
+Checking consistency
+  C0 && (_v == len x1 && (_v == len xs && (len x1 >= 0 && (len xs >= 0 && (len x1 >= 0 && len x1 < len xs)))))
+Candidates (1)
+  0: [C0 -> {}, U0 -> {}] (1 0)
+Remaining Candidates (0)
+TYPE ERROR: Found inconsistent refinements
+when checking length ::
+X0:_ -> {Int|_v == len xs} in
+\xs . length ??
+Adding constraint length, xs |- A0
+INSTANTIATE <a> . x:a -> xs:List a -> {List a|_v == (Cons x xs)}
+INTO x1:A0 -> x2:List A0 -> {List A0|_v == (Cons x1 x2)}
+Trying Cons
+Checking Cons :: X1:_ -> X0:_ -> {Int|_v == len xs} in
+\xs . ?? ?? ??
+Adding constraint length, xs C0 |- x1:A0 -> x2:List A0 -> {List A0|_v == (Cons x1 x2)} <: X1:_ -> X0:_ -> {Int|_v == len xs} ()
+Adding constraint length, xs C0 |- x1:A0 -> x2:List A0 -> {List A0|_v == (Cons x1 x2)} /\ X1:_ -> X0:_ -> {Int|_v == len xs} ()
+Typing Constraints
+length, xs C0 |- x1:A0 -> x2:List A0 -> {List A0|_v == (Cons x1 x2)} /\ X1:_ -> X0:_ -> {Int|_v == len xs} ()
+length, xs C0 |- x1:A0 -> x2:List A0 -> {List A0|_v == (Cons x1 x2)} <: X1:_ -> X0:_ -> {Int|_v == len xs} ()
+length, xs |- A0
+length, xs |- C0
+TYPE ERROR: Cannot match shape 'List (A0)'
+with shape 'Int'
+when checking Cons ::
+X1:_ -> X0:_ -> {Int|_v == len xs}
+in
+\xs . Cons ?? ??
+Adding constraint length, xs |- A0
+Adding constraint length, xs |- A1
+Adding constraint |- P0 :: List (A1) -> A0 -> Bool
+INSTANTIATE <b> . <a> . <p :: List (a) -> b -> Bool> . f:(xs:List a -> x:a -> acc:{b|p xs _v} -> {b|p ((Cons x xs)) _v}) -> seed:{b|p (Nil) _v} -> ys:List a -> {b|p ys _v}
+INTO x1:(x2:List A1 -> x3:A1 -> x4:{A0|P0 x2 _v} -> {A0|P0 ((Cons x3 x2)) _v}) -> x5:{A0|P0 (Nil) _v} -> x6:List A1 -> {A0|P0 x6 _v}
+Trying foldr
+Checking foldr :: X2:_ -> X1:_ -> X0:_ -> {Int|_v == len xs} in
+\xs . ?? ?? ?? ??
+Adding constraint length, xs C0 |- x1:(x2:List A1 -> x3:A1 -> x4:{A0|P0 x2 _v} -> {A0|P0 ((Cons x3 x2)) _v}) -> x5:{A0|P0 (Nil) _v} -> x6:List A1 -> {A0|P0 x6 _v} <: X2:_ -> X1:_ -> X0:_ -> {Int|_v == len xs} ()
+Adding constraint length, xs C0 |- x1:(x2:List A1 -> x3:A1 -> x4:{A0|P0 x2 _v} -> {A0|P0 ((Cons x3 x2)) _v}) -> x5:{A0|P0 (Nil) _v} -> x6:List A1 -> {A0|P0 x6 _v} /\ X2:_ -> X1:_ -> X0:_ -> {Int|_v == len xs} ()
+Typing Constraints
+length, xs C0 |- x1:(x2:List A1 -> x3:A1 -> x4:{A0|P0 x2 _v} -> {A0|P0 ((Cons x3 x2)) _v}) -> x5:{A0|P0 (Nil) _v} -> x6:List A1 -> {A0|P0 x6 _v} /\ X2:_ -> X1:_ -> X0:_ -> {Int|_v == len xs} ()
+length, xs C0 |- x1:(x2:List A1 -> x3:A1 -> x4:{A0|P0 x2 _v} -> {A0|P0 ((Cons x3 x2)) _v}) -> x5:{A0|P0 (Nil) _v} -> x6:List A1 -> {A0|P0 x6 _v} <: X2:_ -> X1:_ -> X0:_ -> {Int|_v == len xs} ()
+|- P0 :: List (A1) -> A0 -> Bool
+length, xs |- A1
+length, xs |- A0
+length, xs |- C0
+UNIFY A0 WITH {Int|_v == len xs} PRODUCING {Int|U0}
+Type assignment
+A0 -> {Int|U0}
+Typing Constraints
+length, xs |- A1
+|- P0 :: List (A1) -> A0 -> Bool
+Type assignment
+A0 -> {Int|U0}
+Simple Constraints
+length, xs |- C0
+length, xs |- {Int|U0}
+X0, X1, length, xs C0 |- {Int|U0 && P0 X0 _v} <: {Int|_v == len xs} ()
+length, x5, x6, xs C0 |- {Int|U0 && P0 x6 _v} /\ {Int|_v == len xs} ()
+WARNING: free vars in predicate |- P0 :: List (A1) -> A0 -> Bool
+Pred assignment
+After process simple constraints
+length, x5, x6, xs C0 |- {Int|U0 && P0 x6 _v} /\ {Int|_v == len xs} ()
+Constraints
+QMap
+  C0 -> {}
+  U0 -> {_v == len xs}
+Checking consistency
+  C0 && (_v == len xs && (len x6 >= 0 && (len xs >= 0 && (U0 && P0 x6 _v))))
+Candidates (1)
+  0: [C0 -> {}, U0 -> {}] (0 0)
+Remaining Candidates (1)
+  0: [C0 -> {}, U0 -> {}] (0 0)
+Checking foldr
+           f0 :: X1:_ -> X0:_ -> {Int|_v == len xs} in
+\xs . ?? ?? ??
+Adding constraint length, xs C0 |- x5:{A0|P0 (Nil) _v} -> x6:List A1 -> {A0|P0 x6 _v} <: X1:_ -> X0:_ -> {Int|_v == len xs} ()
+Adding constraint length, xs C0 |- x5:{A0|P0 (Nil) _v} -> x6:List A1 -> {A0|P0 x6 _v} /\ X1:_ -> X0:_ -> {Int|_v == len xs} ()
+Typing Constraints
+length, xs C0 |- x5:{A0|P0 (Nil) _v} -> x6:List A1 -> {A0|P0 x6 _v} /\ X1:_ -> X0:_ -> {Int|_v == len xs} ()
+length, xs C0 |- x5:{A0|P0 (Nil) _v} -> x6:List A1 -> {A0|P0 x6 _v} <: X1:_ -> X0:_ -> {Int|_v == len xs} ()
+X0, X1, length, xs C0 |- {Int|U0 && P0 X0 _v} <: {Int|_v == len xs} ()
+length, xs |- A1
+|- P0 :: List (A1) -> A0 -> Bool
+Type assignment
+A0 -> {Int|U0}
+Simple Constraints
+X0, X1, length, xs C0 |- {Int|U0 && P0 X0 _v} <: {Int|_v == len xs} ()
+X0, X1, length, xs C0 |- {Int|U0 && P0 X0 _v} <: {Int|_v == len xs} ()
+length, x5, x6, xs C0 |- {Int|U0 && P0 x6 _v} /\ {Int|_v == len xs} ()
+WARNING: free vars in predicate |- P0 :: List (A1) -> A0 -> Bool
+Pred assignment
+After process simple constraints
+length, x5, x6, xs C0 |- {Int|U0 && P0 x6 _v} /\ {Int|_v == len xs} ()
+Constraints
+QMap
+  C0 -> {}
+  U0 -> {_v == len xs}
+Checking consistency
+  C0 && (_v == len xs && (len x6 >= 0 && (len xs >= 0 && (U0 && P0 x6 _v))))
+Candidates (1)
+  0: [C0 -> {}, U0 -> {}] (0 0)
+Remaining Candidates (1)
+  0: [C0 -> {}, U0 -> {}] (0 0)
+Trying xs
+Checking xs :: {A0|P0 (Nil) _v} in
+\xs . foldr f0 ?? ??
+Adding constraint length, xs C0 |- {List a|_v == xs} <: {A0|P0 (Nil) _v} ()
+Typing Constraints
+length, xs C0 |- {List a|_v == xs} <: {A0|P0 (Nil) _v} ()
+X0, X1, length, xs C0 |- {Int|U0 && P0 X0 _v} <: {Int|_v == len xs} ()
+length, xs |- A1
+|- P0 :: List (A1) -> A0 -> Bool
+TYPE ERROR: Cannot match shape 'List (a)'
+with shape 'Int'
+when checking xs ::
+{Int|True && P0 (Nil) _v} in
+\xs . foldr f0 xs ??
+Adding constraint length, xs |- A2
+INSTANTIATE <a> . {List a|_v == (Nil)}
+INTO {List {A2|False}|_v == (Nil)}
+Trying Nil
+Checking Nil :: {A0|P0 (Nil) _v} in
+\xs . foldr f0 ?? ??
+Adding constraint length, xs C0 |- {List {A2|False}|_v == (Nil)} <: {A0|P0 (Nil) _v} ()
+Typing Constraints
+length, xs C0 |- {List {A2|False}|_v == (Nil)} <: {A0|P0 (Nil) _v} ()
+length, xs |- A2
+X0, X1, length, xs C0 |- {Int|U0 && P0 X0 _v} <: {Int|_v == len xs} ()
+length, xs |- A1
+|- P0 :: List (A1) -> A0 -> Bool
+TYPE ERROR: Cannot match shape 'List (A2)'
+with shape 'Int'
+when checking Nil ::
+{Int|True && P0 (Nil) _v} in
+\xs . foldr f0 Nil ??
+Trying zero
+Checking zero :: {A0|P0 (Nil) _v} in
+\xs . foldr f0 ?? ??
+Adding constraint length, xs C0 |- {Int|_v == zero} <: {A0|P0 (Nil) _v} ()
+Typing Constraints
+length, xs C0 |- {Int|_v == zero} <: {A0|P0 (Nil) _v} ()
+X0, X1, length, xs C0 |- {Int|U0 && P0 X0 _v} <: {Int|_v == len xs} ()
+length, xs |- A1
+|- P0 :: List (A1) -> A0 -> Bool
+Type assignment
+A0 -> {Int|U0}
+Simple Constraints
+X0, X1, length, xs C0 |- {Int|U0 && P0 X0 _v} <: {Int|_v == len xs} ()
+length, xs C0 |- {Int|_v == zero} <: {Int|U0 && P0 (Nil) _v} ()
+WARNING: free vars in predicate |- P0 :: List (A1) -> A0 -> Bool
+Pred assignment
+After process simple constraints
+Constraints
+QMap
+  C0 -> {}
+  U0 -> {_v == len xs}
+Checking consistency
+Candidates (1)
+  0: [C0 -> {}, U0 -> {}] (0 0)
+Remaining Candidates (1)
+  0: [C0 -> {}, U0 -> {}] (0 0)
+Synthesized argument zero of type {Int|_v == zero}
+Checking foldr f0
+           zero :: X0:_ -> {Int|_v == len xs} in
+\xs . ?? ??
+Adding constraint length, xs C0 |- x6:List A1 -> {A0|P0 x6 _v} <: X0:_ -> {Int|_v == len xs} ()
+Adding constraint length, xs C0 |- x6:List A1 -> {A0|P0 x6 _v} /\ X0:_ -> {Int|_v == len xs} ()
+Typing Constraints
+length, xs C0 |- x6:List A1 -> {A0|P0 x6 _v} /\ X0:_ -> {Int|_v == len xs} ()
+length, xs C0 |- x6:List A1 -> {A0|P0 x6 _v} <: X0:_ -> {Int|_v == len xs} ()
+length, xs C0 |- {Int|_v == zero} <: {Int|U0 && P0 (Nil) _v} ()
+X0, X1, length, xs C0 |- {Int|U0 && P0 X0 _v} <: {Int|_v == len xs} ()
+length, xs |- A1
+|- P0 :: List (A1) -> A0 -> Bool
+Type assignment
+A0 -> {Int|U0}
+Simple Constraints
+X0, X1, length, xs C0 |- {Int|U0 && P0 X0 _v} <: {Int|_v == len xs} ()
+length, xs C0 |- {Int|_v == zero} <: {Int|U0 && P0 (Nil) _v} ()
+X0, length, xs C0 |- {Int|U0 && P0 X0 _v} <: {Int|_v == len xs} ()
+length, x6, xs C0 |- {Int|U0 && P0 x6 _v} /\ {Int|_v == len xs} ()
+WARNING: free vars in predicate |- P0 :: List (A1) -> A0 -> Bool
+Pred assignment
+After process simple constraints
+length, x6, xs C0 |- {Int|U0 && P0 x6 _v} /\ {Int|_v == len xs} ()
+Constraints
+QMap
+  C0 -> {}
+  U0 -> {_v == len xs}
+Checking consistency
+  C0 && (_v == len xs && (len x6 >= 0 && (len xs >= 0 && (U0 && P0 x6 _v))))
+Candidates (1)
+  0: [C0 -> {}, U0 -> {}] (0 0)
+Remaining Candidates (1)
+  0: [C0 -> {}, U0 -> {}] (0 0)
+Trying xs
+Checking xs :: List A1 in
+\xs . foldr f0 zero ??
+Adding constraint length, xs C0 |- {List a|_v == xs} <: List A1 ()
+Typing Constraints
+length, xs C0 |- {List a|_v == xs} <: List A1 ()
+X0, length, xs C0 |- {Int|U0 && P0 X0 _v} <: {Int|_v == len xs} ()
+length, xs C0 |- {Int|_v == zero} <: {Int|U0 && P0 (Nil) _v} ()
+X0, X1, length, xs C0 |- {Int|U0 && P0 X0 _v} <: {Int|_v == len xs} ()
+length, xs |- A1
+|- P0 :: List (A1) -> A0 -> Bool
+UNIFY A1 WITH a PRODUCING {a|U1}
+Type assignment
+A0 -> {Int|U0}
+A1 -> {a|U1}
+Typing Constraints
+|- P0 :: List (A1) -> A0 -> Bool
+Type assignment
+A0 -> {Int|U0}
+A1 -> {a|U1}
+Simple Constraints
+length, xs |- {a|U1}
+X0, X1, length, xs C0 |- {Int|U0 && P0 X0 _v} <: {Int|_v == len xs} ()
+length, xs C0 |- {Int|_v == zero} <: {Int|U0 && P0 (Nil) _v} ()
+X0, length, xs C0 |- {Int|U0 && P0 X0 _v} <: {Int|_v == len xs} ()
+length, xs C0 |- {List|_v == xs} <: List ()
+length, xs C0 |- a <: {a|U1} ()
+Pred assignment
+P0 -> P0
+After process simple constraints
+length, xs C0 |- a <: {a|U1} ()
+X0, length, xs C0 |- {Int|U0 && [_0 -> X0, _1 -> _v]P0} <: {Int|_v == len xs} ()
+length, xs C0 |- {Int|_v == zero} <: {Int|U0 && [_0 -> (Nil), _1 -> _v]P0} ()
+X0, X1, length, xs C0 |- {Int|U0 && [_0 -> X0, _1 -> _v]P0} <: {Int|_v == len xs} ()
+Constraints
+  False ==> _v == len xs
+  C0 && (_v == zero && (zero == 0 && len xs >= 0)) ==> U0 && [_0 -> (Nil), _1 -> _v]P0
+  False ==> _v == len xs
+  C0 ==> U1
+QMap
+  C0 -> {}
+  P0 -> {_1 == len _0}
+  U0 -> {_v == len xs}
+  U1 -> {}
+Checking consistency
+Candidates (1)
+  0: [C0 -> {}, P0 -> {}, U0 -> {}, U1 -> {}] (3 0)
+Remaining Candidates (1)
+  0: [C0 -> {}, P0 -> {}, U0 -> {}, U1 -> {}] (3 0)
+Synthesized argument xs of type {List a|_v == xs}
+Checking foldr f0 zero
+           xs :: {Int|_v == len xs} in
+\xs . ??
+Adding constraint length, xs C0 |- {A0|P0 xs _v} <: {Int|_v == len xs} ()
+Typing Constraints
+length, xs C0 |- {A0|P0 xs _v} <: {Int|_v == len xs} ()
+Type assignment
+A0 -> {Int|U0}
+A1 -> {a|U1}
+Simple Constraints
+length, xs C0 |- {Int|U0 && P0 xs _v} <: {Int|_v == len xs} ()
+Pred assignment
+P0 -> P0
+After process simple constraints
+length, xs C0 |- {Int|U0 && [_0 -> xs, _1 -> _v]P0} <: {Int|_v == len xs} ()
+Constraints
+  C0 && (len xs >= 0 && (U0 && [_0 -> xs, _1 -> _v]P0)) ==> _v == len xs
+QMap
+  C0 -> {}
+  P0 -> {_1 == len _0}
+  U0 -> {_v == len xs}
+  U1 -> {}
+Candidates (1)
+  0: [C0 -> {}, P0 -> {}, U0 -> {}, U1 -> {}] (3 1)
+Chosen candidate: 0: [C0 -> {}, P0 -> {}, U0 -> {}, U1 -> {}] (3 1)
+Invalid Constraint: C0 && (len xs >= 0 && (U0 && [_0 -> xs, _1 -> _v]P0)) ==> _v == len xs
+Strengthening: C0 && (len xs >= 0 && (U0 && [_0 -> xs, _1 -> _v]P0)) ==> _v == len xs
+Instantiated axioms:
+All assumptions:
+len xs >= 0
+RHS: _v == len xs
+assumption len xs >= 0
+mustHave !(_v == len xs)
+qualsList [_v == len xs]
+Optimal valuations:
+{_v == len xs}
+Pruned valuations:
+{_v == len xs}
+Diffs: (2)
+[C0 -> {}, P0 -> {_1 == len _0}, U0 -> {}]
+[C0 -> {}, P0 -> {}, U0 -> {_v == len xs}]
+Checking consistency
+Candidates (2)
+  0.0: [C0 -> {}, P0 -> {_1 == len _0}, U0 -> {}, U1 -> {}] (4 0)
+  0.1: [C0 -> {}, P0 -> {}, U0 -> {_v == len xs}, U1 -> {}] (3 1)
+Remaining Candidates (2)
+  0.0: [C0 -> {}, P0 -> {_1 == len _0}, U0 -> {}, U1 -> {}] (4 0)
+  0.1: [C0 -> {}, P0 -> {}, U0 -> {_v == len xs}, U1 -> {}] (3 1)
+Typing Constraints
+Type assignment
+A0 -> {Int|U0}
+A1 -> {a|U1}
+Simple Constraints
+Pred assignment
+P0 -> P0
+After process simple constraints
+Constraints
+QMap
+  C0 -> {}
+  P0 -> {_1 == len _0}
+  U0 -> {_v == len xs}
+  U1 -> {}
+Checking consistency
+Candidates (2)
+  0.0: [C0 -> {}, P0 -> {_1 == len _0}, U0 -> {}, U1 -> {}] (4 0)
+  0.1: [C0 -> {}, P0 -> {}, U0 -> {_v == len xs}, U1 -> {}] (3 1)
+Remaining Candidates (2)
+  0.0: [C0 -> {}, P0 -> {_1 == len _0}, U0 -> {}, U1 -> {}] (4 0)
+  0.1: [C0 -> {}, P0 -> {}, U0 -> {_v == len xs}, U1 -> {}] (3 1)
+Auxiliary goals are:
+length, xs C0 |- f0 :: x2:List A1 -> x3:A1 -> x4:{A0|P0 x2 _v} -> {A0|P0 ((Cons x3 x2)) _v}
+f0 = ??
+(depth: 0)
+PICK AUXILIARY GOAL length, xs C0 |- f0 :: x2:List A1 -> x3:A1 -> x4:{A0|P0 x2 _v} -> {A0|P0 ((Cons x3 x2)) _v}
+f0 = ??
+(depth: 0)
+Checking error in
+\xs . error
+Adding constraint f0, length, xs C0 |- {Int|0 == 0 && xs == xs} <: {Int|False} ()
+Typing Constraints
+f0, length, xs C0 |- {Int|0 == 0 && xs == xs} <: {Int|False} ()
+Type assignment
+A0 -> {Int|U0}
+A1 -> {a|U1}
+Simple Constraints
+f0, length, xs C0 |- {Int|0 == 0 && xs == xs} <: {Int|False} ()
+Pred assignment
+P0 -> P0
+After process simple constraints
+f0, length, xs C0 |- {Int|0 == 0 && xs == xs} <: {Int|False} ()
+Constraints
+  C0 && (len xs >= 0 && (0 == 0 && xs == xs)) ==> False
+QMap
+  C0 -> {}
+  P0 -> {_1 == len _0}
+  U0 -> {_v == len xs}
+  U1 -> {}
+Candidates (2)
+  0.0: [C0 -> {}, P0 -> {_1 == len _0}, U0 -> {}, U1 -> {}] (4 1)
+  0.1: [C0 -> {}, P0 -> {}, U0 -> {_v == len xs}, U1 -> {}] (3 2)
+Chosen candidate: 0.1: [C0 -> {}, P0 -> {}, U0 -> {_v == len xs}, U1 -> {}] (3 2)
+Invalid Constraint: C0 && (_v == zero && (zero == 0 && len xs >= 0)) ==> U0 && [_0 -> (Nil), _1 -> _v]P0
+Strengthening: C0 && (_v == zero && (zero == 0 && len xs >= 0)) ==> _v == len xs && True
+Instantiated axioms:
+All assumptions:
+_v == zero, zero == 0, len xs >= 0
+RHS: _v == len xs && True
+assumption _v == zero && (zero == 0 && len xs >= 0)
+mustHave !(_v == len xs && True)
+qualsList []
+Optimal valuations:
+Pruned valuations:
+Diffs: (0)
+Candidates (1)
+  0.0: [C0 -> {}, P0 -> {_1 == len _0}, U0 -> {}, U1 -> {}] (4 1)
+Chosen candidate: 0.0: [C0 -> {}, P0 -> {_1 == len _0}, U0 -> {}, U1 -> {}] (4 1)
+Invalid Constraint: C0 && (len xs >= 0 && (0 == 0 && xs == xs)) ==> False
+Strengthening: C0 && (len xs >= 0 && (0 == 0 && xs == xs)) ==> False
+Instantiated axioms:
+All assumptions:
+0 == 0, xs == xs, len xs >= 0
+RHS: False
+assumption True
+mustHave 0 == 0 && (xs == xs && len xs >= 0)
+qualsList []
+Optimal valuations:
+Pruned valuations:
+Diffs: (0)
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking error in
+\xs . error
+Adding constraint f0, length, x2, x3, x4, xs |- C1
+Looking for type {Int|U0 && P0 ((Cons x3 x2)) _v}
+Trying x2
+Checking x2 :: {A0|P0 ((Cons x3 x2)) _v} in
+\xs . \x2 . \x3 . \x4 . ??
+Adding constraint f0, length, x2, x3, x4, xs C0, C1 |- {List A1|_v == x2} <: {A0|P0 ((Cons x3 x2)) _v} ()
+Typing Constraints
+f0, length, x2, x3, x4, xs C0, C1 |- {List A1|_v == x2} <: {A0|P0 ((Cons x3 x2)) _v} ()
+f0, length, x2, x3, x4, xs |- C1
+TYPE ERROR: Cannot match shape 'List (A1)'
+with shape 'Int'
+when checking x2 ::
+{Int|True && _v == len ((Cons x3 x2))}
+in
+\xs . \x2 . \x3 . \x4 . x2
+Trying x3
+Checking x3 :: {A0|P0 ((Cons x3 x2)) _v} in
+\xs . \x2 . \x3 . \x4 . ??
+Adding constraint f0, length, x2, x3, x4, xs C0, C1 |- {A1|_v == x3} <: {A0|P0 ((Cons x3 x2)) _v} ()
+Typing Constraints
+f0, length, x2, x3, x4, xs C0, C1 |- {A1|_v == x3} <: {A0|P0 ((Cons x3 x2)) _v} ()
+f0, length, x2, x3, x4, xs |- C1
+TYPE ERROR: Cannot match shape 'a'
+with shape 'Int'
+when checking x3 ::
+{Int|True && _v == len ((Cons x3 x2))}
+in
+\xs . \x2 . \x3 . \x4 . x3
+Trying x4
+Checking x4 :: {A0|P0 ((Cons x3 x2)) _v} in
+\xs . \x2 . \x3 . \x4 . ??
+Adding constraint f0, length, x2, x3, x4, xs C0, C1 |- {A0|_v == x4} <: {A0|P0 ((Cons x3 x2)) _v} ()
+Typing Constraints
+f0, length, x2, x3, x4, xs C0, C1 |- {A0|_v == x4} <: {A0|P0 ((Cons x3 x2)) _v} ()
+f0, length, x2, x3, x4, xs |- C1
+Type assignment
+A0 -> {Int|U0}
+A1 -> {a|U1}
+Simple Constraints
+f0, length, x2, x3, x4, xs |- C1
+f0, length, x2, x3, x4, xs C0, C1 |- {Int|_v == x4} <: {Int|U0 && P0 ((Cons x3 x2)) _v} ()
+Pred assignment
+P0 -> P0
+After process simple constraints
+f0, length, x2, x3, x4, xs C0, C1 |- {Int|_v == x4} <: {Int|U0 && [_0 -> (Cons x3 x2), _1 -> _v]P0} ()
+Constraints
+  C0 && (C1 && ([_v -> x3]U1 && (_v == x4 && (len x2 >= 0 && (len xs >= 0 && ([_v -> x4]U0 && [_0 -> x2, _1 -> x4, _v -> x4]P0)))))) ==> U0 && [_0 -> (Cons x3 x2), _1 -> _v]P0
+QMap
+  C0 -> {}
+  C1 -> {}
+  P0 -> {_1 == len _0}
+  U0 -> {_v == len xs}
+  U1 -> {}
+Candidates (2)
+  0.0: [C0 -> {}, C1 -> {}, P0 -> {_1 == len _0}, U0 -> {}, U1 -> {}] (4 1)
+  0.1: [C0 -> {}, C1 -> {}, P0 -> {}, U0 -> {_v == len xs}, U1 -> {}] (4 1)
+Chosen candidate: 0.1: [C0 -> {}, C1 -> {}, P0 -> {}, U0 -> {_v == len xs}, U1 -> {}] (4 1)
+Invalid Constraint: C0 && (_v == zero && (zero == 0 && len xs >= 0)) ==> U0 && [_0 -> (Nil), _1 -> _v]P0
+Strengthening: C0 && (_v == zero && (zero == 0 && len xs >= 0)) ==> _v == len xs && True
+Instantiated axioms:
+All assumptions:
+_v == zero, zero == 0, len xs >= 0
+RHS: _v == len xs && True
+assumption _v == zero && (zero == 0 && len xs >= 0)
+mustHave !(_v == len xs && True)
+qualsList []
+Optimal valuations:
+Pruned valuations:
+Diffs: (0)
+Candidates (1)
+  0.0: [C0 -> {}, C1 -> {}, P0 -> {_1 == len _0}, U0 -> {}, U1 -> {}] (4 1)
+Chosen candidate: 0.0: [C0 -> {}, C1 -> {}, P0 -> {_1 == len _0}, U0 -> {}, U1 -> {}] (4 1)
+Invalid Constraint: C0 && (C1 && ([_v -> x3]U1 && (_v == x4 && (len x2 >= 0 && (len xs >= 0 && ([_v -> x4]U0 && [_0 -> x2, _1 -> x4, _v -> x4]P0)))))) ==> U0 && [_0 -> (Cons x3 x2), _1 -> _v]P0
+Strengthening: C0 && (C1 && ([_v -> x3]U1 && (_v == x4 && (len x2 >= 0 && (len xs >= 0 && ([_v -> x4]U0 && [_0 -> x2, _1 -> x4, _v -> x4]P0)))))) ==> True && _v == len ((Cons x3 x2))
+Instantiated axioms:
+len ((Cons x3 x2)) == 1 + len x2, elems ((Cons x3 x2)) == [x3] + elems x2
+All assumptions:
+_v == x4, x4 == len x2, len ((Cons x3 x2)) == 1 + len x2, elems ((Cons x3 x2)) == [x3] + elems x2, len x2 >= 0, len xs >= 0
+RHS: True && _v == len ((Cons x3 x2))
+assumption _v == x4 && (x4 == len x2 && (len ((Cons x3 x2)) == 1 + len x2 && (elems ((Cons x3 x2)) == [x3] + elems x2 && (len x2 >= 0 && len xs >= 0))))
+mustHave !(True && _v == len ((Cons x3 x2)))
+qualsList [x4 == len xs]
+Optimal valuations:
+Pruned valuations:
+Diffs: (0)
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking x4 ::
+{Int|True && _v == len ((Cons x3 x2))}
+in
+\xs . \x2 . \x3 . \x4 . x4
+Trying xs
+Checking xs :: {A0|P0 ((Cons x3 x2)) _v} in
+\xs . \x2 . \x3 . \x4 . ??
+Adding constraint f0, length, x2, x3, x4, xs C0, C1 |- {List a|_v == xs} <: {A0|P0 ((Cons x3 x2)) _v} ()
+Typing Constraints
+f0, length, x2, x3, x4, xs C0, C1 |- {List a|_v == xs} <: {A0|P0 ((Cons x3 x2)) _v} ()
+f0, length, x2, x3, x4, xs |- C1
+TYPE ERROR: Cannot match shape 'List (a)'
+with shape 'Int'
+when checking xs ::
+{Int|True && _v == len ((Cons x3 x2))}
+in
+\xs . \x2 . \x3 . \x4 . xs
+Adding constraint f0, length, x2, x3, x4, xs |- A2
+INSTANTIATE <a> . {List a|_v == (Nil)}
+INTO {List {A2|False}|_v == (Nil)}
+Trying Nil
+Checking Nil :: {A0|P0 ((Cons x3 x2)) _v} in
+\xs . \x2 . \x3 . \x4 . ??
+Adding constraint f0, length, x2, x3, x4, xs C0, C1 |- {List {A2|False}|_v == (Nil)} <: {A0|P0 ((Cons x3 x2)) _v} ()
+Typing Constraints
+f0, length, x2, x3, x4, xs C0, C1 |- {List {A2|False}|_v == (Nil)} <: {A0|P0 ((Cons x3 x2)) _v} ()
+f0, length, x2, x3, x4, xs |- A2
+f0, length, x2, x3, x4, xs |- C1
+TYPE ERROR: Cannot match shape 'List (A2)'
+with shape 'Int'
+when checking Nil ::
+{Int|True && _v == len ((Cons x3 x2))}
+in
+\xs . \x2 . \x3 . \x4 . Nil
+Trying zero
+Checking zero :: {A0|P0 ((Cons x3 x2)) _v} in
+\xs . \x2 . \x3 . \x4 . ??
+Adding constraint f0, length, x2, x3, x4, xs C0, C1 |- {Int|_v == zero} <: {A0|P0 ((Cons x3 x2)) _v} ()
+Typing Constraints
+f0, length, x2, x3, x4, xs C0, C1 |- {Int|_v == zero} <: {A0|P0 ((Cons x3 x2)) _v} ()
+f0, length, x2, x3, x4, xs |- C1
+Type assignment
+A0 -> {Int|U0}
+A1 -> {a|U1}
+Simple Constraints
+f0, length, x2, x3, x4, xs |- C1
+f0, length, x2, x3, x4, xs C0, C1 |- {Int|_v == zero} <: {Int|U0 && P0 ((Cons x3 x2)) _v} ()
+Pred assignment
+P0 -> P0
+After process simple constraints
+f0, length, x2, x3, x4, xs C0, C1 |- {Int|_v == zero} <: {Int|U0 && [_0 -> (Cons x3 x2), _1 -> _v]P0} ()
+Constraints
+  C0 && (C1 && ([_v -> x3]U1 && (_v == zero && (zero == 0 && (len x2 >= 0 && len xs >= 0))))) ==> U0 && [_0 -> (Cons x3 x2), _1 -> _v]P0
+QMap
+  C0 -> {}
+  C1 -> {}
+  P0 -> {_1 == len _0}
+  U0 -> {_v == len xs}
+  U1 -> {}
+Candidates (2)
+  0.0: [C0 -> {}, C1 -> {}, P0 -> {_1 == len _0}, U0 -> {}, U1 -> {}] (4 1)
+  0.1: [C0 -> {}, C1 -> {}, P0 -> {}, U0 -> {_v == len xs}, U1 -> {}] (3 2)
+Chosen candidate: 0.1: [C0 -> {}, C1 -> {}, P0 -> {}, U0 -> {_v == len xs}, U1 -> {}] (3 2)
+Invalid Constraint: C0 && (C1 && ([_v -> x3]U1 && (_v == zero && (zero == 0 && (len x2 >= 0 && len xs >= 0))))) ==> U0 && [_0 -> (Cons x3 x2), _1 -> _v]P0
+Strengthening: C0 && (C1 && ([_v -> x3]U1 && (_v == zero && (zero == 0 && (len x2 >= 0 && len xs >= 0))))) ==> _v == len xs && True
+Instantiated axioms:
+All assumptions:
+_v == zero, zero == 0, len x2 >= 0, len xs >= 0
+RHS: _v == len xs && True
+assumption _v == zero && (zero == 0 && (len x2 >= 0 && len xs >= 0))
+mustHave !(_v == len xs && True)
+qualsList []
+Optimal valuations:
+Pruned valuations:
+Diffs: (0)
+Candidates (1)
+  0.0: [C0 -> {}, C1 -> {}, P0 -> {_1 == len _0}, U0 -> {}, U1 -> {}] (4 1)
+Chosen candidate: 0.0: [C0 -> {}, C1 -> {}, P0 -> {_1 == len _0}, U0 -> {}, U1 -> {}] (4 1)
+Invalid Constraint: C0 && (C1 && ([_v -> x3]U1 && (_v == zero && (zero == 0 && (len x2 >= 0 && len xs >= 0))))) ==> U0 && [_0 -> (Cons x3 x2), _1 -> _v]P0
+Strengthening: C0 && (C1 && ([_v -> x3]U1 && (_v == zero && (zero == 0 && (len x2 >= 0 && len xs >= 0))))) ==> True && _v == len ((Cons x3 x2))
+Instantiated axioms:
+len ((Cons x3 x2)) == 1 + len x2, elems ((Cons x3 x2)) == [x3] + elems x2
+All assumptions:
+_v == zero, zero == 0, len ((Cons x3 x2)) == 1 + len x2, elems ((Cons x3 x2)) == [x3] + elems x2, len x2 >= 0, len xs >= 0
+RHS: True && _v == len ((Cons x3 x2))
+assumption _v == zero && (zero == 0 && (len ((Cons x3 x2)) == 1 + len x2 && (elems ((Cons x3 x2)) == [x3] + elems x2 && (len x2 >= 0 && len xs >= 0))))
+mustHave !(True && _v == len ((Cons x3 x2)))
+qualsList []
+Optimal valuations:
+Pruned valuations:
+Diffs: (0)
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking zero ::
+{Int|True && _v == len ((Cons x3 x2))}
+in
+\xs . \x2 . \x3 . \x4 . zero
+INSTANTIATE x:Int -> {Int|_v == x - 1}
+INTO x8:Int -> {Int|_v == x8 - 1}
+Trying dec
+Checking dec :: X3:_ -> {A0|P0 ((Cons x3 x2)) _v} in
+\xs . \x2 . \x3 . \x4 . ?? ??
+Adding constraint f0, length, x2, x3, x4, xs C0, C1 |- x8:Int -> {Int|_v == x8 - 1} <: X3:_ -> {A0|P0 ((Cons x3 x2)) _v} ()
+Adding constraint f0, length, x2, x3, x4, xs C0, C1 |- x8:Int -> {Int|_v == x8 - 1} /\ X3:_ -> {A0|P0 ((Cons x3 x2)) _v} ()
+Typing Constraints
+f0, length, x2, x3, x4, xs C0, C1 |- x8:Int -> {Int|_v == x8 - 1} /\ X3:_ -> {A0|P0 ((Cons x3 x2)) _v} ()
+f0, length, x2, x3, x4, xs C0, C1 |- x8:Int -> {Int|_v == x8 - 1} <: X3:_ -> {A0|P0 ((Cons x3 x2)) _v} ()
+f0, length, x2, x3, x4, xs |- C1
+Type assignment
+A0 -> {Int|U0}
+A1 -> {a|U1}
+Simple Constraints
+f0, length, x2, x3, x4, xs |- C1
+X3, f0, length, x2, x3, x4, xs C0, C1 |- {Int|_v == X3 - 1} <: {Int|U0 && P0 ((Cons x3 x2)) _v} ()
+f0, length, x2, x3, x4, x8, xs C0, C1 |- {Int|_v == x8 - 1} /\ {Int|U0 && P0 ((Cons x3 x2)) _v} ()
+Pred assignment
+P0 -> P0
+After process simple constraints
+f0, length, x2, x3, x4, x8, xs C0, C1 |- {Int|_v == x8 - 1} /\ {Int|U0 && [_0 -> (Cons x3 x2), _1 -> _v]P0} ()
+X3, f0, length, x2, x3, x4, xs C0, C1 |- {Int|_v == X3 - 1} <: {Int|U0 && [_0 -> (Cons x3 x2), _1 -> _v]P0} ()
+Constraints
+  False ==> U0 && [_0 -> (Cons x3 x2), _1 -> _v]P0
+QMap
+  C0 -> {}
+  C1 -> {}
+  P0 -> {_1 == len _0}
+  U0 -> {_v == len xs}
+  U1 -> {}
+Checking consistency
+  C0 && (C1 && ([_v -> x3]U1 && (_v == x8 - 1 && (len x2 >= 0 && (len xs >= 0 && (U0 && [_0 -> (Cons x3 x2), _1 -> _v]P0))))))
+Candidates (2)
+  0.0: [C0 -> {}, C1 -> {}, P0 -> {_1 == len _0}, U0 -> {}, U1 -> {}] (5 0)
+  0.1: [C0 -> {}, C1 -> {}, P0 -> {}, U0 -> {_v == len xs}, U1 -> {}] (4 1)
+Remaining Candidates (2)
+  0.0: [C0 -> {}, C1 -> {}, P0 -> {_1 == len _0}, U0 -> {}, U1 -> {}] (5 0)
+  0.1: [C0 -> {}, C1 -> {}, P0 -> {}, U0 -> {_v == len xs}, U1 -> {}] (4 1)
+Trying x2
+Checking x2 :: Int in
+\xs . \x2 . \x3 . \x4 . dec ??
+Adding constraint f0, length, x2, x3, x4, xs C0, C1 |- {List A1|_v == x2} <: Int ()
+Typing Constraints
+f0, length, x2, x3, x4, xs C0, C1 |- {List A1|_v == x2} <: Int ()
+TYPE ERROR: Cannot match shape 'List (A1)'
+with shape 'Int'
+when checking x2 :: Int in
+\xs . \x2 . \x3 . \x4 . dec x2
+Trying x3
+Checking x3 :: Int in
+\xs . \x2 . \x3 . \x4 . dec ??
+Adding constraint f0, length, x2, x3, x4, xs C0, C1 |- {A1|_v == x3} <: Int ()
+Typing Constraints
+f0, length, x2, x3, x4, xs C0, C1 |- {A1|_v == x3} <: Int ()
+TYPE ERROR: Cannot match shape 'a'
+with shape 'Int'
+when checking x3 :: Int in
+\xs . \x2 . \x3 . \x4 . dec x3
+Trying x4
+Checking x4 :: Int in
+\xs . \x2 . \x3 . \x4 . dec ??
+Adding constraint f0, length, x2, x3, x4, xs C0, C1 |- {A0|_v == x4} <: Int ()
+Typing Constraints
+f0, length, x2, x3, x4, xs C0, C1 |- {A0|_v == x4} <: Int ()
+Type assignment
+A0 -> {Int|U0}
+A1 -> {a|U1}
+Simple Constraints
+f0, length, x2, x3, x4, xs C0, C1 |- {Int|_v == x4} <: Int ()
+Pred assignment
+P0 -> P0
+After process simple constraints
+Constraints
+QMap
+  C0 -> {}
+  C1 -> {}
+  P0 -> {_1 == len _0}
+  U0 -> {_v == len xs}
+  U1 -> {}
+Checking consistency
+Candidates (2)
+  0.0: [C0 -> {}, C1 -> {}, P0 -> {_1 == len _0}, U0 -> {}, U1 -> {}] (5 0)
+  0.1: [C0 -> {}, C1 -> {}, P0 -> {}, U0 -> {_v == len xs}, U1 -> {}] (4 1)
+Remaining Candidates (2)
+  0.0: [C0 -> {}, C1 -> {}, P0 -> {_1 == len _0}, U0 -> {}, U1 -> {}] (5 0)
+  0.1: [C0 -> {}, C1 -> {}, P0 -> {}, U0 -> {_v == len xs}, U1 -> {}] (4 1)
+Synthesized argument x4 of type {A0|_v == x4}
+Checking dec
+           x4 :: {A0|P0 ((Cons x3 x2)) _v} in
+\xs . \x2 . \x3 . \x4 . ??
+Adding constraint f0, length, x2, x3, x4, xs C0, C1 |- {Int|_v == x4 - 1} <: {A0|P0 ((Cons x3 x2)) _v} ()
+Typing Constraints
+f0, length, x2, x3, x4, xs C0, C1 |- {Int|_v == x4 - 1} <: {A0|P0 ((Cons x3 x2)) _v} ()
+Type assignment
+A0 -> {Int|U0}
+A1 -> {a|U1}
+Simple Constraints
+f0, length, x2, x3, x4, xs C0, C1 |- {Int|_v == x4 - 1} <: {Int|U0 && P0 ((Cons x3 x2)) _v} ()
+Pred assignment
+P0 -> P0
+After process simple constraints
+f0, length, x2, x3, x4, xs C0, C1 |- {Int|_v == x4 - 1} <: {Int|U0 && [_0 -> (Cons x3 x2), _1 -> _v]P0} ()
+Constraints
+  C0 && (C1 && ([_v -> x3]U1 && (_v == x4 - 1 && (len x2 >= 0 && (len xs >= 0 && ([_v -> x4]U0 && [_0 -> x2, _1 -> x4, _v -> x4]P0)))))) ==> U0 && [_0 -> (Cons x3 x2), _1 -> _v]P0
+QMap
+  C0 -> {}
+  C1 -> {}
+  P0 -> {_1 == len _0}
+  U0 -> {_v == len xs}
+  U1 -> {}
+Candidates (2)
+  0.0: [C0 -> {}, C1 -> {}, P0 -> {_1 == len _0}, U0 -> {}, U1 -> {}] (5 1)
+  0.1: [C0 -> {}, C1 -> {}, P0 -> {}, U0 -> {_v == len xs}, U1 -> {}] (4 2)
+Chosen candidate: 0.1: [C0 -> {}, C1 -> {}, P0 -> {}, U0 -> {_v == len xs}, U1 -> {}] (4 2)
+Invalid Constraint: C0 && (_v == zero && (zero == 0 && len xs >= 0)) ==> U0 && [_0 -> (Nil), _1 -> _v]P0
+Strengthening: C0 && (_v == zero && (zero == 0 && len xs >= 0)) ==> _v == len xs && True
+Instantiated axioms:
+All assumptions:
+_v == zero, zero == 0, len xs >= 0
+RHS: _v == len xs && True
+assumption _v == zero && (zero == 0 && len xs >= 0)
+mustHave !(_v == len xs && True)
+qualsList []
+Optimal valuations:
+Pruned valuations:
+Diffs: (0)
+Candidates (1)
+  0.0: [C0 -> {}, C1 -> {}, P0 -> {_1 == len _0}, U0 -> {}, U1 -> {}] (5 1)
+Chosen candidate: 0.0: [C0 -> {}, C1 -> {}, P0 -> {_1 == len _0}, U0 -> {}, U1 -> {}] (5 1)
+Invalid Constraint: C0 && (C1 && ([_v -> x3]U1 && (_v == x4 - 1 && (len x2 >= 0 && (len xs >= 0 && ([_v -> x4]U0 && [_0 -> x2, _1 -> x4, _v -> x4]P0)))))) ==> U0 && [_0 -> (Cons x3 x2), _1 -> _v]P0
+Strengthening: C0 && (C1 && ([_v -> x3]U1 && (_v == x4 - 1 && (len x2 >= 0 && (len xs >= 0 && ([_v -> x4]U0 && [_0 -> x2, _1 -> x4, _v -> x4]P0)))))) ==> True && _v == len ((Cons x3 x2))
+Instantiated axioms:
+len ((Cons x3 x2)) == 1 + len x2, elems ((Cons x3 x2)) == [x3] + elems x2
+All assumptions:
+_v == x4 - 1, x4 == len x2, len ((Cons x3 x2)) == 1 + len x2, elems ((Cons x3 x2)) == [x3] + elems x2, len x2 >= 0, len xs >= 0
+RHS: True && _v == len ((Cons x3 x2))
+assumption _v == x4 - 1 && (x4 == len x2 && (len ((Cons x3 x2)) == 1 + len x2 && (elems ((Cons x3 x2)) == [x3] + elems x2 && (len x2 >= 0 && len xs >= 0))))
+mustHave !(True && _v == len ((Cons x3 x2)))
+qualsList [x4 == len xs]
+Optimal valuations:
+Pruned valuations:
+Diffs: (0)
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking dec x4 ::
+{Int|True && _v == len ((Cons x3 x2))}
+in
+\xs . \x2 . \x3 . \x4 . dec x4
+Trying xs
+Checking xs :: Int in
+\xs . \x2 . \x3 . \x4 . dec ??
+Adding constraint f0, length, x2, x3, x4, xs C0, C1 |- {List a|_v == xs} <: Int ()
+Typing Constraints
+f0, length, x2, x3, x4, xs C0, C1 |- {List a|_v == xs} <: Int ()
+TYPE ERROR: Cannot match shape 'List (a)'
+with shape 'Int'
+when checking xs :: Int in
+\xs . \x2 . \x3 . \x4 . dec xs
+Adding constraint f0, length, x2, x3, x4, xs |- A2
+INSTANTIATE <a> . {List a|_v == (Nil)}
+INTO {List {A2|False}|_v == (Nil)}
+Trying Nil
+Checking Nil :: Int in
+\xs . \x2 . \x3 . \x4 . dec ??
+Adding constraint f0, length, x2, x3, x4, xs C0, C1 |- {List {A2|False}|_v == (Nil)} <: Int ()
+Typing Constraints
+f0, length, x2, x3, x4, xs C0, C1 |- {List {A2|False}|_v == (Nil)} <: Int ()
+f0, length, x2, x3, x4, xs |- A2
+TYPE ERROR: Cannot match shape 'List (A2)'
+with shape 'Int'
+when checking Nil :: Int in
+\xs . \x2 . \x3 . \x4 . dec Nil
+Trying zero
+Checking zero :: Int in
+\xs . \x2 . \x3 . \x4 . dec ??
+Adding constraint f0, length, x2, x3, x4, xs C0, C1 |- {Int|_v == zero} <: Int ()
+Typing Constraints
+f0, length, x2, x3, x4, xs C0, C1 |- {Int|_v == zero} <: Int ()
+Type assignment
+A0 -> {Int|U0}
+A1 -> {a|U1}
+Simple Constraints
+f0, length, x2, x3, x4, xs C0, C1 |- {Int|_v == zero} <: Int ()
+Pred assignment
+P0 -> P0
+After process simple constraints
+Constraints
+QMap
+  C0 -> {}
+  C1 -> {}
+  P0 -> {_1 == len _0}
+  U0 -> {_v == len xs}
+  U1 -> {}
+Checking consistency
+Candidates (2)
+  0.0: [C0 -> {}, C1 -> {}, P0 -> {_1 == len _0}, U0 -> {}, U1 -> {}] (5 0)
+  0.1: [C0 -> {}, C1 -> {}, P0 -> {}, U0 -> {_v == len xs}, U1 -> {}] (4 1)
+Remaining Candidates (2)
+  0.0: [C0 -> {}, C1 -> {}, P0 -> {_1 == len _0}, U0 -> {}, U1 -> {}] (5 0)
+  0.1: [C0 -> {}, C1 -> {}, P0 -> {}, U0 -> {_v == len xs}, U1 -> {}] (4 1)
+Synthesized argument zero of type {Int|_v == zero}
+Checking dec
+           zero :: {A0|P0 ((Cons x3 x2)) _v} in
+\xs . \x2 . \x3 . \x4 . ??
+Adding constraint f0, length, x2, x3, x4, xs C0, C1 |- {Int|_v == zero - 1} <: {A0|P0 ((Cons x3 x2)) _v} ()
+Typing Constraints
+f0, length, x2, x3, x4, xs C0, C1 |- {Int|_v == zero - 1} <: {A0|P0 ((Cons x3 x2)) _v} ()
+Type assignment
+A0 -> {Int|U0}
+A1 -> {a|U1}
+Simple Constraints
+f0, length, x2, x3, x4, xs C0, C1 |- {Int|_v == zero - 1} <: {Int|U0 && P0 ((Cons x3 x2)) _v} ()
+Pred assignment
+P0 -> P0
+After process simple constraints
+f0, length, x2, x3, x4, xs C0, C1 |- {Int|_v == zero - 1} <: {Int|U0 && [_0 -> (Cons x3 x2), _1 -> _v]P0} ()
+Constraints
+  C0 && (C1 && ([_v -> x3]U1 && (_v == zero - 1 && (zero == 0 && (len x2 >= 0 && len xs >= 0))))) ==> U0 && [_0 -> (Cons x3 x2), _1 -> _v]P0
+QMap
+  C0 -> {}
+  C1 -> {}
+  P0 -> {_1 == len _0}
+  U0 -> {_v == len xs}
+  U1 -> {}
+Candidates (2)
+  0.0: [C0 -> {}, C1 -> {}, P0 -> {_1 == len _0}, U0 -> {}, U1 -> {}] (5 1)
+  0.1: [C0 -> {}, C1 -> {}, P0 -> {}, U0 -> {_v == len xs}, U1 -> {}] (4 2)
+Chosen candidate: 0.1: [C0 -> {}, C1 -> {}, P0 -> {}, U0 -> {_v == len xs}, U1 -> {}] (4 2)
+Invalid Constraint: C0 && (C1 && ([_v -> x3]U1 && (_v == zero - 1 && (zero == 0 && (len x2 >= 0 && len xs >= 0))))) ==> U0 && [_0 -> (Cons x3 x2), _1 -> _v]P0
+Strengthening: C0 && (C1 && ([_v -> x3]U1 && (_v == zero - 1 && (zero == 0 && (len x2 >= 0 && len xs >= 0))))) ==> _v == len xs && True
+Instantiated axioms:
+All assumptions:
+_v == zero - 1, zero == 0, len x2 >= 0, len xs >= 0
+RHS: _v == len xs && True
+assumption _v == zero - 1 && (zero == 0 && (len x2 >= 0 && len xs >= 0))
+mustHave !(_v == len xs && True)
+qualsList []
+Optimal valuations:
+Pruned valuations:
+Diffs: (0)
+Candidates (1)
+  0.0: [C0 -> {}, C1 -> {}, P0 -> {_1 == len _0}, U0 -> {}, U1 -> {}] (5 1)
+Chosen candidate: 0.0: [C0 -> {}, C1 -> {}, P0 -> {_1 == len _0}, U0 -> {}, U1 -> {}] (5 1)
+Invalid Constraint: C0 && (C1 && ([_v -> x3]U1 && (_v == zero - 1 && (zero == 0 && (len x2 >= 0 && len xs >= 0))))) ==> U0 && [_0 -> (Cons x3 x2), _1 -> _v]P0
+Strengthening: C0 && (C1 && ([_v -> x3]U1 && (_v == zero - 1 && (zero == 0 && (len x2 >= 0 && len xs >= 0))))) ==> True && _v == len ((Cons x3 x2))
+Instantiated axioms:
+len ((Cons x3 x2)) == 1 + len x2, elems ((Cons x3 x2)) == [x3] + elems x2
+All assumptions:
+_v == zero - 1, zero == 0, len ((Cons x3 x2)) == 1 + len x2, elems ((Cons x3 x2)) == [x3] + elems x2, len x2 >= 0, len xs >= 0
+RHS: True && _v == len ((Cons x3 x2))
+assumption _v == zero - 1 && (zero == 0 && (len ((Cons x3 x2)) == 1 + len x2 && (elems ((Cons x3 x2)) == [x3] + elems x2 && (len x2 >= 0 && len xs >= 0))))
+mustHave !(True && _v == len ((Cons x3 x2)))
+qualsList []
+Optimal valuations:
+Pruned valuations:
+Diffs: (0)
+TYPE ERROR: Cannot find sufficiently strong refinements
+when checking dec zero ::
+{Int|True && _v == len ((Cons x3 x2))}
+in
+\xs . \x2 . \x3 . \x4 . dec zero
+INSTANTIATE x:Int -> {Int|_v == x + 1}
+INTO x8:Int -> {Int|_v == x8 + 1}
+Trying inc
+Checking inc :: X3:_ -> {A0|P0 ((Cons x3 x2)) _v} in
+\xs . \x2 . \x3 . \x4 . ?? ??
+Adding constraint f0, length, x2, x3, x4, xs C0, C1 |- x8:Int -> {Int|_v == x8 + 1} <: X3:_ -> {A0|P0 ((Cons x3 x2)) _v} ()
+Adding constraint f0, length, x2, x3, x4, xs C0, C1 |- x8:Int -> {Int|_v == x8 + 1} /\ X3:_ -> {A0|P0 ((Cons x3 x2)) _v} ()
+Typing Constraints
+f0, length, x2, x3, x4, xs C0, C1 |- x8:Int -> {Int|_v == x8 + 1} /\ X3:_ -> {A0|P0 ((Cons x3 x2)) _v} ()
+f0, length, x2, x3, x4, xs C0, C1 |- x8:Int -> {Int|_v == x8 + 1} <: X3:_ -> {A0|P0 ((Cons x3 x2)) _v} ()
+f0, length, x2, x3, x4, xs |- C1
+Type assignment
+A0 -> {Int|U0}
+A1 -> {a|U1}
+Simple Constraints
+f0, length, x2, x3, x4, xs |- C1
+X3, f0, length, x2, x3, x4, xs C0, C1 |- {Int|_v == X3 + 1} <: {Int|U0 && P0 ((Cons x3 x2)) _v} ()
+f0, length, x2, x3, x4, x8, xs C0, C1 |- {Int|_v == x8 + 1} /\ {Int|U0 && P0 ((Cons x3 x2)) _v} ()
+Pred assignment
+P0 -> P0
+After process simple constraints
+f0, length, x2, x3, x4, x8, xs C0, C1 |- {Int|_v == x8 + 1} /\ {Int|U0 && [_0 -> (Cons x3 x2), _1 -> _v]P0} ()
+X3, f0, length, x2, x3, x4, xs C0, C1 |- {Int|_v == X3 + 1} <: {Int|U0 && [_0 -> (Cons x3 x2), _1 -> _v]P0} ()
+Constraints
+  False ==> U0 && [_0 -> (Cons x3 x2), _1 -> _v]P0
+QMap
+  C0 -> {}
+  C1 -> {}
+  P0 -> {_1 == len _0}
+  U0 -> {_v == len xs}
+  U1 -> {}
+Checking consistency
+  C0 && (C1 && ([_v -> x3]U1 && (_v == x8 + 1 && (len x2 >= 0 && (len xs >= 0 && (U0 && [_0 -> (Cons x3 x2), _1 -> _v]P0))))))
+Candidates (2)
+  0.0: [C0 -> {}, C1 -> {}, P0 -> {_1 == len _0}, U0 -> {}, U1 -> {}] (5 0)
+  0.1: [C0 -> {}, C1 -> {}, P0 -> {}, U0 -> {_v == len xs}, U1 -> {}] (4 1)
+Remaining Candidates (2)
+  0.0: [C0 -> {}, C1 -> {}, P0 -> {_1 == len _0}, U0 -> {}, U1 -> {}] (5 0)
+  0.1: [C0 -> {}, C1 -> {}, P0 -> {}, U0 -> {_v == len xs}, U1 -> {}] (4 1)
+Trying x2
+Checking x2 :: Int in
+\xs . \x2 . \x3 . \x4 . inc ??
+Adding constraint f0, length, x2, x3, x4, xs C0, C1 |- {List A1|_v == x2} <: Int ()
+Typing Constraints
+f0, length, x2, x3, x4, xs C0, C1 |- {List A1|_v == x2} <: Int ()
+TYPE ERROR: Cannot match shape 'List (A1)'
+with shape 'Int'
+when checking x2 :: Int in
+\xs . \x2 . \x3 . \x4 . inc x2
+Trying x3
+Checking x3 :: Int in
+\xs . \x2 . \x3 . \x4 . inc ??
+Adding constraint f0, length, x2, x3, x4, xs C0, C1 |- {A1|_v == x3} <: Int ()
+Typing Constraints
+f0, length, x2, x3, x4, xs C0, C1 |- {A1|_v == x3} <: Int ()
+TYPE ERROR: Cannot match shape 'a'
+with shape 'Int'
+when checking x3 :: Int in
+\xs . \x2 . \x3 . \x4 . inc x3
+Trying x4
+Checking x4 :: Int in
+\xs . \x2 . \x3 . \x4 . inc ??
+Adding constraint f0, length, x2, x3, x4, xs C0, C1 |- {A0|_v == x4} <: Int ()
+Typing Constraints
+f0, length, x2, x3, x4, xs C0, C1 |- {A0|_v == x4} <: Int ()
+Type assignment
+A0 -> {Int|U0}
+A1 -> {a|U1}
+Simple Constraints
+f0, length, x2, x3, x4, xs C0, C1 |- {Int|_v == x4} <: Int ()
+Pred assignment
+P0 -> P0
+After process simple constraints
+Constraints
+QMap
+  C0 -> {}
+  C1 -> {}
+  P0 -> {_1 == len _0}
+  U0 -> {_v == len xs}
+  U1 -> {}
+Checking consistency
+Candidates (2)
+  0.0: [C0 -> {}, C1 -> {}, P0 -> {_1 == len _0}, U0 -> {}, U1 -> {}] (5 0)
+  0.1: [C0 -> {}, C1 -> {}, P0 -> {}, U0 -> {_v == len xs}, U1 -> {}] (4 1)
+Remaining Candidates (2)
+  0.0: [C0 -> {}, C1 -> {}, P0 -> {_1 == len _0}, U0 -> {}, U1 -> {}] (5 0)
+  0.1: [C0 -> {}, C1 -> {}, P0 -> {}, U0 -> {_v == len xs}, U1 -> {}] (4 1)
+Synthesized argument x4 of type {A0|_v == x4}
+Checking inc
+           x4 :: {A0|P0 ((Cons x3 x2)) _v} in
+\xs . \x2 . \x3 . \x4 . ??
+Adding constraint f0, length, x2, x3, x4, xs C0, C1 |- {Int|_v == x4 + 1} <: {A0|P0 ((Cons x3 x2)) _v} ()
+Typing Constraints
+f0, length, x2, x3, x4, xs C0, C1 |- {Int|_v == x4 + 1} <: {A0|P0 ((Cons x3 x2)) _v} ()
+Type assignment
+A0 -> {Int|U0}
+A1 -> {a|U1}
+Simple Constraints
+f0, length, x2, x3, x4, xs C0, C1 |- {Int|_v == x4 + 1} <: {Int|U0 && P0 ((Cons x3 x2)) _v} ()
+Pred assignment
+P0 -> P0
+After process simple constraints
+f0, length, x2, x3, x4, xs C0, C1 |- {Int|_v == x4 + 1} <: {Int|U0 && [_0 -> (Cons x3 x2), _1 -> _v]P0} ()
+Constraints
+  C0 && (C1 && ([_v -> x3]U1 && (_v == x4 + 1 && (len x2 >= 0 && (len xs >= 0 && ([_v -> x4]U0 && [_0 -> x2, _1 -> x4, _v -> x4]P0)))))) ==> U0 && [_0 -> (Cons x3 x2), _1 -> _v]P0
+QMap
+  C0 -> {}
+  C1 -> {}
+  P0 -> {_1 == len _0}
+  U0 -> {_v == len xs}
+  U1 -> {}
+Checking consistency
+Candidates (2)
+  0.0: [C0 -> {}, C1 -> {}, P0 -> {_1 == len _0}, U0 -> {}, U1 -> {}] (6 0)
+  0.1: [C0 -> {}, C1 -> {}, P0 -> {}, U0 -> {_v == len xs}, U1 -> {}] (4 2)
+Remaining Candidates (2)
+  0.0: [C0 -> {}, C1 -> {}, P0 -> {_1 == len _0}, U0 -> {}, U1 -> {}] (6 0)
+  0.1: [C0 -> {}, C1 -> {}, P0 -> {}, U0 -> {_v == len xs}, U1 -> {}] (4 2)
+Typing Constraints
+Type assignment
+A0 -> {Int|U0}
+A1 -> {a|U1}
+Simple Constraints
+Pred assignment
+P0 -> P0
+After process simple constraints
+Constraints
+QMap
+  C0 -> {}
+  C1 -> {}
+  P0 -> {_1 == len _0}
+  U0 -> {_v == len xs}
+  U1 -> {}
+Checking consistency
+Candidates (2)
+  0.0: [C0 -> {}, C1 -> {}, P0 -> {_1 == len _0}, U0 -> {}, U1 -> {}] (6 0)
+  0.1: [C0 -> {}, C1 -> {}, P0 -> {}, U0 -> {_v == len xs}, U1 -> {}] (4 2)
+Remaining Candidates (2)
+  0.0: [C0 -> {}, C1 -> {}, P0 -> {_1 == len _0}, U0 -> {}, U1 -> {}] (6 0)
+  0.1: [C0 -> {}, C1 -> {}, P0 -> {}, U0 -> {_v == len xs}, U1 -> {}] (4 2)
+Auxiliary goals are:
+Constraints
+QMap
+  C0 -> {}
+  C1 -> {}
+  P0 -> {_1 == len _0}
+  U0 -> {_v == len xs}
+  U1 -> {}
+Candidates (1)
+  0.1: [C0 -> {}, C1 -> {}, P0 -> {}, U0 -> {_v == len xs}, U1 -> {}] (4 2)
+Chosen candidate: 0.1: [C0 -> {}, C1 -> {}, P0 -> {}, U0 -> {_v == len xs}, U1 -> {}] (4 2)
+Invalid Constraint: C0 && (_v == zero && (zero == 0 && len xs >= 0)) ==> U0 && [_0 -> (Nil), _1 -> _v]P0
+Strengthening: C0 && (_v == zero && (zero == 0 && len xs >= 0)) ==> _v == len xs && True
+Instantiated axioms:
+All assumptions:
+_v == zero, zero == 0, len xs >= 0
+RHS: _v == len xs && True
+assumption _v == zero && (zero == 0 && len xs >= 0)
+mustHave !(_v == len xs && True)
+qualsList []
+Optimal valuations:
+Pruned valuations:
+Diffs: (0)
+Auxiliary goals are:
