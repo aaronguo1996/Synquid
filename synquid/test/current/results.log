@@ -656,3 +656,233 @@ findIdx = \arr . \k .
                               then n5
                               else n6
 
+balanceL :: y:a -> isR:Bool -> l:{RBT {a|_v < y}|size _v > 0 && (isR ==> isOk _v)} -> r:{RBT {a|_v > y}|(isOk _v && (isRed _v ==> !isR)) && bHeight _v == bHeight l} -> {RBT a|((elems _v == ([y] + elems l) + elems r && bHeight _v == bHeight r + bHt isR) && size _v == (1 + size l) + size r) && (isR || isOk _v)}
+balanceL = \y . \isR . \l . \r .
+        
+        match l with
+          Empty -> error
+          Node x5 x6 x7 x8 -> 
+            if isR && x6
+              then Bad y isR l r
+              else Node y isR l r
+          Bad x33 x34 x35 x36 -> 
+            if x34
+              then 
+                match x35 with
+                  Empty -> error
+                  Node x41 x42 x43 x44 -> Node x33
+                                            x34 (Node x41 isR x43 x44) (Node
+                                                                          y isR
+                                                                          x36 r)
+                  Bad x61 x62 x63 x64 -> error
+              else 
+                match x36 with
+                  Empty -> error
+                  Node x69 x70 x71 x72 -> Node x69
+                                            x70 (Node x33 x34 x35 x71) (Node
+                                                                          y x34
+                                                                          x72 r)
+                  Bad x89 x90 x91 x92 -> error
+
+balanceR :: x:a -> isR:Bool -> l:{RBT {a|_v < x}|isOk _v && (isRed _v ==> !isR)} -> r:{RBT {a|_v > x}|(size _v > 0 && (isR ==> isOk _v)) && bHeight _v == bHeight l} -> {RBT a|((elems _v == ([x] + elems l) + elems r && bHeight _v == bHeight l + bHt isR) && size _v == (1 + size l) + size r) && (isR || isOk _v)}
+balanceR = \x . \isR . \l . \r .
+        
+        match r with
+          Empty -> error
+          Node x5 x6 x7 x8 -> 
+            if isR && x6
+              then Bad x5 isR (Node x x6 l x7)
+                     x8
+              else Node x isR l r
+          Bad x37 x38 x39 x40 -> 
+            if x38
+              then 
+                match x39 with
+                  Empty -> error
+                  Node x45 x46 x47 x48 -> Node x45
+                                            x38 (Node x isR l x47) (Node x37
+                                                                      isR x48
+                                                                      x40)
+                  Bad x65 x66 x67 x68 -> error
+              else 
+                match x40 with
+                  Empty -> error
+                  Node x73 x74 x75 x76 -> Node x37
+                                            x74 (Node x x38 l x39) (Node x73
+                                                                      x38 x75
+                                                                      x76)
+                  Bad x93 x94 x95 x96 -> error
+
+ins :: x:a -> t:{RBT a|isOk _v} -> {RBT a|((((elems _v == [x] + elems t && bHeight _v == bHeight t) && size _v > 0) && size t <= size _v) && size _v <= size t + 1) && (isOk _v || isRed t)}
+ins = \x . \t . 
+    match t with
+      Empty -> Node x red Empty Empty
+      Node x9 x10 x11 x12 -> 
+        if (x <= x9) && (x9 <= x)
+          then t
+          else 
+            if x9 <= x
+              then balanceR x9 x10 x11 (ins x
+                                          x12)
+              else balanceL x9 x10 (ins x x11)
+                     x12
+      Bad x29 x30 x31 x32 -> error
+
+mkBlack :: t:RBT a -> {RBT a|isOk _v && elems _v == elems t}
+mkBlack = \t . 
+  match t with
+    Empty -> t
+    Node x5 x6 x7 x8 -> t
+    Bad x13 x14 x15 x16 -> Node x13
+                             black x15 x16
+
+insert :: x:a -> t:{RBT a|isOk _v} -> {RBT a|isOk _v && elems _v == elems t + [x]}
+insert = \x . \t . mkBlack (ins
+                              x t)
+
+balL0 :: x:a -> l:{AVL {a|_v < x}|balFac _v == 0} -> r:{AVL {a|_v > x}|realHeight l - realHeight _v == 2} -> {AVL a|realHeight _v == 1 + realHeight l && elems _v == ([x] + elems l) + elems r}
+balL0 = \x . \l . \r . 
+      match l with
+        Leaf -> error
+        Node x5 x6 x7 x8 -> Node x5 x6
+                              (Node x x7 r x8) (inc x8)
+
+balLL :: x:a -> l:{AVL {a|_v < x}|balFac _v > 0} -> r:{AVL {a|_v > x}|realHeight l - realHeight _v == 2} -> {AVL a|realHeight _v == realHeight l && elems _v == ([x] + elems l) + elems r}
+balLL = \x . \l . \r . 
+      match l with
+        Leaf -> error
+        Node x5 x6 x7 x8 -> 
+          match x6 with
+            Leaf -> error
+            Node x13 x14 x15 x16 -> Node x5
+                                      x6 (Node x x7 r x16) x8
+
+balLR :: x:a -> l:{AVL {a|_v < x}|balFac _v < 0} -> r:{AVL {a|_v > x}|realHeight l - realHeight _v == 2} -> {AVL a|realHeight _v == realHeight l && elems _v == ([x] + elems l) + elems r}
+balLR = \x . \l . \r . 
+      match l with
+        Leaf -> error
+        Node x5 x6 x7 x8 -> 
+          match x7 with
+            Leaf -> error
+            Node x13 x14 x15 x16 -> Node x13
+                                      (Node x5 x6 x14 x16) (Node x x15
+                                                              r x16) x8
+
+balR0 :: x:a -> l:AVL {a|_v < x} -> r:{AVL {a|_v > x}|realHeight _v - realHeight l == 2 && balFac _v == 0} -> {AVL a|realHeight _v == 1 + realHeight r && elems _v == ([x] + elems l) + elems r}
+balR0 = \x . \l . \r . 
+      match r with
+        Leaf -> error
+        Node x5 x6 x7 x8 -> Node x5
+                              (Node x l x6 x8) x7 (inc x8)
+
+balRL :: x:a -> l:AVL {a|_v < x} -> r:{AVL {a|_v > x}|realHeight _v - realHeight l == 2 && balFac _v > 0} -> {AVL a|realHeight _v == realHeight r && elems _v == ([x] + elems l) + elems r}
+balRL = \x . \l . \r . 
+      match r with
+        Leaf -> error
+        Node x5 x6 x7 x8 -> 
+          match x6 with
+            Leaf -> error
+            Node x13 x14 x15 x16 -> Node x13
+                                      (Node x l x14 x16) (Node x5 x15
+                                                            x7 x16) x8
+
+balRR :: x:a -> l:AVL {a|_v < x} -> r:{AVL {a|_v > x}|realHeight _v - realHeight l == 2 && balFac _v < 0} -> {AVL a|realHeight _v == realHeight r && elems _v == ([x] + elems l) + elems r}
+balRR = \x . \l . \r . 
+      match r with
+        Leaf -> error
+        Node x5 x6 x7 x8 -> 
+          match x7 with
+            Leaf -> error
+            Node x13 x14 x15 x16 -> Node x5
+                                      (Node x l x6 x16) x7 x8
+
+balance :: x:a -> l:AVL {a|_v < x} -> r:{AVL {a|_v > x}|abs (realHeight l - realHeight _v) <= 2} -> {AVL a|(balHt l r _v && bigHt l r _v) && elems _v == ([x] + elems l) + elems r}
+balance = \x . \l . \r . 
+      if (isSkewed l r) &&
+           (isLeftHeavy l)
+        then balLL x l r
+        else 
+          if (isSkewed l r) &&
+               (isRightHeavy l)
+            then balLR x l r
+            else 
+              if isSkewed l r
+                then balL0 x l r
+                else 
+                  if (isSkewed r l) &&
+                       (isLeftHeavy r)
+                    then balRL x l r
+                    else 
+                      if (isSkewed r l) &&
+                           (isRightHeavy r)
+                        then balRR x l r
+                        else 
+                          if isSkewed r l
+                            then balR0 x l r
+                            else Node x l r (nodeHeight l r)
+
+insert :: y:a -> t:AVL a -> {AVL a|(realHeight t <= realHeight _v && realHeight _v <= realHeight t + 1) && elems _v == [y] + elems t}
+insert = \y . \t . 
+    match t with
+      Leaf -> balance y Leaf Leaf
+      Node x8 x9 x10 x11 -> 
+        if x8 < y
+          then balance x8 x9 (insert y
+                                x10)
+          else 
+            if y < x8
+              then balance x8 (insert y x9)
+                     x10
+              else t
+
+extractMin :: t:AVL a -> {MinPair a|elems t == melems _v && eqOrOneLess (mheight _v) (realHeight t)}
+extractMin = \t . 
+  match t with
+    Leaf -> Nothing
+    Node x5 x6 x7 x8 -> 
+      match extractMin x6 with
+        Nothing -> MinPair x5 x7
+        MinPair x14 x15 -> MinPair x14
+                             (balance x5 x15 x7)
+
+merge :: x:a -> l:AVL {a|_v < x} -> r:{AVL {a|_v > x}|isBal l _v 1} -> {AVL a|bigHt l r _v && elems _v == elems l + elems r}
+merge = \x . \l . \r . 
+      match extractMin r with
+        Nothing -> l
+        MinPair x4 x5 -> balance x4 l x5
+
+delete :: y:a -> t:AVL a -> {AVL a|eqOrOneLess (realHeight _v) (realHeight t) && elems t - [y] == elems _v}
+delete = \y . \t . 
+    match t with
+      Leaf -> t
+      Node x5 x6 x7 x8 -> 
+        if y == x5
+          then merge x5 x6 x7
+          else 
+            if x5 < y
+              then balance x5 x6 (delete y x7)
+              else balance x5 (delete y x6) x7
+
+synquid: succinct/List-Zip.sq: openFile: does not exist (No such file or directory)
+succinct/List-Zip3.sq:14:60: Parse Error:
+  Unexpected ':'
+  expecting end of input
+  indentation doesn't match
+
+synquid: succinct/List-Zip4.sq: openFile: does not exist (No such file or directory)
+synquid: succinct/List-Zip5.sq: openFile: does not exist (No such file or directory)
+synquid: succinct/List-Zip6.sq: openFile: does not exist (No such file or directory)
+synquid: succinct/Graph-Weighted.sq: openFile: does not exist (No such file or directory)
+synquid: succinct/Graph-Colored.sq: openFile: does not exist (No such file or directory)
+synquid: succinct/Graph-Labeled.sq: openFile: does not exist (No such file or directory)
+synquid: succinct/BST-Delete-T2.sq: openFile: does not exist (No such file or directory)
+synquid: succinct/BST-Delete-T2-1.sq: openFile: does not exist (No such file or directory)
+synquid: succinct/BST-Delete-T2-2.sq: openFile: does not exist (No such file or directory)
+synquid: succinct/BST-Delete-T2-3.sq: openFile: does not exist (No such file or directory)
+synquid: succinct/BST-Delete-T2-4.sq: openFile: does not exist (No such file or directory)
+synquid: succinct/BST-Delete-T2-5.sq: openFile: does not exist (No such file or directory)
+synquid: succinct/BST-Delete-T2-6.sq: openFile: does not exist (No such file or directory)
+synquid: succinct/BST-Delete-T2-7.sq: openFile: does not exist (No such file or directory)
+synquid: succinct/BST-Delete-T2-8.sq: openFile: does not exist (No such file or directory)
+synquid: succinct/BST-Delete-T2-9.sq: openFile: does not exist (No such file or directory)
+synquid: succinct/BST-Delete-T3.sq: openFile: does not exist (No such file or directory)
