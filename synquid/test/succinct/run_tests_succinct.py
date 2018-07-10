@@ -12,7 +12,7 @@ from colorama import init, Fore, Back, Style
 # Parameters
 SYNQUID_PATH_LINUX = 'synquid'
 SYNQUID_PATH_WINDOWS = 'Synquid.exe'
-BENCH_PATH = './current'
+BENCH_PATH = '.'
 LOGFILE_NAME = 'results.log'
 ORACLE_NAME = 'oracle'
 OUTFILE_NAME = 'results.csv'
@@ -20,7 +20,7 @@ COMMON_OPTS = []
 TIMEOUT_COMMAND = 'timeout'
 TIMEOUT= '120'
 
-SECTIONS = ['.', 'sygus', 'rbt', 'AVL']
+SECTIONS = ['.', 'sygus', 'AVL','depth','components']
 
 BENCHMARKS = {
   '.' : [
@@ -112,12 +112,6 @@ BENCHMARKS = {
               ('AVL-ExtractMin',      ['-a 2']),
               ('AVL-Delete',          ['-a 2', '-m 1']),
           ],
-  'rbt' : [
-    # Red-black trees
-    ('RBT-BalanceL',        ['-a 2', '-u']),
-    ('RBT-BalanceR',        ['-a 2', '-u']),
-    ('RBT-Insert',          ['-a 2', '-m 1']),
-          ],
   'depth' : [
     ('List-Zip',        ['-a 6']),
     ('List-Zip3',       ['-a 6', '-m 0']),
@@ -143,7 +137,7 @@ BENCHMARKS = {
     ('List-Together',   ['-f=AllArguments']),
     ('Text-MixWithList',   []),
     ('List-MixWithText',[]),
-    ('IncList-MergeMixUnreachable', [])
+    ('IncList-MergeMixUnreachable', ['-f=AllArguments'])
   ]
 }
 
@@ -197,8 +191,8 @@ def run_benchmark(name, opts, path='.'):
     with open(LOGFILE_NAME, 'a+') as logfile:
       start = time.time()
       logfile.seek(0, os.SEEK_END)
-      #return_code = call([TIMEOUT_COMMAND, TIMEOUT, 'stack', 'exec', '--', synquid_path] + COMMON_OPTS + opts + [os.path.join (path, name + '.sq')], stdout=logfile, stderr=logfile)
-      return_code = call(['stack', 'exec', '--', synquid_path] + COMMON_OPTS + opts + [os.path.join (path, name + '.sq')], stdout=logfile, stderr=logfile)
+      return_code = call([TIMEOUT_COMMAND, TIMEOUT, 'stack', 'exec', '--', synquid_path] + COMMON_OPTS + opts + [os.path.join (path, name + '.sq')], stdout=logfile, stderr=logfile)
+      # return_code = call(['stack', 'exec', '--', synquid_path] + COMMON_OPTS + opts + [os.path.join (path, name + '.sq')], stdout=logfile, stderr=logfile)
       end = time.time()
 
       t = end - start
@@ -211,7 +205,7 @@ def run_benchmark(name, opts, path='.'):
           results [name] = SynthesisResult(name, t)
 
 
-def run_test(name, path='./current'):
+def run_test(name, path='.'):
     print (name)
 
     with open(LOGFILE_NAME, 'a+') as logfile:
@@ -311,7 +305,7 @@ if __name__ == '__main__':
 
     if not fail and a.synt:
         # Run synthesis benchmarks in 'current' directory
-        os.chdir('current')
+        # os.chdir('current')
         if os.path.isfile(LOGFILE_NAME):
             os.remove(LOGFILE_NAME)
 
