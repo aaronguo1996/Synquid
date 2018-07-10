@@ -1,655 +1,105 @@
-add :: x:Nat -> y:Nat -> {Int|_v == x + y}
-add = \x . \y . add y (dec (inc
-                              x))
+balL0 :: x:a -> l:{AVL {a|_v < x}|balFac _v == 0} -> r:{AVL {a|_v > x}|realHeight l - realHeight _v == 2} -> {AVL a|realHeight _v == 1 + realHeight l && elems _v == ([x] + elems l) + elems r}
+balL0 = \x . \l . \r . 
+      match l with
+        Leaf -> error
+        Node x16 x17 x18 x19 -> Node x16
+                                  x17 (Node x x18 r x19) (inc x19)
 
-null :: xs:List a -> {Bool|_v == (len xs == 0)}
-null = \xs . 
-  match xs with
-    Nil -> true
-    Cons x8 x9 -> false
+balLL :: x:a -> l:{AVL {a|_v < x}|balFac _v > 0} -> r:{AVL {a|_v > x}|realHeight l - realHeight _v == 2} -> {AVL a|realHeight _v == realHeight l && elems _v == ([x] + elems l) + elems r}
+balLL = \x . \l . \r . 
+      match l with
+        Leaf -> error
+        Node x16 x17 x18 x19 -> 
+          match x17 with
+            Leaf -> error
+            Node x24 x25 x26 x27 -> Node x16
+                                      x17 (Node x x18 r x27) x19
 
-elem :: x:a -> xs:List a -> {Bool|_v == (x in elems xs)}
-elem = \x . \xs . 
-    match xs with
-      Nil -> false
-      Cons x11 x12 -> 
-        if x11 == x
-          then true
-          else elem x x12
+balLR :: x:a -> l:{AVL {a|_v < x}|balFac _v < 0} -> r:{AVL {a|_v > x}|realHeight l - realHeight _v == 2} -> {AVL a|realHeight _v == realHeight l && elems _v == ([x] + elems l) + elems r}
+balLR = \x . \l . \r . 
+      match l with
+        Leaf -> error
+        Node x16 x17 x18 x19 -> 
+          match x18 with
+            Leaf -> error
+            Node x24 x25 x26 x27 -> Node x24
+                                      (Node x16 x17 x25 x27) (Node x
+                                                                x26 r x27) x19
 
-stutter :: xs:List a -> {List a|len _v == 2 * len xs}
-stutter = \xs . 
-  match xs with
-    Nil -> xs
-    Cons x8 x9 -> Cons x8 (Cons x8
-                             (stutter x9))
+balR0 :: x:a -> l:AVL {a|_v < x} -> r:{AVL {a|_v > x}|realHeight _v - realHeight l == 2 && balFac _v == 0} -> {AVL a|realHeight _v == 1 + realHeight r && elems _v == ([x] + elems l) + elems r}
+balR0 = \x . \l . \r . 
+      match r with
+        Leaf -> error
+        Node x16 x17 x18 x19 -> Node x16
+                                  (Node x l x17 x19) x18 (inc x19)
 
-replicate :: n:Nat -> x:a -> {List a|len _v == n}
-replicate = \n . \x . 
-    if n <= 0
-      then Nil
-      else Cons x (replicate (dec n)
-                     x)
+balRL :: x:a -> l:AVL {a|_v < x} -> r:{AVL {a|_v > x}|realHeight _v - realHeight l == 2 && balFac _v > 0} -> {AVL a|realHeight _v == realHeight r && elems _v == ([x] + elems l) + elems r}
+balRL = \x . \l . \r . 
+      match r with
+        Leaf -> error
+        Node x16 x17 x18 x19 -> 
+          match x17 with
+            Leaf -> error
+            Node x24 x25 x26 x27 -> Node x24
+                                      (Node x l x25 x27) (Node x16 x26
+                                                            x18 x27) x19
 
-append :: xs:List a -> ys:List a -> {List a|len _v == len xs + len ys && elems _v == elems xs + elems ys}
-append = \xs . \ys . 
-    match xs with
-      Nil -> ys
-      Cons x19 x20 -> append x20 (Cons
-                                    x19 ys)
+balRR :: x:a -> l:AVL {a|_v < x} -> r:{AVL {a|_v > x}|realHeight _v - realHeight l == 2 && balFac _v < 0} -> {AVL a|realHeight _v == realHeight r && elems _v == ([x] + elems l) + elems r}
+balRR = \x . \l . \r . 
+      match r with
+        Leaf -> error
+        Node x16 x17 x18 x19 -> 
+          match x18 with
+            Leaf -> error
+            Node x24 x25 x26 x27 -> Node x16
+                                      (Node x l x17 x27) x18 x19
 
-concat :: xss:ListOfLists a -> {List a|len _v == sumLen xss}
-concat = \xss . 
-  match xss with
-    Nil2 -> Nil
-    Cons2 x14 x15 -> append x14
-                       (concat x15)
+balance :: x:a -> l:AVL {a|_v < x} -> r:{AVL {a|_v > x}|abs (realHeight l - realHeight _v) <= 2} -> {AVL a|(balHt l r _v && bigHt l r _v) && elems _v == ([x] + elems l) + elems r}
+balance = \x . \l . \r . Node x
+                           l r (nodeHeight r l)
 
-take :: n:Nat -> xs:{List a|len _v >= n} -> {List a|len _v == n}
-take = \n . \xs . 
-    if 0 != n
-      then 
-        match xs with
-          Nil -> error
-          Cons x11 x12 -> Cons x11 (take
-                                      (dec n) x12)
-      else Nil
-
-drop :: n:Nat -> xs:{List a|len _v >= n} -> {List a|len _v == len xs - n}
-drop = \n . \xs . 
-    if 0 != n
-      then 
-        match xs with
-          Nil -> error
-          Cons x11 x12 -> drop (dec n) x12
-      else xs
-
-delete :: x:a -> xs:List a -> {List a|elems _v == elems xs - [x]}
-delete = \x . \xs . 
-    match xs with
-      Nil -> xs
-      Cons x13 x14 -> 
-        if x13 == x
-          then delete x x14
-          else Cons x13 (delete x x14)
-
-map :: f:(arg0:a -> b) -> xs:List a -> {List b|len _v == len xs}
-map = \f . \xs . 
-    match xs with
-      Nil -> Nil
-      Cons x15 x16 -> Cons (f x15)
-                        (map f x16)
-
-zipWith :: f:(arg1:a -> arg0:b -> c) -> xs:List a -> ys:{List b|len _v == len xs} -> {List c|len _v == len xs}
-zipWith = \f . \xs . \ys . 
-      match xs with
-        Nil -> Nil
-        Cons x22 x23 -> 
-          match ys with
-            Nil -> error
-            Cons x26 x27 -> Cons (f x22 x26)
-                              (zipWith f x23 x27)
-
-zip :: xs:List a -> ys:{List b|len _v == len xs} -> {List Pair a b|len _v == len xs}
-zip = \xs . \ys . 
-    match xs with
-      Nil -> Nil
-      Cons x15 x16 -> 
-        match ys with
-          Nil -> error
-          Cons x19 x20 -> Cons (Pair x15
-                                  x19) (zip x16 x20)
-
-toNat :: xs:List Int -> {List Nat|len _v == len xs}
-toNat = \xs . 
-  let f0 = \x10 . 
-      if x10 <= 0
-        then neg x10
-        else neg (neg x10) in
-  map f0 xs
-
-product :: xs:List a -> ys:List b -> {List Pair a b|len _v == len xs * len ys}
-product = \xs . \ys . 
-    match xs with
-      Nil -> Nil
-      Cons x25 x26 -> 
-        let f26 = \x1368 . Pair x25
-                             x1368 in
-        map (\x45 . x45) (append
-                            (product x26 ys) (map f26 ys))
-
-extractMin :: xs:{List a|len _v > 0} -> {MinPair a|elems xs == [min _v] + elems (rest _v) && len xs == 1 + len (rest _v)}
-extractMin = \xs . 
-  match xs with
-    Nil -> error
-    Cons x9 x10 -> 
-      match x10 with
-        Nil -> MinPair x9 Nil
-        Cons x18 x19 -> 
-          match extractMin x10 with
-            MinPair x23 x24 -> 
-              if x23 <= x9
-                then MinPair x23 (Cons x9 x24)
-                else MinPair x9 (Cons x23 x24)
-
-member :: x:a -> xs:List a -> {Bool|_v == (x in elems xs)}
-member = \x . \xs . 
-    match xs with
-      Nil -> false
-      Cons x15 x16 -> 
-        if x15 == x
-          then true
-          else member x x16
-
-coincidence :: xs:List a -> ys:List a -> {List a|elems _v == elems xs * elems ys}
-./List-Intersection.sq:21: Error:
-  Cannot find sufficiently strong refinements
-  when checking Nil ::
-  {List a|len _v >= 0 && len _v < len xs}
-  in
-  \xs . \ys . 
-      match coincidence Nil ?? with
-
-foldr :: <p :: List (a) -> b -> Bool> . f:(xs:List a -> x:a -> acc:{b|p xs _v} -> {b|p ((Cons x xs)) _v}) -> seed:{b|p (Nil) _v} -> ys:List a -> {b|p ys _v}
-foldr = \f . \seed . \ys . 
-      match ys with
-        Nil -> seed
-        Cons x26 x27 -> f x27 x26 (foldr
-                                     f seed x27)
-
-length :: xs:List a -> {Int|_v == len xs}
-length = \xs . 
-  let f0 = \x15 . \x16 . \x17 .
-          inc x17 in
-  foldr f0 zero xs
-
-append :: xs:List a -> ys:List a -> {List a|len _v == len xs + len ys}
-append = \xs . \ys . 
-    let f0 = \x14 . \x15 . \x16 .
-            Cons x15 x16 in
-    foldr f0 xs ys
-
-ith :: <p :: Int -> a -> Bool> . xs:List a <p> -> i:{Int|0 <= _v && _v < len xs} -> {a|p i _v}
-ith = \xs . \i . 
-    match xs with
-      Nil -> error
-      Cons x11 x12 -> 
-        if 0 == i
-          then x11
-          else ith x12 (dec i)
-
-elemIndex :: <p :: Int -> a -> Bool> . x:a -> xs:{List a <p>|x in elems _v} -> {Int|p _v x}
-elemIndex = \x . \xs . 
-    match xs with
-      Nil -> error
-      Cons x11 x12 -> 
-        if x11 == x
-          then zero
-          else inc (elemIndex x x12)
-
-snoc :: <p :: a -> a -> Bool> . x:a -> xs:List {a|p _v x} <p> -> {List a <p>|len _v == len xs + 1 && elems _v == elems xs + [x]}
-snoc = \x . \xs . 
-    match xs with
-      Nil -> Cons x Nil
-      Cons x17 x18 -> Cons x17 (snoc x
-                                  x18)
-
-reverse :: <p :: a -> a -> Bool> . xs:List a <p> -> {List a <p _1 _0>|len _v == len xs && elems _v == elems xs}
-reverse = \xs . 
-  match xs with
-    Nil -> Nil
-    Cons x10 x11 -> snoc x10
-                      (reverse x11)
-
-insert :: x:a -> xs:UList a -> {UList a|elems _v == elems xs + [x]}
-insert = \x . \xs . 
-    match xs with
-      Nil -> Cons x xs
-      Cons x17 x18 -> 
-        if x17 == x
-          then xs
-          else Cons x17 (insert x x18)
-
-delete :: x:a -> xs:UList a -> {UList a|elems _v == elems xs - [x]}
-delete = \x . \xs . 
-    match xs with
-      Nil -> xs
-      Cons x13 x14 -> 
-        if x13 == x
-          then x14
-          else Cons x13 (delete x x14)
-
-range :: size:Nat -> lo:Int -> {UList {Int|lo <= _v && _v <= lo + size}|len _v == size}
-range = \size . \lo . Cons lo
-                        (range (dec size) (inc lo))
-
-elem :: x:a -> xs:List a -> {Bool|_v == (x in elems xs)}
-elem = \x . \xs . 
-    match xs with
-      Nil -> false
-      Cons x11 x12 -> 
-        if x11 == x
-          then true
-          else elem x x12
-
-nub' :: xs:List a -> acc:UList a -> {UList a|elems _v == elems acc + elems xs}
-./List-Nub.sq:25: Error:
-  Cannot find sufficiently strong refinements
-  when checking Nil ::
-  {PList a <True>|len _v >= 0 && len _v < len xs}
-  in
-  \xs . \acc . 
-      match nub' Nil ?? with
-
-compress :: xs:List a -> {CList a|elems _v == elems xs}
-compress = \xs . 
-  match xs with
-    Nil -> Nil
-    Cons x8 x9 -> 
-      match compress x9 with
-        Nil -> Cons x8 Nil
-        Cons x22 x23 -> 
-          if x8 == x22
-            then compress x9
-            else Cons x8 (Cons x22 x23)
-
-insert :: x:a -> xs:IList a -> {IList a|ielems _v == ielems xs + [x]}
-insert = \x . \xs . 
-    match xs with
-      INil -> ICons x INil
-      ICons x19 x20 -> 
-        if x19 <= x
-          then ICons x19 (insert x x20)
-          else ICons x (insert x19 x20)
-
-insertSort :: xs:List a -> {IList a|ielems _v == elems xs}
-insertSort = \xs . 
-  match xs with
-    Nil -> INil
-    Cons x12 x13 -> insert x12
-                      (insertSort x13)
-
-sort :: xs:List a -> {IncList a|elems _v == elems xs && len _v == len xs}
-sort = \xs . 
-  let f0 = \x12 . \x13 . \x14 . 
-          match x14 with
-            Nil -> Cons x13 Nil
-            Cons x104 x105 -> 
-              if x13 <= x104
-                then Cons x13 (Cons x104 x105)
-                else Cons x104 (f0 x105 x13
-                                  x105) in
-  foldr f0 Nil xs
-
-split :: xs:List a -> {Pair {List a|abs (len xs - len _v * 2) <= 1} List a|len xs == len (fst _v) + len (snd _v) && elems xs == elems (fst _v) + elems (snd _v)}
-split = \xs . 
-  match xs with
-    Nil -> Pair xs Nil
-    Cons x12 x13 -> 
-      match x13 with
-        Nil -> Pair x13 xs
-        Cons x23 x24 -> 
-          match split x24 with
-            Pair x28 x29 -> Pair (Cons x12
-                                    x28) (Cons x23 x29)
-
-merge :: xs:IList a -> ys:IList a -> {IList a|ilen _v == ilen xs + ilen ys && ielems _v == ielems xs + ielems ys}
-merge = \xs . \ys . 
-    match ys with
-      INil -> xs
-      ICons x12 x13 -> 
-        match xs with
-          INil -> ys
-          ICons x20 x21 -> 
-            if x20 <= x12
-              then ICons x20 (merge x21 (ICons
-                                           x12 x13))
-              else ICons x12 (merge (ICons x20
-                                       x21) x13)
-
-mergeSort :: xs:List a -> {IList a|ilen _v == len xs && ielems _v == elems xs}
-mergeSort = \xs . 
-  match xs with
-    Nil -> INil
-    Cons x17 x18 -> 
-      match x18 with
-        Nil -> ICons x17 INil
-        Cons x41 x42 -> 
-          match split xs with
-            Pair x46 x47 -> merge (mergeSort
-                                     x46) (mergeSort x47)
-
-partition :: p:a -> xs:List a -> {Pair List {a|_v <= p} List {a|_v > p}|len (fst _v) + len (snd _v) == len xs && elems (fst _v) + elems (snd _v) == elems xs}
-partition = \p . \xs . 
-    match xs with
-      Nil -> Pair Nil Nil
-      Cons x19 x20 -> 
-        match partition p x20 with
-          Pair x25 x26 -> 
-            if p < x19
-              then Pair x25 (Cons x19 x26)
-              else Pair (Cons x19 x25) x26
-
-pivotAppend :: p:a -> xs:IList {a|_v <= p} -> ys:IList {a|_v > p} -> {IList a|ilen _v == (ilen xs + ilen ys) + 1 && ielems _v == (ielems xs + ielems ys) + [p]}
-pivotAppend = \p . \xs . \ys . 
-      match xs with
-        INil -> ICons p ys
-        ICons x21 x22 -> ICons x21
-                           (pivotAppend p x22 ys)
-
-quickSort :: xs:List a -> {IList a|ilen _v == len xs && ielems _v == elems xs}
-quickSort = \xs . 
-  match xs with
-    Nil -> INil
-    Cons x17 x18 -> 
-      match partition x17 x18 with
-        Pair x23 x24 -> pivotAppend x17
-                          (quickSort x23) (quickSort x24)
-
-elem :: x:a -> t:Tree a -> {Bool|_v == (x in telems t)}
-elem = \x . \t . 
+insert :: y:a -> t:AVL a -> {AVL a|(realHeight t <= realHeight _v && realHeight _v <= realHeight t + 1) && elems _v == [y] + elems t}
+insert = \y . \t . 
     match t with
-      Empty -> false
-      Node x19 x20 x21 -> 
-        if x19 == x
-          then not false
-          else or (elem x x20) (elem x
-                                  x21)
-
-flatten :: t:Tree a -> {List a|len _v == size t}
-flatten = \t . 
-  match t with
-    Empty -> Nil
-    Node x16 x17 x18 -> append
-                          (flatten x17) (Cons x16 (flatten
-                                                     x18))
-
-member :: x:a -> t:BST a -> {Bool|_v == (x in telems t)}
-member = \x . \t . 
-    match t with
-      Empty -> false
-      Node x13 x14 x15 -> 
-        if (x <= x13) && (x13 <= x)
-          then true
+      Leaf -> balance y Leaf Leaf
+      Node x54 x55 x56 x57 -> 
+        if x54 < y
+          then balance x54 x55 (insert y
+                                  x56)
           else 
-            if x <= x13
-              then member x x14
-              else member x x15
+            if y < x54
+              then balance y x55 (insert x54
+                                    x56)
+              else Node x54 x55 x56 x57
 
-insert :: x:a -> t:BST a -> {BST a|telems _v == telems t + [x]}
-insert = \x . \t . 
-    match t with
-      Empty -> Node x Empty Empty
-      Node x31 x32 x33 -> 
-        if (x <= x31) && (x31 <= x)
-          then t
-          else 
-            if x31 <= x
-              then Node x31 x32 (insert x x33)
-              else Node x x32 (insert x31 x33)
-
-extractMin :: t:{BST a|size _v > 0} -> {MinPair a|telems t == [min _v] + telems (rest _v)}
+extractMin :: t:AVL a -> {MinPair a|elems t == melems _v && eqOrOneLess (mheight _v) (realHeight t)}
 extractMin = \t . 
   match t with
-    Empty -> error
-    Node x11 x12 x13 -> 
-      match x12 with
-        Empty -> MinPair x11 x13
-        Node x26 x27 x28 -> 
-          match extractMin x12 with
-            MinPair x32 x33 -> MinPair x32
-                                 (Node x11 x33 x13)
+    Leaf -> Nothing
+    Node x19 x20 x21 x22 -> 
+      match extractMin x20 with
+        Nothing -> MinPair x19 x21
+        MinPair x43 x44 -> MinPair x43
+                             (balance x19 x44 x21)
 
-delete :: t:BST a -> x:a -> {BST a|telems _v == telems t - [x]}
-delete = \t . \x . 
+merge :: x:a -> l:AVL {a|_v < x} -> r:{AVL {a|_v > x}|isBal l _v 1} -> {AVL a|bigHt l r _v && elems _v == elems l + elems r}
+merge = \x . \l . \r . 
+      match extractMin r with
+        Nothing -> l
+        MinPair x26 x27 -> balance x26 l
+                             x27
+
+delete :: y:a -> t:AVL a -> {AVL a|eqOrOneLess (realHeight _v) (realHeight t) && elems t - [y] == elems _v}
+delete = \y . \t . 
     match t with
-      Empty -> t
-      Node x16 x17 x18 -> 
-        if x16 < x
-          then Node x16 x17 (delete x18 x)
+      Leaf -> t
+      Node x30 x31 x32 x33 -> 
+        if x30 < y
+          then balance x30 x31 (delete y
+                                  x32)
           else 
-            if x16 != x
-              then Node x16 (delete x17 x) x18
-              else 
-                match x17 with
-                  Empty -> x18
-                  Node x72 x73 x74 -> Node x72 x73
-                                        (delete (Node x x74 x18) x16)
+            if y == x30
+              then merge x30 x31 x32
+              else balance x30 (delete y x31)
+                     x32
 
-insert :: x:a -> t:BST a -> {BST a|telems _v == telems t + [x]}
-insert = \x . \t . 
-    match t with
-      Empty -> Node x Empty Empty
-      Node x35 x36 x37 -> 
-        if (x <= x35) && (x35 <= x)
-          then t
-          else 
-            if x35 <= x
-              then Node x35 x36 (insert x x37)
-              else Node x x36 (insert x35 x37)
-
-toBST :: xs:List a -> {BST a|telems _v == elems xs}
-toBST = \xs . 
-  match xs with
-    Nil -> Empty
-    Cons x15 x16 -> insert x15
-                      (toBST x16)
-
-pivotAppend :: p:a -> xs:IList {a|_v < p} -> ys:IList {a|_v > p} -> {IList a|ilen _v == (ilen xs + ilen ys) + 1 && ielems _v == (ielems xs + ielems ys) + [p]}
-pivotAppend = \p . \xs . \ys . 
-      match xs with
-        INil -> ICons p ys
-        ICons x29 x30 -> ICons x29
-                           (pivotAppend p x30 ys)
-
-flatten :: t:BST a -> {IList a|ielems _v == telems t}
-flatten = \t . 
-  match t with
-    Empty -> INil
-    Node x20 x21 x22 -> pivotAppend
-                          x20 (flatten x21) (flatten x22)
-
-sort :: xs:List a -> {IList a|ielems _v == elems xs}
-sort = \xs . flatten (toBST xs)
-
-member :: x:a -> t:Heap a -> {Bool|_v == (x in elems t)}
-member = \x . \t . 
-    match t with
-      Empty -> false
-      Node x19 x20 x21 -> 
-        if (x19 != x) && (x <= x19)
-          then false
-          else 
-            if x <= x19
-              then not false
-              else or (member x x20) (member x
-                                        x21)
-
-insert :: t:Heap a -> x:a -> {Heap a|elems _v == elems t + [x]}
-insert = \t . \x . 
-    match t with
-      Empty -> Node x Empty Empty
-      Node x31 x32 x33 -> 
-        if (x <= x31) && (x31 <= x)
-          then t
-          else 
-            if x31 <= x
-              then Node x31 x32 (insert x33 x)
-              else Node x x32 (insert x33 x31)
-
-transform :: x:AST -> {PAST|result2 _v == result x}
-transform = \x . 
-  match x with
-    One -> IntNode one
-    Zero -> IntNode zero
-    Two -> IntNode two
-    PlusNode x30 x31 -> OpNode zero
-                          (transform x30) (transform x31)
-    MinusNode x3054 x3055 -> OpNode
-                               one (transform x3054) (transform
-                                                        x3055)
-    ProductNode x4846 x4847 ->
-      OpNode two (transform x4846)
-        (transform x4847)
-
-mkAddressBook :: adds:List Address -> {AddressBook|size _v == len adds}
-mkAddressBook = \adds . 
-  match adds with
-    Nil -> AddressBook Nil Nil
-    Cons x28 x29 -> 
-      match mkAddressBook x29 with
-        AddressBook x33 x34 -> 
-          if getPriv x28
-            then AddressBook x33 (Cons x28
-                                    x34)
-            else AddressBook (Cons x28 x33)
-                   x34
-
-mergeAddressBooks :: a:AddressBook -> b:AddressBook -> {AddressBook|size _v == size a + size b}
-mergeAddressBooks = \a . \b . 
-    match a with
-      AddressBook x16 x17 -> 
-        match b with
-          AddressBook x20 x21 ->
-            AddressBook (append x16 x20)
-              (append x17 x21)
-
-replicate :: n:{Nat|_v <= 2} -> x:a -> {List a|((n == 0 ==> _v == (Nil)) && (n == 1 ==> _v == (Cons x (Nil)))) && (n == 2 ==> _v == (Cons x ((Cons x (Nil)))))}
-replicate = \n . \x . 
-    if n <= 0
-      then Nil
-      else Cons x (replicate (dec n)
-                     x)
-
-max2 :: x:Int -> y:Int -> {Int|_v >= x && _v >= y}
-max2 = \x . \y . 
-    if x >= y
-      then x
-      else y
-
-max3 :: x:Int -> y:Int -> z:Int -> {Int|(_v >= x && _v >= y) && _v >= z}
-max3 = \x . \y . \z . 
-      if (x >= y) && (x >= z)
-        then x
-        else 
-          if y >= z
-            then y
-            else z
-
-max4 :: w:Int -> x:Int -> y:Int -> z:Int -> {Int|((_v >= w && _v >= x) && _v >= y) && _v >= z}
-max4 = \w . \x . \y . \z . 
-        if ((w >= x) && (w >= y)) && (w
-                                        >= z)
-          then w
-          else 
-            if (x >= y) && (x >= z)
-              then x
-              else 
-                if y >= z
-                  then y
-                  else z
-
-max5 :: v:Int -> w:Int -> x:Int -> y:Int -> z:Int -> {Int|(((_v >= v && _v >= w) && _v >= x) && _v >= y) && _v >= z}
-max5 = \v . \w . \x . \y . \z . 
-          if (((v >= w) && (v >= x)) && (v
-                                           >= y)) && (v >= z)
-            then v
-            else 
-              if ((w >= x) && (w >= y)) && (w
-                                              >= z)
-                then w
-                else 
-                  if (x >= y) && (x >= z)
-                    then x
-                    else 
-                      if y >= z
-                        then y
-                        else z
-
-findIdx :: arr:Array a -> k:a -> {Int|((k < at0 arr ==> _v == 0) && (k > at1 arr ==> _v == 2)) && (k > at0 arr && k < at1 arr ==> _v == 1)}
-findIdx = \arr . \k . 
-    match arr with
-      Array2 x6 x7 -> 
-        if k < x6
-          then n0
-          else 
-            if k < x7
-              then n1
-              else n2
-
-findIdx :: arr:Array a -> k:a -> {Int|(((k < at0 arr ==> _v == 0) && (k > at2 arr ==> _v == 3)) && (k > at0 arr && k < at1 arr ==> _v == 1)) && (k > at1 arr && k < at2 arr ==> _v == 2)}
-findIdx = \arr . \k . 
-    match arr with
-      Array3 x8 x9 x10 -> 
-        if k < x8
-          then n0
-          else 
-            if k < x9
-              then n1
-              else 
-                if k < x10
-                  then n2
-                  else n3
-
-findIdx :: arr:Array a -> k:a -> {Int|((((k < at0 arr ==> _v == 0) && (k > at3 arr ==> _v == 4)) && (k > at0 arr && k < at1 arr ==> _v == 1)) && (k > at1 arr && k < at2 arr ==> _v == 2)) && (k > at2 arr && k < at3 arr ==> _v == 3)}
-findIdx = \arr . \k . 
-    match arr with
-      Array4 x10 x11 x12 x13 -> 
-        if k < x10
-          then n0
-          else 
-            if k < x11
-              then n1
-              else 
-                if k < x12
-                  then n2
-                  else 
-                    if k < x13
-                      then n3
-                      else n4
-
-findIdx :: arr:Array a -> k:a -> {Int|(((((k < at0 arr ==> _v == 0) && (k > at4 arr ==> _v == 5)) && (k > at0 arr && k < at1 arr ==> _v == 1)) && (k > at1 arr && k < at2 arr ==> _v == 2)) && (k > at2 arr && k < at3 arr ==> _v == 3)) && (k > at3 arr && k < at4 arr ==> _v == 4)}
-findIdx = \arr . \k . 
-    match arr with
-      Array5 x12 x13 x14 x15 x16 -> 
-        if k < x12
-          then n0
-          else 
-            if k < x13
-              then n1
-              else 
-                if k < x14
-                  then n2
-                  else 
-                    if k < x15
-                      then n3
-                      else 
-                        if k < x16
-                          then n4
-                          else n5
-
-findIdx :: arr:Array a -> k:a -> {Int|((((((k < at0 arr ==> _v == 0) && (k > at5 arr ==> _v == 6)) && (k > at0 arr && k < at1 arr ==> _v == 1)) && (k > at1 arr && k < at2 arr ==> _v == 2)) && (k > at2 arr && k < at3 arr ==> _v == 3)) && (k > at3 arr && k < at4 arr ==> _v == 4)) && (k > at4 arr && k < at5 arr ==> _v == 5)}
-findIdx = \arr . \k . 
-    match arr with
-      Array6 x14 x15 x16 x17 x18 x19 ->
-        
-        if k < x14
-          then n0
-          else 
-            if k < x15
-              then n1
-              else 
-                if k < x16
-                  then n2
-                  else 
-                    if k < x17
-                      then n3
-                      else 
-                        if k < x18
-                          then n4
-                          else 
-                            if k < x19
-                              then n5
-                              else n6
-
-balanceL :: y:a -> isR:Bool -> l:{RBT {a|_v < y}|size _v > 0 && (isR ==> isOk _v)} -> r:{RBT {a|_v > y}|(isOk _v && (isRed _v ==> !isR)) && bHeight _v == bHeight l} -> {RBT a|((elems _v == ([y] + elems l) + elems r && bHeight _v == bHeight r + bHt isR) && size _v == (1 + size l) + size r) && (isR || isOk _v)}

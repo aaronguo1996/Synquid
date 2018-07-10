@@ -1379,7 +1379,7 @@ findDstNodesInGraph env typ = case typ of
       _ -> Set.empty
     checkVars k m = (not (isSuccinctComposite k)) && (succinctAnyEq k typ) && (isStrongerThan measureNames k typ || 
                      not (Set.null (Set.map getEdgeId (Set.unions (HashMap.elems m)) `Set.intersection` ((measuresOf typ) `Set.difference` (measuresOf k)))))
-    candidateMap = HashMap.filterWithKey checkVars (env ^. graphFromGoal)
+    candidateMap = HashMap.filterWithKey (if typ == SuccinctAny then filter_fun else checkVars) (env ^. graphFromGoal)
     in HashMap.foldr (\m acc -> HashMap.foldrWithKey (\kty set accM -> HashMap.insertWith Set.union kty set accM) acc m) HashMap.empty candidateMap
 
 pruneGraphByReachability g reachableSet = HashMap.foldrWithKey (\k v acc -> if Set.member k reachableSet then HashMap.insert k (HashMap.filterWithKey (\k' s -> Set.member k' reachableSet) v) acc else acc) HashMap.empty g

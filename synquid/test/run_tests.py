@@ -277,7 +277,7 @@ if __name__ == '__main__':
       a.check = True
       a.synt = True
 
-    sections = [s.lower() for s in a.sections]
+    sections = [s for s in a.sections]
 
     fail = False
     if a.unit:
