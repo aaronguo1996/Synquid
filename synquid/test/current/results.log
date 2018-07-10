@@ -1,113 +1,105 @@
-add :: x:Nat -> y:Nat -> {Int|_v == x + y}
-add = \x . \y . add y (dec (inc
-                              x))
+balL0 :: x:a -> l:{AVL {a|_v < x}|balFac _v == 0} -> r:{AVL {a|_v > x}|realHeight l - realHeight _v == 2} -> {AVL a|realHeight _v == 1 + realHeight l && elems _v == ([x] + elems l) + elems r}
+balL0 = \x . \l . \r . 
+      match l with
+        Leaf -> error
+        Node x16 x17 x18 x19 -> Node x16
+                                  x17 (Node x x18 r x19) (inc x19)
 
-null :: xs:List a -> {Bool|_v == (len xs == 0)}
-null = \xs . 
-  match xs with
-    Nil -> true
-    Cons x7 x8 -> false
+balLL :: x:a -> l:{AVL {a|_v < x}|balFac _v > 0} -> r:{AVL {a|_v > x}|realHeight l - realHeight _v == 2} -> {AVL a|realHeight _v == realHeight l && elems _v == ([x] + elems l) + elems r}
+balLL = \x . \l . \r . 
+      match l with
+        Leaf -> error
+        Node x16 x17 x18 x19 -> 
+          match x17 with
+            Leaf -> error
+            Node x24 x25 x26 x27 -> Node x16
+                                      x17 (Node x x18 r x27) x19
 
-elem :: x:a -> xs:List a -> {Bool|_v == (x in elems xs)}
-elem = \x . \xs . 
-    match xs with
-      Nil -> false
-      Cons x9 x10 -> 
-        if x9 == x
-          then true
-          else elem x x10
+balLR :: x:a -> l:{AVL {a|_v < x}|balFac _v < 0} -> r:{AVL {a|_v > x}|realHeight l - realHeight _v == 2} -> {AVL a|realHeight _v == realHeight l && elems _v == ([x] + elems l) + elems r}
+balLR = \x . \l . \r . 
+      match l with
+        Leaf -> error
+        Node x16 x17 x18 x19 -> 
+          match x18 with
+            Leaf -> error
+            Node x24 x25 x26 x27 -> Node x24
+                                      (Node x16 x17 x25 x27) (Node x
+                                                                x26 r x27) x19
 
-stutter :: xs:List a -> {List a|len _v == 2 * len xs}
-stutter = \xs . 
-  match xs with
-    Nil -> xs
-    Cons x7 x8 -> Cons x7 (Cons x7
-                             (stutter x8))
+balR0 :: x:a -> l:AVL {a|_v < x} -> r:{AVL {a|_v > x}|realHeight _v - realHeight l == 2 && balFac _v == 0} -> {AVL a|realHeight _v == 1 + realHeight r && elems _v == ([x] + elems l) + elems r}
+balR0 = \x . \l . \r . 
+      match r with
+        Leaf -> error
+        Node x16 x17 x18 x19 -> Node x16
+                                  (Node x l x17 x19) x18 (inc x19)
 
-replicate :: n:Nat -> x:a -> {List a|len _v == n}
-./List-Replicate.sq:18: Error:
-  Cannot find sufficiently strong refinements
-  when checking zero ::
-  {Int|_v >= 0 && (_v >= 0 && _v < n)}
-  in
-  \n . \x . 
-      match replicate zero ?? with
+balRL :: x:a -> l:AVL {a|_v < x} -> r:{AVL {a|_v > x}|realHeight _v - realHeight l == 2 && balFac _v > 0} -> {AVL a|realHeight _v == realHeight r && elems _v == ([x] + elems l) + elems r}
+balRL = \x . \l . \r . 
+      match r with
+        Leaf -> error
+        Node x16 x17 x18 x19 -> 
+          match x17 with
+            Leaf -> error
+            Node x24 x25 x26 x27 -> Node x24
+                                      (Node x l x25 x27) (Node x16 x26
+                                                            x18 x27) x19
 
-append :: xs:List a -> ys:List a -> {List a|len _v == len xs + len ys && elems _v == elems xs + elems ys}
-append = \xs . \ys . 
-    match xs with
-      Nil -> ys
-      Cons x17 x18 -> append x18 (Cons
-                                    x17 ys)
+balRR :: x:a -> l:AVL {a|_v < x} -> r:{AVL {a|_v > x}|realHeight _v - realHeight l == 2 && balFac _v < 0} -> {AVL a|realHeight _v == realHeight r && elems _v == ([x] + elems l) + elems r}
+balRR = \x . \l . \r . 
+      match r with
+        Leaf -> error
+        Node x16 x17 x18 x19 -> 
+          match x18 with
+            Leaf -> error
+            Node x24 x25 x26 x27 -> Node x16
+                                      (Node x l x17 x27) x18 x19
 
-concat :: xss:ListOfLists a -> {List a|len _v == sumLen xss}
-concat = \xss . 
-  match xss with
-    Nil2 -> Nil
-    Cons2 x13 x14 -> append x13
-                       (concat x14)
+balance :: x:a -> l:AVL {a|_v < x} -> r:{AVL {a|_v > x}|abs (realHeight l - realHeight _v) <= 2} -> {AVL a|(balHt l r _v && bigHt l r _v) && elems _v == ([x] + elems l) + elems r}
+balance = \x . \l . \r . Node x
+                           l r (nodeHeight r l)
 
-take :: n:Nat -> xs:{List a|len _v >= n} -> {List a|len _v == n}
-take = \n . \xs . 
-    if 0 != n
-      then 
-        match xs with
-          Nil -> error
-          Cons x9 x10 -> Cons x9 (take
-                                    (dec n) x10)
-      else Nil
+insert :: y:a -> t:AVL a -> {AVL a|(realHeight t <= realHeight _v && realHeight _v <= realHeight t + 1) && elems _v == [y] + elems t}
+insert = \y . \t . 
+    match t with
+      Leaf -> balance y Leaf Leaf
+      Node x54 x55 x56 x57 -> 
+        if x54 < y
+          then balance x54 x55 (insert y
+                                  x56)
+          else 
+            if y < x54
+              then balance y x55 (insert x54
+                                    x56)
+              else Node x54 x55 x56 x57
 
-drop :: n:Nat -> xs:{List a|len _v >= n} -> {List a|len _v == len xs - n}
-drop = \n . \xs . 
-    if 0 != n
-      then 
-        match xs with
-          Nil -> error
-          Cons x9 x10 -> drop (dec n) x10
-      else xs
+extractMin :: t:AVL a -> {MinPair a|elems t == melems _v && eqOrOneLess (mheight _v) (realHeight t)}
+extractMin = \t . 
+  match t with
+    Leaf -> Nothing
+    Node x19 x20 x21 x22 -> 
+      match extractMin x20 with
+        Nothing -> MinPair x19 x21
+        MinPair x43 x44 -> MinPair x43
+                             (balance x19 x44 x21)
 
-delete :: x:a -> xs:List a -> {List a|elems _v == elems xs - [x]}
-delete = \x . \xs . 
-    match xs with
-      Nil -> xs
-      Cons x11 x12 -> 
-        if x11 == x
-          then delete x x12
-          else Cons x11 (delete x x12)
+merge :: x:a -> l:AVL {a|_v < x} -> r:{AVL {a|_v > x}|isBal l _v 1} -> {AVL a|bigHt l r _v && elems _v == elems l + elems r}
+merge = \x . \l . \r . 
+      match extractMin r with
+        Nothing -> l
+        MinPair x26 x27 -> balance x26 l
+                             x27
 
-map :: f:(arg0:a -> b) -> xs:List a -> {List b|len _v == len xs}
-./List-Map.sq:10: Error:
-  Cannot find sufficiently strong refinements
-  when checking Nil ::
-  {List a|len _v >= 0 && len _v < len xs}
-  in
-  \f . \xs . 
-      match map f0 Nil with
-
-zipWith :: f:(arg1:a -> arg0:b -> c) -> xs:List a -> ys:{List b|len _v == len xs} -> {List c|len _v == len xs}
-zipWith = \f . \xs . \ys . 
-      match xs with
-        Nil -> Nil
-        Cons x19 x20 -> 
-          match ys with
-            Nil -> error
-            Cons x23 x24 -> Cons (f x19 x23)
-                              (zipWith f x20 x24)
-
-zip :: xs:List a -> ys:{List b|len _v == len xs} -> {List Pair a b|len _v == len xs}
-./List-Zip.sq:13: Error:
-  Cannot find sufficiently strong refinements
-  when checking Nil ::
-  {List a|len _v >= 0 && len _v < len xs}
-  in
-  \xs . \ys . 
-      match zip Nil ?? with
-
-toNat :: xs:List Int -> {List Nat|len _v == len xs}
-toNat = \xs . 
-  let f0 = \x11 . 
-      if x11 <= 0
-        then neg x11
-        else neg (neg x11) in
-  map f0 xs
+delete :: y:a -> t:AVL a -> {AVL a|eqOrOneLess (realHeight _v) (realHeight t) && elems t - [y] == elems _v}
+delete = \y . \t . 
+    match t with
+      Leaf -> t
+      Node x30 x31 x32 x33 -> 
+        if x30 < y
+          then balance x30 x31 (delete y
+                                  x32)
+          else 
+            if y == x30
+              then merge x30 x31 x32
+              else balance x30 (delete y x31)
+                     x32
 

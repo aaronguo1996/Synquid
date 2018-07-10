@@ -9,15 +9,6 @@ termination measure blen :: ByteArray -> {Int | _v >= 0} where
 
 type Nat = {Int | _v >= 0}
 
-data Array where
-  Array :: aBA: ByteArray -> alen: Nat -> Array
-
-measure aarr :: Array -> ByteArray where
-  Array aBA alen -> aBA
-
-measure alen :: Array -> {Int | _v >= 0} where
-  Array aBA l -> l
-
 data Text where
   Text :: bArr: ByteArray -> offset: Int -> length: Int -> Text
 
@@ -35,10 +26,10 @@ measure tlen :: Text -> Int where
 
 data Char
 
-false :: {Bool | _v == False}
-true :: {Bool | _v == True}
+-- false :: {Bool | _v == False}
+-- true :: {Bool | _v == True}
 
--- | components to add
+{- components related to Text  -}
 inc :: x: Int -> {Int | _v == x+1 }
 dec :: x: Int -> {Int | _v == x-1 }
 zero :: {Int | _v == 0}
@@ -47,10 +38,8 @@ textCons :: t: Text -> c: Char -> {Text | tlength t + 1 == tlength _v && tlen _v
 textAppend :: t1: Text -> t2: Text -> {Text | tlength _v == tlength t1 + tlength t2}
 -- textNull :: t: Text -> {Bool | _v == (tlength t == 0)}
 -- textIsSingleton :: t: Text -> {Bool | _v == (tlength t == 1)}
-textLength :: t: Text -> {Nat | _v == tlength t}
--- textCompLength :: t: Text -> len: Nat -> {Bool | _v == (tlength t == len)}
--- textJustifyLeft :: k: Nat -> c: Char -> t: {Text | tlength _v <= k} -> {Text | tlength _v == k}
 
+{- component useless for Text and should be unreachable -}
 data List a where
   Nil :: List a
   Cons :: x: a -> xs: List a -> List a
@@ -87,9 +76,5 @@ appendFold :: xs: List a -> ys: List a -> {List a | len _v == len xs + len ys}
 length :: xs: List a -> {Int | _v == len xs}
 coincidence :: xs: List a -> ys: List a -> {List a | elems _v == elems xs * elems ys}
 map :: f: (a -> b) -> xs: List a -> {List b | len _v == len xs}
-
-textAppend = ??
--- textReplicate :: n: Nat -> c: Char -> {Text | tlength _v == n}
--- textReplicate = ??
-textTake :: n: Nat -> t: {Text | tlength _v >= n} -> {Text | tlength _v == n}
-textTake = ??
+qualifier {x != y}
+drop = ??
