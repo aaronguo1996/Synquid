@@ -77,7 +77,16 @@ data ExplorerParams = ExplorerParams {
 makeLenses ''ExplorerParams
 
 type Requirements = Map Id [RType]
-type ProgramQueue = MaxPQueue (Double, Double) (SProgram, ExplorerState, [Constraint])
+data PriorityKey = PriorityKey {
+  fscore :: Double,
+  gscore :: Double
+} deriving (Eq)
+
+instance Ord (PriorityKey) where
+  (<=) (PriorityKey f1 g1) (PriorityKey f2 g2) = (f1+g1) <= (f2+g2)
+
+
+type ProgramQueue = MaxPQueue PriorityKey (SProgram, ExplorerState, [Constraint])
 
 -- | State of program exploration
 data ExplorerState = ExplorerState {
@@ -393,7 +402,7 @@ walkThrough env pq =
   if PQ.size pq == 0
     then return (Nothing, PQ.empty)
     else do 
-      let ((fscore,gscore),(p, pes, constraints)) = PQ.findMax pq
+      let ((PriorityKey fscore gscore),(p, pes, constraints)) = PQ.findMax pq
       writeLog 2 $ text "Score for" <+> pretty (toRProgram p) <+> text "is" <+> text (show fscore) <+> text "," <+> text (show gscore)
       es <- get
       put $ keepIdCount es pes
@@ -434,7 +443,7 @@ walkThrough env pq =
                           fes <- get
                           put (keepIdCount fes es') >> if depth p' <= d then return (Just (p', fes, constraints', weight)) else return Nothing
                           ) candidates --if hasHole p then PQ.insertBehind  prog accQ else PQ.insertBehind 1 prog accQ
-                        walkThrough env $ foldl (\accQ prog@(p,st,cs,w) -> PQ.insertBehind (1.0 / (1.0/fscore + w), termScore env p) (p,st,cs) accQ) pq' $ map fromJust $ filter isJust filteredCands
+                        walkThrough env $ foldl (\accQ prog@(p,st,cs,w) -> PQ.insertBehind (PriorityKey (1.0 / (1.0/fscore + w)) (termScore env p)) (p,st,cs) accQ) pq' $ map fromJust $ filter isJust filteredCands
                       )
                       (do currSt <- get; put $ keepIdCount currSt es; walkThrough env pq')
                   [] -> do
@@ -454,7 +463,7 @@ walkThrough env pq =
                       -- typingState .= ts' >> if depth p' <= d then return (Just (p', fes)) else return Nothing
                       put (keepIdCount fes es') >> if depth p' <= d then return (Just (p', fes, constraints', weight)) else return Nothing
                       ) candidates --if hasHole p then PQ.insertBehind  prog accQ else PQ.insertBehind 1 prog accQ
-                    walkThrough env $ foldl (\accQ prog@(p,st,cs,w) -> PQ.insertBehind (1.0 / (1.0/fscore + w), termScore env p) (p,st,cs) accQ) pq' $ map fromJust $ filter isJust filteredCands
+                    walkThrough env $ foldl (\accQ prog@(p,st,cs,w) -> PQ.insertBehind (PriorityKey (1.0 / (1.0/fscore + w)) (termScore env p)) (p,st,cs) accQ) pq' $ map fromJust $ filter isJust filteredCands
               )
               -- (typingState .= ts >> walkThrough env pq')
               (do currSt <- get; put $ keepIdCount currSt es; walkThrough env pq')
@@ -636,7 +645,7 @@ initProgramQueue env typ = do
   let p = Program PHole (succinctTy, typ, AnyT)
   -- ts <- use typingState
   es <- get
-  let pq = PQ.singleton (1,termScore env p) (p, es, [])
+  let pq = PQ.singleton (PriorityKey 1.0 (termScore env p)) (p, es, [])
   return pq
 
 generateEWithGraph :: MonadHorn s => Environment -> ProgramQueue -> RType -> Bool -> Bool -> Explorer s RProgram
@@ -1266,7 +1275,13 @@ addEdge :: Id -> SuccinctType -> Environment -> Environment
 addEdge name (SuccinctFunction paramCnt argSet retTy) env = -- [TODO] add methods to support high order function
   let
     argTy = if Set.size argSet == 1 then Set.findMin argSet else SuccinctComposite argSet
-    addedRevEnv = (succinctGraphRev %~ HashMap.insertWith Set.union argTy (Set.singleton retTy)) env
+    highOrderArgs = Set.filter isSuccinctFunction argSet
+    addedArgEnv = Set.foldr (\arg accEnv -> let 
+      dstTy = lastSuccinctType arg
+      env' = (succinctGraphRev %~ HashMap.insertWith Set.union dstTy (Set.singleton arg)) accEnv
+      in (succinctGraph %~ HashMap.insertWith mergeMapOfSet arg (HashMap.singleton dstTy (Set.singleton (SuccinctEdge {_symbolId = "", _params = 0, _weight = 99999})))) env'
+      ) env highOrderArgs
+    addedRevEnv = (succinctGraphRev %~ HashMap.insertWith Set.union argTy (Set.singleton retTy)) addedArgEnv
     addedRetEnv = (succinctGraph %~ HashMap.insertWith mergeMapOfSet retTy (HashMap.singleton argTy (Set.singleton (SuccinctEdge {_symbolId = name, _params = paramCnt, _weight = 99999})))) addedRevEnv
   in if Set.size argSet == 1
     then addedRetEnv
@@ -1323,7 +1338,7 @@ getReachableNodes env =
 assignWeights :: Environment -> Environment
 assignWeights env = (graphFromGoal %~ assignWeightsHelper (env ^. succinctGraphRev) Set.empty (startStatus ++ anyStatus)) env
   where
-    startNodes = Set.toList $ Set.filter (\typ -> isSuccinctInhabited typ || isSuccinctFunction typ || typ == (SuccinctScalar BoolT)) (allSuccinctNodes env)
+    startNodes = Set.toList $ Set.filter (\typ -> isSuccinctInhabited typ || typ == (SuccinctScalar BoolT)) (allSuccinctNodes env)
     startStatus = zip3 (replicate (length startNodes) Nothing) startNodes (replicate (length startNodes) 0)
     anyNodes = Set.toList $ Set.filter (hasSuccinctAny .&&. (not . isSuccinctComposite) .&&. (not . isSuccinctFunction)) (allSuccinctNodes env)
     anyStatus = zip3 (replicate (length anyNodes) Nothing) anyNodes (replicate (length anyNodes) 1)
