@@ -6,7 +6,7 @@ termination measure len :: List a -> {Int | _v >= 0} where
   Nil -> 0
   Cons x xs -> 1 + len xs  
   
-append :: xs: List a -> ys: List a -> {List a | len _v == len xs + len ys}  
+-- append :: xs: List a -> ys: List a -> {List a | len _v == len xs + len ys}  
   
 data Info where
   Info :: streetAddr: Int -> zipcode: Int -> local: Bool -> Info

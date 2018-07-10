@@ -25,7 +25,7 @@ SECTIONS = ['.', 'sygus', 'rbt', 'AVL','succinct']
 BENCHMARKS = {
   '.' : [
               # Integers
-              ('Int-Add',     []),
+              ('Int-Add',     ['-f=AllArguments']),
               # Lists
               ('List-Null',       []),
               ('List-Elem',       []),
@@ -39,7 +39,7 @@ BENCHMARKS = {
               ('List-Map',        []),
               ('List-ZipWith',    []),
               ('List-Zip',        []),
-              ('List-ToNat',      ['-m 0']),
+              ('List-ToNat',      []),
               ('List-Product',    []),
               ('List-ExtractMin',     ['-a=2', '-m 3']),
               ('List-Intersection',   []),
@@ -83,7 +83,7 @@ BENCHMARKS = {
               ('BinHeap-Insert',      []),
               # User-defined datatypes
               ('Evaluator',           []),
-              ('AddressBook-Make',    ['-a=2']),
+              ('AddressBook-Make',    []),
               ('AddressBook-Merge',   ['-a=2']),
               # Synthesis from examples
               ('Replicate-Examples',  []),
@@ -305,7 +305,7 @@ if __name__ == '__main__':
 
     if not fail and a.synt:
         # Run synthesis benchmarks in 'current' directory
-        # os.chdir('current')
+        os.chdir('current')
         if os.path.isfile(LOGFILE_NAME):
             os.remove(LOGFILE_NAME)
 

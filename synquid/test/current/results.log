@@ -1,51 +1,51 @@
 add :: x:Nat -> y:Nat -> {Int|_v == x + y}
-add = \x . \y . add y (dec (inc
-                              x))
+add = \x . \y . 
+    if y <= 0
+      then x
+      else inc (add x (dec y))
 
 null :: xs:List a -> {Bool|_v == (len xs == 0)}
 null = \xs . 
   match xs with
     Nil -> true
-    Cons x7 x8 -> false
+    Cons x8 x9 -> false
 
 elem :: x:a -> xs:List a -> {Bool|_v == (x in elems xs)}
 elem = \x . \xs . 
     match xs with
       Nil -> false
-      Cons x9 x10 -> 
-        if x9 == x
+      Cons x11 x12 -> 
+        if x11 == x
           then true
-          else elem x x10
+          else elem x x12
 
 stutter :: xs:List a -> {List a|len _v == 2 * len xs}
 stutter = \xs . 
   match xs with
-    Nil -> xs
-    Cons x7 x8 -> Cons x7 (Cons x7
-                             (stutter x8))
+    Nil -> Nil
+    Cons x8 x9 -> Cons x8 (Cons x8
+                             (stutter x9))
 
 replicate :: n:Nat -> x:a -> {List a|len _v == n}
-./List-Replicate.sq:18: Error:
-  Cannot find sufficiently strong refinements
-  when checking zero ::
-  {Int|_v >= 0 && (_v >= 0 && _v < n)}
-  in
-  \n . \x . 
-      match replicate zero ?? with
+replicate = \n . \x . 
+    if n <= 0
+      then Nil
+      else Cons x (replicate (dec n)
+                     x)
 
 append :: xs:List a -> ys:List a -> {List a|len _v == len xs + len ys && elems _v == elems xs + elems ys}
 append = \xs . \ys . 
     match xs with
       Nil -> ys
-      Cons x17 x18 -> append x18 (Cons
-                                    x17 ys)
+      Cons x19 x20 -> append Nil
+                        (append x20 (Cons x19 ys))
 
 concat :: xss:ListOfLists a -> {List a|len _v == sumLen xss}
 concat = \xss . 
   match xss with
     Nil2 -> Nil
-    Cons2 x13 x14 -> append x13
-                       (concat x14)
+    Cons2 x14 x15 -> append Nil
+                       (append x14 (concat x15))
 
 take :: n:Nat -> xs:{List a|len _v >= n} -> {List a|len _v == n}
 take = \n . \xs . 
@@ -53,8 +53,8 @@ take = \n . \xs .
       then 
         match xs with
           Nil -> error
-          Cons x9 x10 -> Cons x9 (take
-                                    (dec n) x10)
+          Cons x11 x12 -> Cons x11 (take
+                                      (dec n) x12)
       else Nil
 
 drop :: n:Nat -> xs:{List a|len _v >= n} -> {List a|len _v == len xs - n}
@@ -63,51 +63,179 @@ drop = \n . \xs .
       then 
         match xs with
           Nil -> error
-          Cons x9 x10 -> drop (dec n) x10
+          Cons x11 x12 -> drop zero (drop
+                                       (dec n) x12)
       else xs
 
 delete :: x:a -> xs:List a -> {List a|elems _v == elems xs - [x]}
 delete = \x . \xs . 
     match xs with
-      Nil -> xs
-      Cons x11 x12 -> 
-        if x11 == x
-          then delete x x12
-          else Cons x11 (delete x x12)
+      Nil -> Nil
+      Cons x13 x14 -> 
+        if x13 != x
+          then Cons x13 (Cons x13 (delete
+                                     x x14))
+          else delete x x14
 
 map :: f:(arg0:a -> b) -> xs:List a -> {List b|len _v == len xs}
-./List-Map.sq:10: Error:
-  Cannot find sufficiently strong refinements
-  when checking Nil ::
-  {List a|len _v >= 0 && len _v < len xs}
-  in
-  \f . \xs . 
-      match map f0 Nil with
+map = \f . \xs . 
+    match xs with
+      Nil -> Nil
+      Cons x15 x16 -> Cons (f x15)
+                        (map f x16)
 
 zipWith :: f:(arg1:a -> arg0:b -> c) -> xs:List a -> ys:{List b|len _v == len xs} -> {List c|len _v == len xs}
 zipWith = \f . \xs . \ys . 
       match xs with
         Nil -> Nil
-        Cons x19 x20 -> 
+        Cons x22 x23 -> 
           match ys with
             Nil -> error
-            Cons x23 x24 -> Cons (f x19 x23)
-                              (zipWith f x20 x24)
+            Cons x26 x27 -> Cons (f x22 x26)
+                              (zipWith f x23 x27)
 
 zip :: xs:List a -> ys:{List b|len _v == len xs} -> {List Pair a b|len _v == len xs}
-./List-Zip.sq:13: Error:
-  Cannot find sufficiently strong refinements
-  when checking Nil ::
-  {List a|len _v >= 0 && len _v < len xs}
-  in
-  \xs . \ys . 
-      match zip Nil ?? with
+zip = \xs . \ys . 
+    match xs with
+      Nil -> Nil
+      Cons x17 x18 -> 
+        match ys with
+          Nil -> error
+          Cons x21 x22 -> Cons (Pair x17
+                                  x21) (zip x18 x22)
 
 toNat :: xs:List Int -> {List Nat|len _v == len xs}
 toNat = \xs . 
-  let f0 = \x11 . 
-      if x11 <= 0
-        then neg x11
-        else neg (neg x11) in
-  map f0 xs
+  let f0 = \x20 . 
+      if x20 <= 0
+        then neg x20
+        else x20 in
+  map f0 (map (\x26 . 
+              let f0 = ?? in
+              x26) (map (\x32 . 
+                        let f0 = ?? in
+                        x15) xs))
 
+product :: xs:List a -> ys:List b -> {List Pair a b|len _v == len xs * len ys}
+product = \xs . \ys . 
+    match xs with
+      Nil -> Nil
+      Cons x25 x26 -> 
+        let f30 = \x1988 . Pair x25
+                             x1988 in
+        map (\x45 . x45) (append
+                            (product x26 ys) (map f30 ys))
+
+extractMin :: xs:{List a|len _v > 0} -> {MinPair a|elems xs == [min _v] + elems (rest _v) && len xs == 1 + len (rest _v)}
+extractMin = \xs . 
+  match xs with
+    Nil -> error
+    Cons x9 x10 -> 
+      match x10 with
+        Nil -> MinPair x9 Nil
+        Cons x18 x19 -> 
+          match extractMin x10 with
+            MinPair x23 x24 -> 
+              if x23 <= x9
+                then MinPair x23 (Cons x9 x24)
+                else MinPair x9 (Cons x23 x24)
+
+member :: x:a -> xs:List a -> {Bool|_v == (x in elems xs)}
+member = \x . \xs . 
+    match xs with
+      Nil -> eq Nil (Cons Nil Nil)
+      Cons x31 x32 -> 
+        if x31 == x
+          then eq Nil Nil
+          else member x x32
+
+coincidence :: xs:List a -> ys:List a -> {List a|elems _v == elems xs * elems ys}
+coincidence = \xs . \ys . 
+    match xs with
+      Nil -> Nil
+      Cons x15 x16 -> 
+        if eq (eq (eq false false) (eq
+                                      false false)) (eq (eq false
+                                                           false) (member x15
+                                                                     ys))
+          then Cons x15 (coincidence x16
+                           ys)
+          else coincidence x16 ys
+
+foldr :: <p :: List (a) -> b -> Bool> . f:(xs:List a -> x:a -> acc:{b|p xs _v} -> {b|p ((Cons x xs)) _v}) -> seed:{b|p (Nil) _v} -> ys:List a -> {b|p ys _v}
+synquid: Map.!: given key is not an element in the map
+length :: xs:List a -> {Int|_v == len xs}
+<no file name>:1: Error:
+  Cannot find sufficiently strong refinements
+
+append :: xs:List a -> ys:List a -> {List a|len _v == len xs + len ys}
+<no file name>:1: Error:
+  Cannot find sufficiently strong refinements
+
+ith :: <p :: Int -> a -> Bool> . xs:List a <p> -> i:{Int|0 <= _v && _v < len xs} -> {a|p i _v}
+ith = \xs . \i . 
+    match xs with
+      Nil -> error
+      Cons x11 x12 -> 
+        if 0 == i
+          then x11
+          else ith x12 (dec i)
+
+elemIndex :: <p :: Int -> a -> Bool> . x:a -> xs:{List a <p>|x in elems _v} -> {Int|p _v x}
+elemIndex = \x . \xs . 
+    match xs with
+      Nil -> error
+      Cons x11 x12 -> 
+        if x11 == x
+          then zero
+          else inc (elemIndex x x12)
+
+snoc :: <p :: a -> a -> Bool> . x:a -> xs:List {a|p _v x} <p> -> {List a <p>|len _v == len xs + 1 && elems _v == elems xs + [x]}
+snoc = \x . \xs . 
+    match xs with
+      Nil -> Cons x Nil
+      Cons x17 x18 -> Cons x17 (snoc x
+                                  x18)
+
+reverse :: <p :: a -> a -> Bool> . xs:List a <p> -> {List a <p _1 _0>|len _v == len xs && elems _v == elems xs}
+reverse = \xs . 
+  match xs with
+    Nil -> Nil
+    Cons x10 x11 -> snoc x10
+                      (reverse x11)
+
+insert :: x:a -> xs:UList a -> {UList a|elems _v == elems xs + [x]}
+insert = \x . \xs . 
+    match xs with
+      Nil -> Cons x Nil
+      Cons x17 x18 -> 
+        if x17 == x
+          then xs
+          else Cons x17 (insert x x18)
+
+delete :: x:a -> xs:UList a -> {UList a|elems _v == elems xs - [x]}
+delete = \x . \xs . 
+    match xs with
+      Nil -> Nil
+      Cons x13 x14 -> 
+        if x13 == x
+          then x14
+          else Cons x13 (delete x x14)
+
+range :: size:Nat -> lo:Int -> {UList {Int|lo <= _v && _v <= lo + size}|len _v == size}
+range = \size . \lo . 
+    if size <= 0
+      then Nil
+      else Cons lo (range (dec size)
+                      (inc lo))
+
+elem :: x:a -> xs:List a -> {Bool|_v == (x in elems xs)}
+elem = \x . \xs . 
+    match xs with
+      Nil -> false
+      Cons x11 x12 -> 
+        if x11 == x
+          then true
+          else elem x x12
+
+nub' :: xs:List a -> acc:UList a -> {UList a|elems _v == elems acc + elems xs}

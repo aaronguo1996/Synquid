@@ -210,14 +210,12 @@ reconstructI' env t@(ScalarT _ _) impl = case impl of
                           _ -> throwErrorWithDescription $ text "Not in scope: data constructor" </> squotes (text consName)
     checkCases _ [] = return []
   
-  -- [TODO] cut here
 reconstructCase env scrVar pScrutinee t (Case consName args iBody) consT = cut $ do  
   runInSolver $ matchConsType (lastType consT) (typeOf pScrutinee)
   consT' <- runInSolver $ currentAssignment consT
   (syms, ass) <- caseSymbols env scrVar args consT'
   let env' = foldr (uncurry addVariable) (addAssumption ass env) syms
   useSucc <- asks . view $ _1 . buildGraph
-  -- let useSucc = True
   caseEnv <- if useSucc then foldM (\e (name,ty)-> addSuccinctSymbol name (Monotype ty) e) env' syms else return env'
   pCaseExpr <- local (over (_1 . matchDepth) (-1 +)) $
                inContext (\p -> Program (PMatch pScrutinee [Case consName args p]) t) $ 

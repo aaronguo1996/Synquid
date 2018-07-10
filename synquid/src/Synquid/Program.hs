@@ -183,16 +183,11 @@ data MeasureDef = MeasureDef {
 makeLenses ''MeasureDef
 
 {- Evaluation environment -}
-data SuccinctContext = SuccinctContext {
-  _srcType :: SuccinctType
-} deriving (Eq)
-
-makeLenses ''SuccinctContext
 
 data SuccinctEdge = SuccinctEdge {
   _symbolId :: Id,
   _params :: Int,
-  _weight :: HashMap SuccinctContext Double
+  _weight :: Double
 } deriving (Eq)
 
 instance Ord (SuccinctEdge) where
