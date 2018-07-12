@@ -32,11 +32,12 @@ take :: xs: List a -> n: Nat -> {List a | len _v == n}
 zip :: xs: List a -> ys: {List b | len _v == len xs} -> {List (Pair (a) (b)) | len _v == len xs}
 
 {- Synthesis goal -}
-zip7 :: xs: List a -> ys: {List b | len _v == len xs} 
-        -> zs: {List c | len _v == len xs} 
-        -> ts: {List d | len _v == len xs} 
-        -> rs: {List e | len _v == len xs} 
-        -> ms: {List f | len _v == len xs} 
-        -> ns: {List g | len _v == len xs} 
-        -> {List (Pair (Pair (Pair (Pair (Pair (Pair a b) c) d) e) f) g) | len _v == len xs}
+zip7 :: xs: List a 
+-> ys: {List b | len _v == len xs} 
+        -- -> zs: {List c | len _v == len xs} 
+--         -> ts: {List d | len _v == len xs} 
+--         -> rs: {List e | len _v == len xs} 
+--         -> ms: {List f | len _v == len xs} 
+--         -> ns: {List g | len _v == len xs} 
+        -> {List (Pair (Pair (Pair (Pair (Pair (Pair a b) a) b) a) b) a) | len _v == len xs}
 zip7 = ??

@@ -194,7 +194,7 @@ unifySuccinct comp target boundedTys = case (comp, target) of
                     else Map.empty
                   else Set.foldr (\out acc -> 
                     let (_, outPlace) = out in 
-                      if outPlace > 0 || (outPlace == 0 && length xx == 0)
+                      if outPlace > 0 || (outPlace == 0 && length (if includeOut then xx else Set.delete out xx) == 0)
                         then Map.insert id (if includeOut then (SuccinctDatatype out xx yy consMaps Set.empty) else (SuccinctDatatype out (Set.delete out xx) yy consMaps Set.empty)) acc
                         else acc) (assign vs xs ys includeOut) xx
                 _ -> Map.empty
@@ -204,10 +204,14 @@ unifySuccinct comp target boundedTys = case (comp, target) of
                          len = (Set.size y) + (Set.foldr (\(_,n) acc ->if n==0 then acc+1 else acc) 0 x)
                     -- in (cnt > 1 && len >= 1) || (cnt == 0 && (len == 0 || len == 1)) || (cnt == 1 && len == 1)
                      in (cnt > 1 && len >= 1) || (cnt == 0 && (len == 0 || len == 1)) || (cnt == 1 && len == 1)
-              resultMap = [assign (Set.toList freeVars) c t False | c <- finalCons, t <- finalTys,
-                                                              (foldr (\(x,y) acc -> acc && (isValid x y)) True (zip c t))]
-                        ++ [assign (Set.toList freeVars) c t True | c <- finalCons, t <- finalTys,
-                                                              (foldr (\(x,y) acc -> acc && (isValid x y)) True (zip c t))]
+              -- resultMap = filter (not . Map.null) ([assign (Set.toList freeVars) c t False | c <- finalCons, t <- finalTys,
+              --                                                 (foldr (\(x,y) acc -> acc && (isValid x y)) True (zip c t))]
+              --                                   ++ [assign (Set.toList freeVars) c t True | c <- finalCons, t <- finalTys,
+              --                                                 (foldr (\(x,y) acc -> acc && (isValid x y)) True (zip c t))])
+              resultMap = [ m | c <- finalCons, t <- finalTys, let m = assign (Set.toList freeVars) c t False,
+                                      (foldr (\(x,y) acc -> acc && (isValid x y)) (not (Map.null m)) (zip c t))]
+                        ++ [ m | c <- finalCons, t <- finalTys,let m = assign (Set.toList freeVars) c t True,
+                                      (foldr (\(x,y) acc -> acc && (isValid x y)) (not (Map.null m)) (zip c t))]
           in resultMap
 
 -- getDestructors :: Id -> SType -> Map Id SType
@@ -274,11 +278,16 @@ hasSuccinctAny (SuccinctAny) = True
 hasSuccinctAny (SuccinctDatatype _ _ tys _ _) = hasSuccinctAny (SuccinctComposite tys)
 hasSuccinctAny _ = False
 
--- is the first type has stronger than the second one
-isStrongerThan measures (SuccinctDatatype id1 ids1 tys1 cons1 measures1) (SuccinctDatatype id2 ids2 tys2 cons2 measures2) = 
-  (measures2 `Set.intersection` measures) `Set.isSubsetOf` (measures1 `Set.intersection` measures)
-isStrongerThan _ SuccinctAny sty2 = True
-isStrongerThan _ sty1 sty2 = sty1 == sty2
+-- does the first type make contribution to the second one's refinement
+contributeTo measures (SuccinctDatatype id1 ids1 tys1 cons1 measures1) (SuccinctDatatype id2 ids2 tys2 cons2 measures2) = 
+  Set.null $ (measures2) `Set.intersection` (measures1)
+contributeTo _ sty2 SuccinctAny = True
+contributeTo _ sty1 sty2 = sty1 == sty2
+
+isStrongerThan (SuccinctDatatype id1 ids1 tys1 cons1 measures1) (SuccinctDatatype id2 ids2 tys2 cons2 measures2) = 
+  tys1 == tys2 && id1 == id2 && ids1 == ids2 && (measures2) `Set.isSubsetOf` (measures1)
+isStrongerThan SuccinctAny sty2 = True
+isStrongerThan sty1 sty2 = sty1 == sty2
 
 measuresOf (SuccinctDatatype _ _ _ _ measures) = measures
 measuresOf _ = Set.empty
@@ -290,13 +299,14 @@ printGraph graph = HashMap.foldrWithKey printMap "" graph
     printMap k v acc = Set.foldr (\x tmp -> tmp ++ (succinct2str k) ++ x) acc (HashMap.foldrWithKey printSet Set.empty v)
     printSet k s acc = acc `Set.union` Set.map (\x -> "--" ++ x ++ "-->" ++ (succinct2str k) ++ "\n") s
 
+-- | can typ2 be kind of typ1?
 succinctAnyEq :: SuccinctType -> SuccinctType -> Bool
 succinctAnyEq (SuccinctScalar t1) (SuccinctScalar t2) = t1 == t2
 succinctAnyEq (SuccinctFunction cnt1 targ1 tret1) (SuccinctFunction cnt2 targ2 tret2) = cnt1 == cnt2 && (succinctAnyEq (SuccinctComposite targ1) (SuccinctComposite targ2)) && (tret1 == tret2 || (tret1 == SuccinctAny) || (tret2 == SuccinctAny))
 succinctAnyEq t1@(SuccinctDatatype id1 ids1 tys1 cons1 measures1) t2@(SuccinctDatatype id2 ids2 tys2 cons2 measures2) = 
   if hasSuccinctAny t1 || hasSuccinctAny t2
-    then (succinctAnyEq (SuccinctComposite tys1) (SuccinctComposite tys2)) && (Set.isSubsetOf ids1 ids2 || Set.isSubsetOf ids2 ids1) && id1 == id2 -- && (Set.isSubsetOf measures1 measures2 || Set.isSubsetOf measures2 measures1)
-    else tys1 == tys2 && id1 == id2 && ids1 == ids2 && (Map.null cons1 || Map.null cons2 || cons1 == cons2) -- && (Set.isSubsetOf measures1 measures2 || Set.isSubsetOf measures2 measures1)
+    then (succinctAnyEq (SuccinctComposite tys1) (SuccinctComposite tys2)) && (Set.isSubsetOf ids1 ids2 || Set.isSubsetOf ids2 ids1) && id1 == id2 && ((not . Set.null $ measures1 `Set.intersection` measures2)  || Set.null measures1)
+    else tys1 == tys2 && id1 == id2 && ids1 == ids2 && (Map.null cons1 || Map.null cons2 || cons1 == cons2) && ((not . Set.null $ measures1 `Set.intersection` measures2) || Set.null measures1)
 succinctAnyEq (SuccinctComposite tys1) (SuccinctComposite tys2) =
   if Set.member SuccinctAny tys1
     then let diff = tys1 `Set.difference` tys2 in Set.size diff == 0 || (Set.size diff == 1 && Set.findMin diff == SuccinctAny)

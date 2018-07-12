@@ -1,0 +1,138 @@
+data ByteString
+data Word8
+measure bLength :: ByteString -> {Int | _v >= 0} -- dummy measure
+
+data Text
+data Char
+measure tLength :: Text -> {Int | _v >= 0} -- dummy measure
+
+data List a where
+  Nil :: List a
+  Cons :: x: a -> xs: List a -> List a
+  
+termination measure len :: List a -> {Int | _v >= 0} where
+  Nil -> 0
+  Cons x xs -> 1 + len xs
+
+type Nat = {Int | _v >= 0}
+
+{- Useless components # 50 -}
+bsEq :: ByteString -> ByteString -> Bool
+-- bsEmpty :: {ByteString | bLength _v == 0}
+bsSingleton :: Word8 -> {ByteString | (bLength _v) == 1}
+-- bsPack :: cs:List Word8 -> {ByteString | (bLength _v) == (len cs)}
+bsUnpack :: b:ByteString -> {List Word8 | (len _v) == (bLength b)}
+bsNull :: b:ByteString -> {Bool | (bLength b == 0)}
+bsLength :: b:ByteString -> {Nat | _v == (bLength b)}
+bsCons :: Word8 -> b:ByteString -> {ByteString | (bLength _v) == 1 + (bLength b)}
+bsSnoc :: b:ByteString -> Word8 -> {ByteString | (bLength _v) == 1 + (bLength b)}
+bsHead :: b:{ByteString | bLength _v >= 0 } -> Word8
+bsTail :: b:{ByteString | bLength _v > 0 } -> {ByteString | (bLength _v) == (bLength b) - 1}
+bsLast :: b:{ByteString | bLength _v >= 0 } -> Word8
+bsInit :: b:{ByteString | bLength _v > 0 } -> {ByteString | (bLength _v) == (bLength b) - 1}
+bsAppend :: b1:ByteString -> b2:ByteString -> {ByteString | (bLength _v) == (bLength b1) + (bLength b2)}
+bsMap :: (Word8 -> Word8) -> b:ByteString -> {ByteString | bLength _v == bLength b}
+bsReverse :: b:ByteString -> {ByteString | bLength _v == bLength b}
+bsIntersperse :: Word8 -> b:ByteString -> {ByteString | bLength _v == if bLength b > 0 then (2 * bLength b - 1) else 0 }
+bsFoldl :: (Word8 -> Word8 -> Word8) -> {ByteString | bLength _v >= 0} -> Word8
+bsAny :: (Word8 -> Bool) -> ByteString -> Bool
+bsAll :: (Word8 -> Bool) -> ByteString -> Bool
+bsMaximum :: ByteString -> Word8
+bsMinimum :: ByteString -> Word8
+bsMapIndexed :: (Int -> Word8 -> Word8) -> b:ByteString -> {ByteString | bLength _v == bLength b}
+bsScanl1 :: (Word8 -> Word8 -> Word8) -> b:ByteString -> {ByteString | bLength _v == bLength b}
+bsScanr :: (Word8 -> Word8 -> Word8) -> Word8 -> b:ByteString -> {ByteString | (bLength _v) == 1 + (bLength b)}
+bsReplicate :: n:Nat -> Word8 -> {ByteString | (bLength _v) == (if n > 0 then n else 0)}
+bsTake :: n:Nat -> b:ByteString -> {ByteString | (bLength _v) == (if (n <= (bLength b)) then n else (bLength b))}
+bsDrop :: n:Nat -> b:ByteString -> {ByteString | (bLength _v) ==  (if (n <= (bLength b)) then (bLength b) - n else 0)}
+bsTakeWhile :: (Word8 -> Bool) -> b:ByteString -> {ByteString | bLength _v <= bLength b}
+bsDropWhile :: (Word8 -> Bool) -> b:ByteString -> {ByteString | bLength _v <= bLength b}
+-- bsJoin :: ByteString -> List ByteString -> ByteString
+bsIntercalateWithByte :: Word8 -> f:ByteString -> g:ByteString -> {ByteString | (bLength _v) == (bLength f) + (bLength g) + 1}
+bsIndex :: b:ByteString -> {Nat | _v < (bLength b)} -> Word8
+bsElemIndex :: Word8 -> b:ByteString -> {Nat | _v < (bLength b)}
+bsElemIndexEnd :: Word8 -> b:ByteString -> {Nat | _v < (bLength b)}
+bsElemIndices :: Word8 -> b:ByteString -> List {Nat | _v < (bLength b) }
+bsCount :: Word8 -> b:ByteString -> {Nat | _v <= (bLength b) }
+bsFindIndex :: (Word8 -> Bool) -> b:ByteString -> {Nat | _v < (bLength b)}
+bsElem :: Word8 -> ByteString -> Bool
+bsNotElem :: Word8 -> ByteString -> Bool
+bsFilter :: (Word8 -> Bool) -> b:ByteString -> {ByteString | bLength _v <= bLength b}
+bsFilterByte :: Word8 -> b:ByteString -> {ByteString | (bLength _v) <= (bLength b)}
+bsIsPrefixOf :: ByteString -> ByteString -> Bool
+bsIsSuffixOf :: ByteString -> ByteString -> Bool
+bsIsInfixOf :: ByteString -> ByteString -> Bool
+bsFindSubstring :: pat:ByteString -> str:ByteString -> {Nat | _v <= (bLength str)}
+bsZipWith :: (Word8 -> Word8 -> Word8) -> x:ByteString -> y:{ByteString | bLength _v == bLength x} -> {ByteString | bLength _v == bLength x}
+bsFindSubstrings :: pat:ByteString -> str:ByteString -> List {Nat | _v <= (bLength str)}
+bsInits :: b:ByteString -> List {ByteString | (bLength _v) <= (bLength b)}
+bsTails :: b:ByteString -> {List {ByteString | (bLength _v) <= (bLength b)} | (len _v) == 1 + (bLength b)}
+textEq :: Text -> Text -> Bool
+-- textEmpty :: {Text | tLength _v == 0}
+textSingleton :: Char -> {Text | (tLength _v) == 1}
+-- textPack :: cs:List Char -> {Text | (tLength _v) == (len cs)}
+textUnpack :: b:Text -> {List Char | (len _v) == (tLength b)}
+textNull :: b:Text -> {Bool | (tLength b == 0)}
+textLength :: b:Text -> {Nat | _v == (tLength b)}
+textCons :: Char -> b:Text -> {Text | (tLength _v) == 1 + (tLength b)}
+textSnoc :: b:Text -> Char -> {Text | (tLength _v) == 1 + (tLength b)}
+textHead :: b:{Text | tLength _v >= 0 } -> Char
+textTail :: b:{Text | tLength _v > 0 } -> {Text | (tLength _v) == (tLength b) - 1}
+textLast :: b:{Text | tLength _v >= 0 } -> Char
+textInit :: b:{Text | tLength _v > 0 } -> {Text | (tLength _v) == (tLength b) - 1}
+textAppend :: b1:Text -> b2:Text -> {Text | (tLength _v) == (tLength b1) + (tLength b2)}
+textMap :: (Char -> Char) -> b:Text -> {Text | tLength _v == tLength b}
+textReverse :: b:Text -> {Text | tLength _v == tLength b}
+textIntersperse :: Char -> b:Text -> {Text | tLength _v == if tLength b > 0 then (2 * tLength b - 1) else 0 }
+textFoldl :: (Char -> Char -> Char) -> {Text | tLength _v >= 0} -> Char
+textAny :: (Char -> Bool) -> Text -> Bool
+textAll :: (Char -> Bool) -> Text -> Bool
+textMaximum :: Text -> Char
+textMinimum :: Text -> Char
+textMapIndexed :: (Int -> Char -> Char) -> b:Text -> {Text | tLength _v == tLength b}
+textScanl1 :: (Char -> Char -> Char) -> b:Text -> {Text | tLength _v == tLength b}
+textScanr :: (Char -> Char -> Char) -> Char -> b:Text -> {Text | (tLength _v) == 1 + (tLength b)}
+textReplicate :: n:Nat -> Char -> {Text | (tLength _v) == (if n > 0 then n else 0)}
+textTake :: n:Nat -> b:Text -> {Text | (tLength _v) == (if (n <= (tLength b)) then n else (tLength b))}
+textDrop :: n:Nat -> b:Text -> {Text | (tLength _v) ==  (if (n <= (tLength b)) then (tLength b) - n else 0)}
+textTakeWhile :: (Char -> Bool) -> b:Text -> {Text | tLength _v <= tLength b}
+textDropWhile :: (Char -> Bool) -> b:Text -> {Text | tLength _v <= tLength b}
+-- textJoin :: Text -> List Text -> Text
+textIntercalateWithByte :: Char -> f:Text -> g:Text -> {Text | (tLength _v) == (tLength f) + (tLength g) + 1}
+textIndex :: b:Text -> {Nat | _v < (tLength b)} -> Char
+textElemIndex :: Char -> b:Text -> {Nat | _v < (tLength b)}
+textElemIndexEnd :: Char -> b:Text -> {Nat | _v < (tLength b)}
+textElemIndices :: Char -> b:Text -> List {Nat | _v < (tLength b) }
+textCount :: Char -> b:Text -> {Nat | _v <= (tLength b) }
+textFindIndex :: (Char -> Bool) -> b:Text -> {Nat | _v < (tLength b)}
+textElem :: Char -> Text -> Bool
+textNotElem :: Char -> Text -> Bool
+textFilter :: (Char -> Bool) -> b:Text -> {Text | tLength _v <= tLength b}
+textFilterByte :: Char -> b:Text -> {Text | (tLength _v) <= (tLength b)}
+textIsPrefixOf :: Text -> Text -> Bool
+textIsSuffixOf :: Text -> Text -> Bool
+textIsInfixOf :: Text -> Text -> Bool
+textFindSubstring :: pat:Text -> str:Text -> {Nat | _v <= (tLength str)}
+textZipWith :: (Char -> Char -> Char) -> x:Text -> y:{Text | tLength _v == tLength x} -> {Text | tLength _v == tLength x}
+textFindSubstrings :: pat:Text -> str:Text -> List {Nat | _v <= (tLength str)}
+textInits :: b:Text -> List {Text | (tLength _v) <= (tLength b)}
+textTails :: b:Text -> {List {Text | (tLength _v) <= (tLength b)} | (len _v) == 1 + (tLength b)}
+textToList :: l:IList a -> r:IList a -> b: Text -> {IList a | ilen _v == ilen l + ilen r + tLength b}
+bsToList :: l:IList a -> b: ByteString -> {IList a | ilen _v == ilen l + bLength b}
+{- Useful components -}
+qualifier {x <= y, x != y}
+
+data IList a where
+  INil :: IList a
+  ICons :: x: a -> xs: IList {a | x <= _v} -> IList a
+  
+termination measure ilen :: IList a -> {Int | _v >= 0} where
+  INil -> 0
+  ICons x xs -> 1 + ilen xs  
+
+measure ielems :: IList a -> Set a where
+  INil -> []
+  ICons x xs -> [x] + ielems xs
+  
+merge :: xs: IList a -> ys: IList a -> {IList a | ilen _v == ilen xs + ilen ys && ielems _v == ielems xs + ielems ys}
+merge = ??

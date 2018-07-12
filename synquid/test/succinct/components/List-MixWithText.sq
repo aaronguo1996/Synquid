@@ -36,8 +36,8 @@ zero :: {Int | _v == 0}
 textSingleton :: c: Char -> {Text | tlength _v == 1}
 textCons :: t: Text -> c: Char -> {Text | tlength t + 1 == tlength _v && tlen _v == tlen t + 1}
 textAppend :: t1: Text -> t2: Text -> {Text | tlength _v == tlength t1 + tlength t2}
--- textNull :: t: Text -> {Bool | _v == (tlength t == 0)}
--- textIsSingleton :: t: Text -> {Bool | _v == (tlength t == 1)}
+textNull :: t: Text -> {Bool | _v == (tlength t == 0)}
+textIsSingleton :: t: Text -> {Bool | _v == (tlength t == 1)}
 
 {- component useless for Text and should be unreachable -}
 data List a where

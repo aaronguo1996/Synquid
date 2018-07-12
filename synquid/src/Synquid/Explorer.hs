@@ -267,7 +267,7 @@ generateFirstCase env scrVar pScrutinee t consName = do
       let env' = foldr (uncurry addVariable) (addAssumption ass env) syms
       useSucc <- asks . view $ _1 . buildGraph
       let scrutineeSyms = symbolsOf pScrutinee
-      caseEnv <- if useSucc then foldM (\e (name, ty) -> addSuccinctSymbol name (Monotype (if Set.size scrutineeSyms == 1 then refineMatchType env (Set.findMin scrutineeSyms) ty else ty)) e) env' syms else return env'
+      caseEnv <- if useSucc then foldM (\e (name, ty) -> addSuccinctSymbol name (Monotype (if Set.size scrutineeSyms == 1 then refineScalarType env ty else ty)) e) env' syms else return env'
 
       ifte (do -- Try to find a vacuousness condition:
               deadUnknown <- Unknown Map.empty <$> freshId "C"
@@ -302,7 +302,7 @@ generateCase env scrVar pScrutinee t consName = do
       let env' = (if unfoldSyms then unfoldAllVariables else id) $ foldr (uncurry addVariable) (addAssumption cUnknown env) syms
       useSucc <- asks . view $ _1 . buildGraph
       let scrutineeSyms = symbolsOf pScrutinee
-      caseEnv <- if useSucc then foldM (\e (name, ty) -> addSuccinctSymbol name (Monotype (if Set.size scrutineeSyms == 1 then refineMatchType env (Set.findMin scrutineeSyms) ty else ty)) e) env' syms else return env'
+      caseEnv <- if useSucc then foldM (\e (name, ty) -> addSuccinctSymbol name (Monotype (if Set.size scrutineeSyms == 1 then refineScalarType env ty else ty)) e) env' syms else return env'
       pCaseExpr <- optionalInPartial t $ local (over (_1 . matchDepth) (-1 +))
                                        $ inContext (\p -> Program (PMatch pScrutinee [Case consName binders p]) t)
                                        $ generateError caseEnv `mplus` generateI caseEnv t False
@@ -486,7 +486,8 @@ termWithType env sty rty typ = do
           return [(toSProgram env arg, es)]
     else do
       writeLog 2 $ text "Looking for rtype" <+> pretty rty
-      writeLog 2 $ text "Looking for succinct type" <+> text (succinct2str sty)
+      let styp = outOfSuccinctAll $ toSuccinctType env rty
+      writeLog 2 $ text "Looking for succinct type" <+> text (succinct2str styp)
       let ids = Set.toList $ Set.unions $ HashMap.elems $ findDstNodesInGraph env sty
       useCounts <- use symbolUseCount
       let sortedIds = if isSuccinctFunction sty
@@ -1093,13 +1094,13 @@ writeLog level msg = do
 baseToSuccinctType :: Environment -> BaseType Formula -> SuccinctType
 baseToSuccinctType env typ@(DatatypeT id ts _) = if "_" == id 
   then SuccinctAny --SuccinctAll (Set.singleton "_") (SuccinctScalar (TypeVarT Map.empty "_"))
-  else SuccinctDatatype (id, length ts) resIds resTys Map.empty (usedMeasures `Set.union` usedVars)
+  else SuccinctDatatype (id, length ts) resIds resTys Map.empty (usedMeasures)
   where
     fmls = extractBaseRefinements typ
     measureNames = Map.keysSet $ allMeasuresOf id env
-    symbolNames = Map.keysSet $ allSymbols env
+    -- symbolNames = Map.keysSet $ allSymbols env
     usedMeasures = Set.unions $ map (fmlMeasure measureNames) (Set.toList fmls)
-    usedVars = Set.unions $ map (fmlVars symbolNames) (Set.toList fmls)
+    -- usedVars = Set.unions $ map (fmlVars symbolNames) (Set.toList fmls)
     mergeDt t (accIds, accTys) = case outOfSuccinctAll (toSuccinctType env t) of
       SuccinctDatatype id' ids tys _ _ -> (Set.insert id' (ids `Set.union` accIds), tys `Set.union` accTys)
       ty                         -> (accIds, Set.singleton ty `Set.union` accTys)
@@ -1108,20 +1109,20 @@ baseToSuccinctType _ t = SuccinctScalar t
 
 toSuccinctType :: Environment -> RType -> SuccinctType
 toSuccinctType env t@(ScalarT bt _) = let 
-  vars = extractSTyVars t 
+  vars = extractSTyVars t `Set.difference` Set.fromList (env ^. boundTypeVars)
   ty = case baseToSuccinctType env bt of
     SuccinctDatatype (id, l) ids tys cons measures -> let
       fmls = extractRefinements t
       measureNames = Map.keysSet $ allMeasuresOf id env
-      symbolNames = Map.keysSet $ allSymbols env
+      -- symbolNames = Map.keysSet $ allSymbols env
       usedMeasures = Set.unions $ map (fmlMeasure measureNames) (Set.toList fmls)
-      usedVars = Set.unions $ map (fmlVars symbolNames) (Set.toList fmls)
+      -- usedVars = Set.unions $ map (fmlVars symbolNames) (Set.toList fmls)
       -- usedMeasures = Set.empty
-      in SuccinctDatatype (id,l) ids tys cons (measures `Set.union` usedMeasures `Set.union` usedVars)
+      in SuccinctDatatype (id,l) ids tys cons (measures `Set.union` usedMeasures)
     sbt -> sbt
   in if Set.size vars == 0 then ty else simplifySuccinctType $ SuccinctAll vars ty
 toSuccinctType env t@(FunctionT _ param ret) = let
-  vars = extractSTyVars t
+  vars = extractSTyVars t `Set.difference` Set.fromList (env ^. boundTypeVars)
   ty = case outOfSuccinctAll (toSuccinctType env ret) of
     SuccinctFunction paramCnt paramSet retTy -> SuccinctFunction (paramCnt+1) (Set.insert (toSuccinctType env param) paramSet) retTy
     ty'                                      -> SuccinctFunction 1 (Set.singleton (toSuccinctType env param)) ty'
@@ -1131,7 +1132,7 @@ toSuccinctType env t@(FunctionT _ param ret) = let
 --   ty = SuccinctLet id (toSuccinctType env varty) (toSuccinctType env bodyty)
 --   in if Set.size vars == 0 then ty else simplifySuccinctType $ SuccinctAll vars ty
 toSuccinctType env t@(LetT id varty bodyty) = let
-  vars = extractSTyVars t
+  vars = extractSTyVars t `Set.difference` Set.fromList (env ^. boundTypeVars)
   ty = toSuccinctType env bodyty
   in if Set.size vars == 0 then ty else simplifySuccinctType $ SuccinctAll vars ty
 toSuccinctType _ AnyT = SuccinctAny
@@ -1141,10 +1142,11 @@ addEdgeForSymbol name succinctTy env = let
   envWithSelf = addEdge name succinctTy $ (succinctSymbols %~ HashMap.insert name succinctTy) env
   iteratedEnv = iteration env envWithSelf
   goalTy = lastSuccinctType (HashMap.lookupDefault SuccinctAny "__goal__" (iteratedEnv ^. succinctSymbols))
-  reachableSet = (getReachableNodes iteratedEnv)
   diffTys = Set.filter isSuccinctConcrete $ ((allSuccinctNodes iteratedEnv)) `Set.difference` ((allSuccinctNodes env))
   -- finalEnv = iteratedEnv
   finalEnv = foldr (\sty accEnv -> addFromEdges sty $ addToEdges sty accEnv) iteratedEnv diffTys
+  subgraphNodes = if goalTy == SuccinctAny then allSuccinctNodes finalEnv else reachableGraphFromGoal finalEnv
+  reachableSet = (getReachableNodes iteratedEnv) `Set.intersection` subgraphNodes
   prunedEnv = finalEnv { _graphFromGoal = pruneGraphByReachability (finalEnv ^. succinctGraph) reachableSet }
   in prunedEnv
   where
@@ -1161,14 +1163,14 @@ addEdgeForSymbol name succinctTy env = let
       SuccinctDatatype (id,_) _ _ _ _ -> Map.keysSet $ allMeasuresOf id env
       _ -> Set.empty
     addToEdges typ oldEnv = let
-      filter_fun k v = (isStrongerThan measureNames k typ) && (not (isSuccinctComposite k)) && k /= typ
+      filter_fun k v = (isStrongerThan k typ) && (not (isSuccinctComposite k)) && k /= typ
       candidates = HashMap.keys $ HashMap.filterWithKey filter_fun (oldEnv ^. succinctGraph)
       in foldr (\t accEnv -> let 
         revEnv = (succinctGraphRev %~ HashMap.insertWith Set.union t (Set.singleton typ)) accEnv
         in (succinctGraph %~ HashMap.insertWith mergeMapOfSet typ (HashMap.singleton t (Set.singleton (SuccinctEdge {_symbolId = "", _params = 0, _weight = HashMap.empty})))) revEnv
         ) oldEnv candidates
     addFromEdges typ oldEnv = let
-      filter_fun k v = (isStrongerThan measureNames typ k) && (not (isSuccinctComposite k)) && k /= typ
+      filter_fun k v = (isStrongerThan typ k) && (not (isSuccinctComposite k)) && k /= typ
       candidates = HashMap.keys $ HashMap.filterWithKey filter_fun (oldEnv ^. succinctGraph)
       in foldr (\t accEnv -> let 
         revEnv = (succinctGraphRev %~ HashMap.insertWith Set.union typ (Set.singleton t)) accEnv
@@ -1179,7 +1181,7 @@ addSuccinctSymbol :: MonadHorn s => Id -> RSchema -> Environment -> Explorer s E
 addSuccinctSymbol name t env = do
   newt <- instantiateWithoutConstraint env (t) True []
   tass <- use (typingState . typeAssignment)
-  let succinctTy = getSuccinctTy ((typeSubstitute tass newt))
+  let succinctTy = getSuccinctTy (refineScalarType env (typeSubstitute tass newt))
   writeLog 2 $ text "ADD" <+> text name <+> text ":" <+> text (succinct2str succinctTy)
   case newt of 
     (LetT id tDef tBody) -> do
@@ -1373,13 +1375,13 @@ findDstNodesInGraph env typ = case typ of
   SuccinctLet _ _ ty -> findDstNodesInGraph env ty
   SuccinctAll _ ty -> findDstNodesInGraph env ty
   _ -> let
-    filter_fun k v = (succinctAnyEq k typ) && (not (isSuccinctComposite k))
-    measureNames = case typ of
-      SuccinctDatatype (id,_) _ _ _ _ -> Map.keysSet $ allMeasuresOf id env
-      _ -> Set.empty
-    checkVars k m = (not (isSuccinctComposite k)) && (succinctAnyEq k typ) && (isStrongerThan measureNames k typ || 
-                     not (Set.null (Set.map getEdgeId (Set.unions (HashMap.elems m)) `Set.intersection` ((measuresOf typ) `Set.difference` (measuresOf k)))))
-    candidateMap = HashMap.filterWithKey (if typ == SuccinctAny then filter_fun else checkVars) (env ^. graphFromGoal)
+    filter_fun k v = (succinctAnyEq typ k) && (not (isSuccinctComposite k))
+    -- measureNames = case typ of
+    --   SuccinctDatatype (id,_) _ _ _ _ -> Map.keysSet $ allMeasuresOf id env
+    --   _ -> Set.empty
+    -- checkVars k m = (not (isSuccinctComposite k)) && (succinctAnyEq k typ) && (isStrongerThan measureNames k typ || 
+    --                  not (Set.null (Set.map getEdgeId (Set.unions (HashMap.elems m)) `Set.intersection` ((measuresOf typ) `Set.difference` (measuresOf k)))))
+    candidateMap = HashMap.filterWithKey filter_fun (env ^. graphFromGoal)
     in HashMap.foldr (\m acc -> HashMap.foldrWithKey (\kty set accM -> HashMap.insertWith Set.union kty set accM) acc m) HashMap.empty candidateMap
 
 pruneGraphByReachability g reachableSet = HashMap.foldrWithKey (\k v acc -> if Set.member k reachableSet then HashMap.insert k (HashMap.filterWithKey (\k' s -> Set.member k' reachableSet) v) acc else acc) HashMap.empty g
@@ -1406,26 +1408,21 @@ termScore env prog@(Program p (sty, rty, _)) =
       PHole -> max maxSize (sizeof sty)
       _ -> maxSize
 
-refineMatchType env x typ = case terminationRefinement x typ of
+refineScalarType env typ = case measureRefinement typ of
   Nothing -> typ
-  Just (argLt, _) -> addRefinement typ argLt
+  Just argLt -> addRefinement typ argLt
   where
-    -- | If argument is recursible, return its strict and non-strict termination refinements, otherwise @Nothing@
-    terminationRefinement argName (ScalarT IntT fml) = Just ( valInt |>=| IntLit 0  |&|  valInt |<| intVar argName,
-                                                              valInt |>=| IntLit 0  |&|  valInt |<=| intVar argName)
-    terminationRefinement argName (ScalarT dt@(DatatypeT name _ _) fml) = case env ^. datatypes . to (Map.! name) . wfMetric of
-      Nothing -> Nothing
-      Just mName -> let 
-                      metric x = Pred IntS mName [x]
-                      argSort = toSort dt
-                    in Just ( metric (Var argSort valueVarName) |>=| IntLit 0  |&| metric (Var argSort valueVarName) |<| metric (Var argSort argName),
-                              metric (Var argSort valueVarName) |>=| IntLit 0  |&| metric (Var argSort valueVarName) |<=| metric (Var argSort argName))
-    terminationRefinement _ _ = Nothing
+    measureRefinement (ScalarT dt@(DatatypeT name _ _) fml) = let
+      measureNames = Map.keysSet $ allMeasuresOf name env
+      metric mName x = Pred IntS mName [x]
+      argSort = toSort dt
+      in Just (Set.foldr (\name accPred -> metric name (Var argSort valueVarName) |>=| IntLit 0  |&| accPred) ftrue measureNames)
+    measureRefinement _ = Nothing
 
 allSuccinctNodes :: Environment -> Set SuccinctType
 allSuccinctNodes env = Set.fromList $ (HashMap.keys (env ^. succinctGraph)) ++ (HashMap.foldr (\m acc -> acc ++ (HashMap.keys m)) [] (env ^. succinctGraph))
 
-edges env = HashMap.foldrWithKey (\k v acc -> (map (\(k',v') -> (k,v',k')) (HashMap.toList v)) ++ acc) [] (env ^. graphFromGoal)
+edges env = HashMap.foldrWithKey (\k v acc -> (map (\(k',v') -> (k,v',k')) (HashMap.toList v)) ++ acc) [] (env ^. succinctGraph)
 
 nodes env = allSuccinctNodes env
 

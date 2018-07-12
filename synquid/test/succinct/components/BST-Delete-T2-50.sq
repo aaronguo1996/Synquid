@@ -1,0 +1,168 @@
+{- Useless components (totally unrelated) -}
+type Nat = {Int | _v >= 0}
+
+data List a where
+  Nil :: List a
+  Cons :: x: a -> xs: List a -> List a
+  
+termination measure len :: List a -> {Int | _v >= 0} where
+  Nil -> 0
+  Cons x xs -> 1 + len xs  
+
+measure elems :: List a -> Set a where
+  Nil -> []
+  Cons x xs -> [x] + elems xs
+
+data ListOfLists a where
+  Nil2 :: ListOfLists a
+  Cons2 :: x: List a -> xs: ListOfLists a -> ListOfLists a
+  
+termination measure len2 :: ListOfLists a -> {Int | _v >= 0} where
+  Nil2 -> 0
+  Cons2 x xs -> 1 + len2 xs
+  
+measure sumLen :: ListOfLists a -> {Int | _v >= 0} where
+  Nil2 -> 0
+  Cons2 x xs -> sumLen xs + len x
+
+data Info where
+  Info :: streetAddr: Int -> zipcode: Int -> local: Bool -> Info
+    
+data Address where
+  Address :: info: Info -> priv: Bool -> Address
+  
+measure isPriv :: Address -> Bool where
+  Address info priv -> priv
+
+data AddressBook where
+  AddressBook :: business: List {Address | !(isPriv _v)} -> personal: List {Address | isPriv _v} -> AddressBook
+
+data IList a where
+    INil :: IList a
+    ICons :: x: a -> xs: IList {a | x <= _v} -> IList a
+  
+termination measure ilen :: IList a -> {Int | _v >= 0} where
+  INil -> 0
+  ICons x xs -> 1 + ilen xs  
+
+measure ielems :: IList a -> Set a where
+  INil -> []
+  ICons x xs -> [x] + ielems xs
+
+data MinPair a where
+  MinPair :: x: a -> l: List {a | x <= _v}  -> MinPair a
+  
+measure min :: MinPair a -> a where
+  MinPair x l -> x
+  
+measure rest :: MinPair a -> List a where
+  MinPair x l -> l
+
+data Pair a b where
+  Pair :: x: a -> y: b -> Pair a b
+
+data Char
+
+data PList a <p :: a -> a -> Bool> where
+  PNil :: PList a <p>
+  PCons :: x: a -> xs: PList {a | p x _v} <p> -> PList a <p>
+  
+termination measure plen :: PList a -> {Int | _v >= 0} where
+  PNil -> 0
+  PCons x xs -> 1 + plen xs  
+
+measure pelems :: PList a -> Set a where
+  PNil -> []
+  PCons x xs -> [x] + pelems xs
+
+type UList a = PList a <{_0 != _1}>
+
+data ByteString
+data Word8
+measure bLength :: ByteString -> {Int | _v >= 0} -- dummy measure
+
+data Text
+data Char
+measure tLength :: Text -> {Int | _v >= 0} -- dummy measure
+
+append :: xs: List a -> ys: List a -> {List a | len _v == len xs + len ys && elems _v == elems xs + elems ys}
+concat :: xss: ListOfLists a -> { List a | len _v == sumLen xss }
+deleteList :: x: a -> xs: List a -> {List a | elems _v == elems xs - [x]}
+drop :: n: Nat -> xs: {List a | len _v >= n} -> {List a | len _v == len xs - n}
+elem :: x: a -> xs: List a -> {Bool | _v == (x in elems xs)}
+map :: f: (a -> b) -> xs: List a -> {List b | len _v == len xs}
+replicate :: n: Nat -> x: a -> {List a | len _v == n}
+stutter :: xs: List a -> {List a | len _v == 2 * len xs}
+take :: n: Nat -> xs: {List a | len _v >= n} -> {List a | len _v == n}
+toNat :: xs: List Int -> {List Nat | len _v == len xs}
+zipWith :: f: (a -> b -> c) -> xs: List a -> ys: {List b | len _v == len xs} -> {List c | len _v == len xs}
+inc :: x: Int -> {Int | _v == x+1 }
+dec :: x: Int -> {Int | _v == x-1 }
+bsSingleton :: Word8 -> {ByteString | (bLength _v) == 1}
+bsCons :: Word8 -> b:ByteString -> {ByteString | (bLength _v) == 1 + (bLength b)}
+bsSnoc :: b:ByteString -> Word8 -> {ByteString | (bLength _v) == 1 + (bLength b)}
+bsTail :: b:{ByteString | bLength _v > 0 } -> {ByteString | (bLength _v) == (bLength b) - 1}
+bsInit :: b:{ByteString | bLength _v > 0 } -> {ByteString | (bLength _v) == (bLength b) - 1}
+bsAppend :: b1:ByteString -> b2:ByteString -> {ByteString | (bLength _v) == (bLength b1) + (bLength b2)}
+bsMap :: (Word8 -> Word8) -> b:ByteString -> {ByteString | bLength _v == bLength b}
+bsReverse :: b:ByteString -> {ByteString | bLength _v == bLength b}
+bsIntersperse :: Word8 -> b:ByteString -> {ByteString | bLength _v == if bLength b > 0 then (2 * bLength b - 1) else 0 }
+bsMapIndexed :: (Int -> Word8 -> Word8) -> b:ByteString -> {ByteString | bLength _v == bLength b}
+bsScanl1 :: (Word8 -> Word8 -> Word8) -> b:ByteString -> {ByteString | bLength _v == bLength b}
+bsScanr :: (Word8 -> Word8 -> Word8) -> Word8 -> b:ByteString -> {ByteString | (bLength _v) == 1 + (bLength b)}
+bsReplicate :: n:Nat -> Word8 -> {ByteString | (bLength _v) == (if n > 0 then n else 0)}
+bsTake :: n:Nat -> b:ByteString -> {ByteString | (bLength _v) == (if (n <= (bLength b)) then n else (bLength b))}
+bsDrop :: n:Nat -> b:ByteString -> {ByteString | (bLength _v) ==  (if (n <= (bLength b)) then (bLength b) - n else 0)}
+bsTakeWhile :: (Word8 -> Bool) -> b:ByteString -> {ByteString | bLength _v <= bLength b}
+bsDropWhile :: (Word8 -> Bool) -> b:ByteString -> {ByteString | bLength _v <= bLength b}
+bsJoin :: ByteString -> List ByteString -> ByteString
+bsIntercalateWithByte :: Word8 -> f:ByteString -> g:ByteString -> {ByteString | (bLength _v) == (bLength f) + (bLength g) + 1}
+bsFilter :: (Word8 -> Bool) -> b:ByteString -> {ByteString | bLength _v <= bLength b}
+bsFilterByte :: Word8 -> b:ByteString -> {ByteString | (bLength _v) <= (bLength b)}
+bsZipWith :: (Word8 -> Word8 -> Word8) -> x:ByteString -> y:{ByteString | bLength _v == bLength x} -> {ByteString | bLength _v == bLength x}
+textSingleton :: Char -> {Text | (tLength _v) == 1}
+textCons :: Char -> b:Text -> {Text | (tLength _v) == 1 + (tLength b)}
+textSnoc :: b:Text -> Char -> {Text | (tLength _v) == 1 + (tLength b)}
+textTail :: b:{Text | tLength _v > 0 } -> {Text | (tLength _v) == (tLength b) - 1}
+textInit :: b:{Text | tLength _v > 0 } -> {Text | (tLength _v) == (tLength b) - 1}
+textAppend :: b1:Text -> b2:Text -> {Text | (tLength _v) == (tLength b1) + (tLength b2)}
+textMap :: (Char -> Char) -> b:Text -> {Text | tLength _v == tLength b}
+textReverse :: b:Text -> {Text | tLength _v == tLength b}
+textIntersperse :: Char -> b:Text -> {Text | tLength _v == if tLength b > 0 then (2 * tLength b - 1) else 0 }
+textMapIndexed :: (Int -> Char -> Char) -> b:Text -> {Text | tLength _v == tLength b}
+textScanl1 :: (Char -> Char -> Char) -> b:Text -> {Text | tLength _v == tLength b}
+textScanr :: (Char -> Char -> Char) -> Char -> b:Text -> {Text | (tLength _v) == 1 + (tLength b)}
+textReplicate :: n:Nat -> Char -> {Text | (tLength _v) == (if n > 0 then n else 0)}
+textTake :: n:Nat -> b:Text -> {Text | (tLength _v) == (if (n <= (tLength b)) then n else (tLength b))}
+textDrop :: n:Nat -> b:Text -> {Text | (tLength _v) ==  (if (n <= (tLength b)) then (tLength b) - n else 0)}
+textTakeWhile :: (Char -> Bool) -> b:Text -> {Text | tLength _v <= tLength b}
+textDropWhile :: (Char -> Bool) -> b:Text -> {Text | tLength _v <= tLength b}
+textJoin :: Text -> List Text -> Text
+textIntercalateWithByte :: Char -> f:Text -> g:Text -> {Text | (tLength _v) == (tLength f) + (tLength g) + 1}
+textFilter :: (Char -> Bool) -> b:Text -> {Text | tLength _v <= tLength b}
+textFilterByte :: Char -> b:Text -> {Text | (tLength _v) <= (tLength b)}
+textZipWith :: (Char -> Char -> Char) -> x:Text -> y:{Text | tLength _v == tLength x} -> {Text | tLength _v == tLength x}
+
+{- Useless components (related but unreachable) -}
+-- build BST with number of nodes `x` from list `xs`
+toBST :: xs: List a -> s: Nat -> {BST a | elems xs == telems _v && size _v == s}
+bsToBST :: b: ByteString -> {BST a | size _v == bLength b}
+textToBST :: t: Text -> {BST a | size _v == tLength t}
+{- Useful components -}
+data BST a where
+  Empty :: BST a
+  Node  :: x: a -> l: BST {a | _v < x} -> r: BST {a | x < _v} -> BST a
+                          
+termination measure size :: BST a -> {Int | _v >= 0} where
+  Empty -> 0
+  Node x l r -> size l + size r + 1
+  
+measure telems :: BST a -> Set a where
+  Empty -> []
+  Node x l r -> telems l + telems r + [x]
+
+qualifier {x < y, x != y}
+
+{- Synthesis goal -}
+delete :: t: BST a -> x: a -> {BST a | telems _v == telems t - [x]}
+delete = ??

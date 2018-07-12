@@ -18,7 +18,7 @@ ORACLE_NAME = 'oracle'
 OUTFILE_NAME = 'results.csv'
 COMMON_OPTS = []
 TIMEOUT_COMMAND = 'timeout'
-TIMEOUT= '120'
+TIMEOUT= '100'
 
 SECTIONS = ['.', 'sygus', 'AVL','depth','components']
 
@@ -118,26 +118,32 @@ BENCHMARKS = {
     ('List-Zip4',       ['-a 6', '-m 0']),
     ('List-Zip5',       ['-a 6', '-m 0']),
     ('List-Zip6',       ['-a 6', '-m 0']),
+    ('List-Zip7',       ['-a 6', '-m 0']),
     ('Graph-Weighted',  ['-m 3']),
     ('Graph-Colored',   ['-m 4']),
     ('Graph-Labeled',   ['-a 4', '-m 5'])
   ],
   'components' : [
     ('BST-Delete-T2',   []),
-    ('BST-Delete-T2-1', []),
-    ('BST-Delete-T2-2', []),
-    ('BST-Delete-T2-3', []),
-    ('BST-Delete-T2-4', []),
-    ('BST-Delete-T2-5', []),
-    ('BST-Delete-T2-6', []),
-    ('BST-Delete-T2-7', []),
-    ('BST-Delete-T2-8', []),
-    ('BST-Delete-T2-9', []),
-    ('BST-Delete-T3',   []),
-    ('List-Together',   ['-f=AllArguments']),
-    ('Text-MixWithList',   []),
-    ('List-MixWithText',[]),
-    ('IncList-MergeMixUnreachable', ['-f=AllArguments'])
+    ('BST-Delete-T2-10',   []),
+    ('BST-Delete-T2-20',   []),
+    ('BST-Delete-T2-30',   []),
+    ('BST-Delete-T2-40',   []),
+    ('BST-Delete-T2-50',   [])
+    # ('BST-Delete-T2-1', []),
+    # ('BST-Delete-T2-2', []),
+    # ('BST-Delete-T2-3', []),
+    # ('BST-Delete-T2-4', []),
+    # ('BST-Delete-T2-5', []),
+    # ('BST-Delete-T2-6', []),
+    # ('BST-Delete-T2-7', []),
+    # ('BST-Delete-T2-8', []),
+    # ('BST-Delete-T2-9', []),
+    # ('BST-Delete-T3',   []),
+    # ('List-Together',   ['-f=AllArguments']),
+    # ('Text-MixWithList',   []),
+    # ('List-MixWithText',[]),
+    # ('IncList-MergeMixUnreachable', ['-f=AllArguments'])
   ]
 }
 
@@ -316,7 +322,7 @@ if __name__ == '__main__':
 
         print('TOTAL', '{0:0.2f}'.format(total_time))
 
-        if sections == ['all']:
-            write_times(sum(BENCHMARKS.values(), []))
+        # if sections == ['all']:
+        write_times(sum(BENCHMARKS.values(), []))
             #check_diff()
         os.chdir('..')

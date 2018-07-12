@@ -34,6 +34,6 @@ zip :: xs: List a -> ys: {List b | len _v == len xs} -> {List (Pair (a) (b)) | l
 {- Synthesis goal -}
 zip3 :: xs: List a -> 
         ys: {List b | len _v == len xs} -> 
-        zs: {List c | len _v == len xs} -> 
-        {List ((Pair (Pair a b) c)) | len _v == len xs}
+        -- zs: {List c | len _v == len xs} -> 
+        {List ((Pair (Pair a b) a)) | len _v == len xs}
 zip3 = ??

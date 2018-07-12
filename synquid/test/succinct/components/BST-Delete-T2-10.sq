@@ -58,6 +58,25 @@ measure min :: MinPair a -> a where
 measure rest :: MinPair a -> List a where
   MinPair x l -> l
 
+data Pair a b where
+  Pair :: x: a -> y: b -> Pair a b
+
+data Char
+
+data PList a <p :: a -> a -> Bool> where
+  PNil :: PList a <p>
+  PCons :: x: a -> xs: PList {a | p x _v} <p> -> PList a <p>
+  
+termination measure plen :: PList a -> {Int | _v >= 0} where
+  PNil -> 0
+  PCons x xs -> 1 + plen xs  
+
+measure pelems :: PList a -> Set a where
+  PNil -> []
+  PCons x xs -> [x] + pelems xs
+
+type UList a = PList a <{_0 != _1}>
+
 data ByteString
 data Word8
 measure bLength :: ByteString -> {Int | _v >= 0} -- dummy measure
@@ -77,20 +96,17 @@ stutter :: xs: List a -> {List a | len _v == 2 * len xs}
 take :: n: Nat -> xs: {List a | len _v >= n} -> {List a | len _v == n}
 toNat :: xs: List Int -> {List Nat | len _v == len xs}
 zipWith :: f: (a -> b -> c) -> xs: List a -> ys: {List b | len _v == len xs} -> {List c | len _v == len xs}
-selectSort :: xs: List a -> {IList a | ielems _v == elems xs}
-extractMin :: xs: {List a | len _v > 0} -> {MinPair a | elems xs == [min _v] + elems (rest _v) && len xs == 1 + len (rest _v)}
-quickSort :: xs: List a -> {IList a | ilen _v == len xs && ielems _v == elems xs }
-insert :: x: a -> xs: IList a -> {IList a | ielems _v == ielems xs + [x]}
-insertSort :: xs: List a -> {IList a | ielems _v == elems xs}
-merge :: xs: IList a -> ys: IList a -> {IList a | ilen _v == ilen xs + ilen ys && ielems _v == ielems xs + ielems ys}
 inc :: x: Int -> {Int | _v == x+1 }
 dec :: x: Int -> {Int | _v == x-1 }
-
+bsSingleton :: Word8 -> {ByteString | (bLength _v) == 1}
+bsCons :: Word8 -> b:ByteString -> {ByteString | (bLength _v) == 1 + (bLength b)}
+bsSnoc :: b:ByteString -> Word8 -> {ByteString | (bLength _v) == 1 + (bLength b)}
+bsTail :: b:{ByteString | bLength _v > 0 } -> {ByteString | (bLength _v) == (bLength b) - 1}
+bsInit :: b:{ByteString | bLength _v > 0 } -> {ByteString | (bLength _v) == (bLength b) - 1}
 {- Useless components (related but unreachable) -}
--- get BST at most depth `d`
--- pruneByDepth :: t: BST a -> d: Nat -> {BST a | size _v <= size t}
-bsToBST :: b: ByteString -> {BST a | size _v == bLength b}
+-- build BST with number of nodes `x` from list `xs`
 toBST :: xs: List a -> s: Nat -> {BST a | elems xs == telems _v && size _v == s}
+bsToBST :: b: ByteString -> {BST a | size _v == bLength b}
 textToBST :: t: Text -> {BST a | size _v == tLength t}
 
 {- Useful components -}
