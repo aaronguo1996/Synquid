@@ -1422,7 +1422,7 @@ refineScalarType env typ = case measureRefinement typ of
 allSuccinctNodes :: Environment -> Set SuccinctType
 allSuccinctNodes env = Set.fromList $ (HashMap.keys (env ^. succinctGraph)) ++ (HashMap.foldr (\m acc -> acc ++ (HashMap.keys m)) [] (env ^. succinctGraph))
 
-edges env = HashMap.foldrWithKey (\k v acc -> (map (\(k',v') -> (k,v',k')) (HashMap.toList v)) ++ acc) [] (env ^. succinctGraph)
+edges env = HashMap.foldrWithKey (\k v acc -> (map (\(k',v') -> (k,v',k')) (HashMap.toList v)) ++ acc) [] (env ^. graphFromGoal)
 
 nodes env = allSuccinctNodes env
 

@@ -77,13 +77,37 @@ measure pelems :: PList a -> Set a where
 
 type UList a = PList a <{_0 != _1}>
 
+data ByteString
+data Word8
+measure bLength :: ByteString -> {Int | _v >= 0} -- dummy measure
+
+data Text
+data Char
+measure tLength :: Text -> {Int | _v >= 0} -- dummy measure
+
+data Vector a
+measure vlen :: Vector a -> {Int | _v >= 0}
+
 append :: xs: List a -> ys: List a -> {List a | len _v == len xs + len ys && elems _v == elems xs + elems ys}
+concat :: xss: ListOfLists a -> { List a | len _v == sumLen xss }
+deleteList :: x: a -> xs: List a -> {List a | elems _v == elems xs - [x]}
+drop :: n: Nat -> xs: {List a | len _v >= n} -> {List a | len _v == len xs - n}
+elem :: x: a -> xs: List a -> {Bool | _v == (x in elems xs)}
+map :: f: (a -> b) -> xs: List a -> {List b | len _v == len xs}
+replicate :: n: Nat -> x: a -> {List a | len _v == n}
+stutter :: xs: List a -> {List a | len _v == 2 * len xs}
+take :: n: Nat -> xs: {List a | len _v >= n} -> {List a | len _v == n}
+toNat :: xs: List Int -> {List Nat | len _v == len xs}
+zipWith :: f: (a -> b -> c) -> xs: List a -> ys: {List b | len _v == len xs} -> {List c | len _v == len xs}
 inc :: x: Int -> {Int | _v == x+1 }
 dec :: x: Int -> {Int | _v == x-1 }
 
 {- Useless components (related but unreachable) -}
 -- build BST with number of nodes `x` from list `xs`
 toBST :: xs: List a -> s: Nat -> {BST a | elems xs == telems _v && size _v == s}
+bsToBST :: b: ByteString -> {BST a | size _v == bLength b}
+textToBST :: t: Text -> {BST a | size _v == tLength t}
+vectorToBST :: v: Vector a -> {BST a | size _v == vlen v}
 
 {- Useful components -}
 data BST a where

@@ -124,12 +124,14 @@ BENCHMARKS = {
     ('Graph-Labeled',   ['-a 4', '-m 5'])
   ],
   'components' : [
-    ('BST-Delete-T2',   []),
+    ('BST-Delete-T2-1',   []),
     ('BST-Delete-T2-10',   []),
     ('BST-Delete-T2-20',   []),
     ('BST-Delete-T2-30',   []),
     ('BST-Delete-T2-40',   []),
-    ('BST-Delete-T2-50',   [])
+    ('BST-Delete-T2-50',   []),
+    ('BST-Delete-T2-75',   []),
+    ('BST-Delete-T2-100',   [])
     # ('BST-Delete-T2-1', []),
     # ('BST-Delete-T2-2', []),
     # ('BST-Delete-T2-3', []),

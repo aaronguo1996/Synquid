@@ -85,6 +85,9 @@ data Text
 data Char
 measure tLength :: Text -> {Int | _v >= 0} -- dummy measure
 
+data Vector a
+measure vlen :: Vector a -> {Int | _v >= 0}
+
 append :: xs: List a -> ys: List a -> {List a | len _v == len xs + len ys && elems _v == elems xs + elems ys}
 concat :: xss: ListOfLists a -> { List a | len _v == sumLen xss }
 deleteList :: x: a -> xs: List a -> {List a | elems _v == elems xs - [x]}
@@ -158,12 +161,51 @@ textDropAround :: (Char -> Bool) -> t:Text -> {Text | tLength _v <= tLength t}
 textStrip :: t:Text -> {Text | tLength _v <= tLength t}
 textStripStart :: t:Text -> {Text | tLength _v <= tLength t}
 textStripEnd :: t:Text -> {Text | tLength _v <= tLength t}
+textCopy :: t:Text -> {Text | tLength _v == tLength t}
+textReplace :: needle:Text -> replacement:Text -> haystack:Text -> {Text | tLength _v == tLength haystack - tLength needle + tLength replacement}
+decodeASCII :: bs: ByteString -> {Text | bLength bs == tLength _v}
+decodeLatin1 :: bs: ByteString -> {Text | bLength bs == tLength _v}
+decodeUtf8 :: bs: ByteString -> {Text | bLength bs == tLength _v}
+decodeUtf16LE :: bs: ByteString -> {Text | bLength bs == tLength _v}
+decodeUtf16BE :: bs: ByteString -> {Text | bLength bs == tLength _v}
+decodeUtf32LE :: bs: ByteString -> {Text | bLength bs == tLength _v}
+decodeUtf32BE :: bs: ByteString -> {Text | bLength bs == tLength _v}
+encodeUtf8 :: t:Text -> {ByteString | bLength _v == tLength t}
+encodeUtf16LE :: t:Text -> {ByteString | bLength _v == tLength t}
+encodeUtf16BE :: t:Text -> {ByteString | bLength _v == tLength t}
+encodeUtf32LE :: t:Text -> {ByteString | bLength _v == tLength t}
+encodeUtf32BE :: t:Text -> {ByteString | bLength _v == tLength t}
+readFile :: path: Text -> ByteString
+bsStripPrefix :: bs1: ByteString -> bs2: {ByteString | bLength _v <= bLength bs1} -> {ByteString | bLength _v == bLength bs2 - bLength bs1}
+bsStripSuffix :: bs1: ByteString -> bs2: {ByteString | bLength _v <= bLength bs1} -> {ByteString | bLength _v == bLength bs2 - bLength bs1}
+bsCopy :: bs: ByteString -> {ByteString | bLength _v == bLength bs}
+vInit :: v:Vector a -> {Vector a | vlen _v == vlen v}
+vTake :: n: Nat -> v: {Vector a | vlen _v >= n} -> {Vector a | vlen _v == n}
+vDrop :: n: Nat -> v: {Vector a | vlen _v >= n} -> {Vector a | vlen _v == vlen v - n}
+vTail :: v: Vector a -> {Vector a | vlen _v == vlen v - 1}
+vReplicate :: n: Nat -> x: a -> {Vector a | vlen _v == n}
+vGenerate :: n: Nat -> (Nat -> a) -> {Vector a | vlen _v == n}
+vEnumFromN :: x:a -> n: Nat -> {Vector a | vlen _v == n}
+vCons :: x: a -> v: Vector a -> {Vector a | vlen _v == vlen v + 1}
+vSnoc :: v: Vector a -> x: a -> {Vector a | vlen _v == vlen v + 1}
+vAccum :: (a -> b -> a) -> v: Vector a -> List (Pair Int b) -> {Vector a | vlen v == vlen _v}
+vReverse :: v: Vector a -> {Vector a | vlen _v == vlen v}
+-- vMap :: (a -> b) -> v: Vector a -> {Vector b | vlen _v == vlen v}
+-- vIMap :: (Nat -> a -> b) -> v: Vector a -> {Vector b | vlen _v == vlen v}
+-- vZipWith :: (a -> b -> c) -> v1: Vector a -> v2: {Vector b | vlen _v == vlen v1} -> {Vector c | vlen _v == vlen v1}
+vFilter :: (a -> Bool) -> v: Vector a -> {Vector a | vlen _v == vlen v}
+vTakeWhile :: (a -> Bool) -> v: Vector a -> {Vector a | vlen _v <= vlen v}
+vDropWhile :: (a -> Bool) -> v: Vector a -> {Vector a | vlen _v <= vlen v}
+vScanl :: (a -> a -> a) -> v: Vector a -> {Vector a | vlen _v == vlen v}
+vFromListN :: n: Nat -> xs: {List a | len _v >= n} -> {Vector a | vlen _v == n}
+vCopy :: v: Vector a -> {Vector a | vlen _v == vlen v}
 
 {- Useless components (related but unreachable) -}
 -- build BST with number of nodes `x` from list `xs`
 toBST :: xs: List a -> s: Nat -> {BST a | elems xs == telems _v && size _v == s}
 bsToBST :: b: ByteString -> {BST a | size _v == bLength b}
 textToBST :: t: Text -> {BST a | size _v == tLength t}
+vectorToBST :: v: Vector a -> {BST a | size _v == vlen v}
 {- Useful components -}
 data BST a where
   Empty :: BST a

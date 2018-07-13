@@ -85,6 +85,9 @@ data Text
 data Char
 measure tLength :: Text -> {Int | _v >= 0} -- dummy measure
 
+data Vector a
+measure vlen :: Vector a -> {Int | _v >= 0}
+
 append :: xs: List a -> ys: List a -> {List a | len _v == len xs + len ys && elems _v == elems xs + elems ys}
 concat :: xss: ListOfLists a -> { List a | len _v == sumLen xss }
 deleteList :: x: a -> xs: List a -> {List a | elems _v == elems xs - [x]}
@@ -129,6 +132,7 @@ textSnoc :: b:Text -> Char -> {Text | (tLength _v) == 1 + (tLength b)}
 toBST :: xs: List a -> s: Nat -> {BST a | elems xs == telems _v && size _v == s}
 bsToBST :: b: ByteString -> {BST a | size _v == bLength b}
 textToBST :: t: Text -> {BST a | size _v == tLength t}
+vectorToBST :: v: Vector a -> {BST a | size _v == vlen v}
 {- Useful components -}
 data BST a where
   Empty :: BST a
